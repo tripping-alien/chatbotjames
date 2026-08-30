@@ -13,7 +13,13 @@ export const RULES = [
         ],
         params: m => {
             let val, fromStr, toStr;
-            if (m[2] && m[3] && !m[0].toLowerCase().startsWith('how')) {
+            // Pattern 1 ("convert X unitA to unitB") always has a numeric m[1].
+            // Pattern 2 ("[how many] unitA is X unitB") always has a unit-word m[1].
+            // Checking m[1] itself is reliable; checking whether the whole match
+            // starts with "how" is not, since "how many " is optional in pattern 2 —
+            // "MB is 2 GB" (no "how many") matched pattern 2 but fell into the wrong
+            // branch here, assigning "2" as fromStr and throwing "Unknown unit: 2".
+            if (/^\d/.test(m[1])) {
                 val = m[1]; fromStr = m[2]; toStr = m[3];
             } else {
                 toStr = m[1]; val = m[2]; fromStr = m[3];
