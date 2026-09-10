@@ -1128,11 +1128,14 @@ a:hover {
 }
 
 .typing-indicator span {
-    display: block;
+    display: inline-block;
     width: 6px;
     height: 6px;
     background: var(--text-secondary);
     border-radius: 50%;
+    /* will-change: transform enables GPU compositing on mobile browsers (iOS Safari,
+       Android Chrome) so the scale animation is not dropped on the main thread */
+    will-change: transform;
     animation: bounce 1.4s infinite ease-in-out both;
 }
 
@@ -1142,6 +1145,12 @@ a:hover {
 
 .typing-indicator span:nth-child(2) {
     animation-delay: -0.16s;
+}
+
+/* Third dot must be explicit — without this it inherits delay: 0s but some
+   mobile browsers reset it, breaking the stagger sequence. */
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0s;
 }
 
 @keyframes bounce {

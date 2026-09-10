@@ -53,9 +53,12 @@ const initWebGLBackground = () => {
                 color += gridColor;
             }
 
-            // Render a faint matrix rain/noise on the top half
+            // Render a faint matrix rain/noise on the top half.
+            // NOTE: mod() clamps the sin() input to [0, 2π] before the large multiplier
+            // to prevent NaN/Inf on Nvidia GPUs where sin() of large values may overflow.
             if (y >= 0.0) {
-                float noise = fract(sin(dot(uv.xy + u_time * 0.1, vec2(12.9898,78.233))) * 43758.5453);
+                float sinInput = mod(dot(uv.xy + u_time * 0.1, vec2(12.9898, 78.233)), 6.2831853);
+                float noise = fract(sin(sinInput) * 43758.5453);
                 color += vec3(0.0, 1.0, 0.4) * noise * 0.015;
             }
 
@@ -89,6 +92,9 @@ const initWebGLBackground = () => {
         return;
     }
 
+    // IMPORTANT: useProgram MUST come before resize() so that gl.uniform2f calls
+    // inside resize() actually reach the active program. On Nvidia drivers, calling
+    // uniform setters with no active program is a silent no-op, breaking u_resolution.
     gl.useProgram(program);
 
     // Fullscreen quad

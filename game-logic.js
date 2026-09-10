@@ -1,4 +1,4 @@
-import { Chess } from 'https://esm.sh/chess.js';
+import { Chess } from 'https://esm.sh/chess.js@1.3.0';
 
 export class ChessGame {
     constructor(fen, moveHistory = []) {
