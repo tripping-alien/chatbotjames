@@ -37,7 +37,7 @@ class WorkerController {
         };
 
         const _lastPreset = safeLocalStorage ? safeLocalStorage.getItem('james-last-preset-id') : null;
-        this.worker.postMessage({ type: 'init', lastPresetId: _lastPreset || null });
+        this.worker.postMessage({ type: 'init', lastPresetId: _lastPreset || null, screenWidth: window.screen?.width, maxTouchPoints: navigator.maxTouchPoints });
         this.toolsWorker.postMessage({ type: 'init', lastPresetId: _lastPreset || null });
         this.pythonWorker.postMessage({ type: 'init' });
     }

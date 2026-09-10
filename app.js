@@ -1054,7 +1054,7 @@ setupModelPanel({
         uiManager.updateStatusMeta('Loading selected model…');
         uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
         uiManager.updateStatusText('⬇️ LOADING MODEL…');
-        workerController.worker.postMessage({ type: 'init', forcePresetId: selectedId });
+        workerController.worker.postMessage({ type: 'init', forcePresetId: selectedId, screenWidth: window.screen?.width, maxTouchPoints: navigator.maxTouchPoints });
     }
 });
 

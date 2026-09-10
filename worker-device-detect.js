@@ -1,8 +1,10 @@
-export function isMobileDevice() {
+export function isMobileDevice(hints = {}) {
     const ua = navigator.userAgent;
     const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
-    const isNarrowScreen = self.screen && self.screen.width < 1024;
-    const hasTouchPoints = navigator.maxTouchPoints > 1;
+    const screenWidth = hints.screenWidth ?? (typeof self !== 'undefined' && self.screen ? self.screen.width : undefined);
+    const maxTouchPoints = hints.maxTouchPoints ?? navigator.maxTouchPoints;
+    const isNarrowScreen = typeof screenWidth === 'number' && screenWidth < 1024;
+    const hasTouchPoints = typeof maxTouchPoints === 'number' && maxTouchPoints > 1;
     return isMobileUA || (hasTouchPoints && isNarrowScreen);
 }
 

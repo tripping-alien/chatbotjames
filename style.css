@@ -12,12 +12,12 @@
     user-select: none;
     transition: background 0.2s, color 0.2s;
 }
-
+ 
 .chat-sentinel:hover {
     background: rgba(255, 255, 255, 0.07);
     color: rgba(148, 163, 184, 1);
 }
-
+ 
 /* ═════ SCREEN READER ONLY ═════ */
 .sr-only {
     position: absolute;
@@ -30,7 +30,7 @@
     white-space: nowrap;
     border-width: 0;
 }
-
+ 
 /* ═════ INSTALL BANNER ═════ */
 .install-banner {
     position: fixed;
@@ -52,26 +52,26 @@
     width: max-content;
     max-width: 90vw;
 }
-
+ 
 /* Hidden state for smooth animations */
 .install-banner.hidden {
     opacity: 0;
     pointer-events: none;
     transform: translateX(-50%) translateY(30px);
 }
-
+ 
 .install-banner span {
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-primary);
 }
-
+ 
 .install-actions {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-
+ 
 #installBtn {
     background: var(--primary-purple);
     color: #fff;
@@ -83,12 +83,12 @@
     cursor: pointer;
     transition: background 0.2s, transform 0.2s;
 }
-
+ 
 #installBtn:hover {
     background: var(--primary-purple-hover);
     transform: scale(1.05);
 }
-
+ 
 #dismissInstallBtn {
     background: transparent;
     color: var(--text-muted);
@@ -103,12 +103,12 @@
     transition: color 0.2s, background 0.2s;
     font-size: 1.1rem;
 }
-
+ 
 #dismissInstallBtn:hover {
     color: var(--text-primary);
     background: rgba(255, 255, 255, 0.1);
 }
-
+ 
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .install-banner {
@@ -117,39 +117,39 @@
         gap: 12px;
         padding: 16px;
     }
-
+ 
     .install-actions {
         width: 100%;
         justify-content: center;
     }
 }
-
+ 
 :root {
     /* Color Palette */
     --bg-main: #060913;
     --sidebar-bg: #090e1c;
     --panel-bg: #0b1021;
-
+ 
     /* Accents */
     --primary-purple: #00f3ff;
     --primary-purple-hover: #00c3cc;
     --primary-blue: #00ff66;
     --primary-green: #00ff66;
     --danger-red: #ff0055;
-
+ 
     /* Borders & Bubbles */
     --border: rgba(0, 243, 255, 0.25);
     --border-light: rgba(0, 243, 255, 0.15);
     --input-bg: rgba(9, 14, 28, 0.8);
     --assistant-bubble: transparent;
     --user-bubble: rgba(0, 243, 255, 0.05);
-
+ 
     /* Typography */
     --text-primary: #e0fbfc;
     --text-secondary: #94a3b8;
     --text-muted: #7c8a9e; /* improved contrast for WCAG */
     --disabled-gray: #1e293b;
-
+ 
     /* Spacing */
     --chat-max-width: 48rem;
     
@@ -159,41 +159,42 @@
     --radius-lg: 8px;
     --radius-xl: 12px;
 }
-
+ 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
-
+ 
 body {
     font-family: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
     background-color: transparent;
     background-image: none;
     color: var(--text-primary);
     text-shadow: 0 0 2px rgba(0, 243, 255, 0.3);
+    height: 100vh; /* fallback for browsers/WebViews without dvh support */
     height: 100dvh;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-
+ 
 a {
     color: var(--primary-purple);
     text-decoration: none;
     transition: color 0.2s;
 }
-
+ 
 a:hover {
     color: var(--primary-blue);
 }
-
+ 
 .main-layout {
     display: flex;
     width: 100vw;
     height: 100%;
 }
-
+ 
 /* ═════ SIDEBAR ═════ */
 .sidebar {
     width: 280px;
@@ -208,7 +209,7 @@ a:hover {
     opacity: 1;
     overflow: hidden;
 }
-
+ 
 .sidebar.collapsed {
     width: 0;
     padding-left: 0;
@@ -217,7 +218,7 @@ a:hover {
     opacity: 0;
     pointer-events: none;
 }
-
+ 
 .new-thread-btn {
     display: flex;
     align-items: center;
@@ -234,14 +235,14 @@ a:hover {
     margin-bottom: 24px;
     transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
 }
-
+ 
 .new-thread-btn:hover {
     background: rgba(0, 243, 255, 0.1);
     border-color: var(--primary-purple);
     box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
     transform: translateY(-1px);
 }
-
+ 
 .chat-list {
     flex: 1;
     overflow-y: auto;
@@ -251,7 +252,7 @@ a:hover {
     padding-right: 4px;
     /* for scrollbar */
 }
-
+ 
 .chat-item {
     padding: 12px 14px;
     border-radius: var(--radius-sm);
@@ -263,19 +264,19 @@ a:hover {
     align-items: center;
     transition: all 0.2s;
 }
-
+ 
 .chat-item:hover {
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
 }
-
+ 
 .chat-item.active {
     background: rgba(0, 255, 102, 0.1);
     color: var(--primary-blue);
     border-left: 2px solid var(--primary-blue);
     font-weight: 500;
 }
-
+ 
 /* Add to style.css */
 .input-area {
     display: flex;
@@ -285,7 +286,7 @@ a:hover {
     border-top: 1px solid var(--border-color);
     gap: 10px;
 }
-
+ 
 #attach-button {
     background: transparent;
     border: 1px solid var(--border-color);
@@ -301,19 +302,19 @@ a:hover {
     transition: background 0.2s, border-color 0.2s;
     flex-shrink: 0;
 }
-
+ 
 #attach-button:hover {
     background-color: rgba(255, 255, 255, 0.08);
     border-color: var(--primary-color);
 }
-
+ 
 .attachment-preview {
     padding: 8px 20px 0 20px;
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
 }
-
+ 
 .attachment-chip {
     background: #252525;
     border: 1px solid var(--border-color);
@@ -325,7 +326,7 @@ a:hover {
     gap: 8px;
     color: var(--text-color);
 }
-
+ 
 .attachment-chip button {
     background: none;
     border: none;
@@ -336,11 +337,11 @@ a:hover {
     padding: 0;
     line-height: 1;
 }
-
+ 
 .attachment-chip button:hover {
     color: #ff7777;
 }
-
+ 
 /* Add or replace in style.css */
 .chat-container,
 #chat-messages {
@@ -352,7 +353,7 @@ a:hover {
     padding: 20px;
     gap: 12px;
 }
-
+ 
 #thinking-bubble {
     position: sticky;
     bottom: 16px;
@@ -365,7 +366,7 @@ a:hover {
     z-index: 10;
     margin-top: auto;
 }
-
+ 
 .delete-chat-btn {
     background: none;
     border: none;
@@ -377,17 +378,17 @@ a:hover {
     opacity: 0;
     transition: opacity 0.2s, background 0.2s, color 0.2s;
 }
-
+ 
 .chat-item:hover .delete-chat-btn {
     opacity: 0.6;
 }
-
+ 
 .delete-chat-btn:hover {
     opacity: 1 !important;
     background: rgba(239, 68, 68, 0.2);
     color: var(--danger-red);
 }
-
+ 
 .sidebar-footer {
     display: flex;
     flex-direction: column;
@@ -398,26 +399,26 @@ a:hover {
     border-top: 1px solid var(--border);
     margin-top: auto;
 }
-
+ 
 .sidebar-footer .footer-links {
     display: flex;
     gap: 12px;
 }
-
+ 
 .sidebar-footer a {
     color: var(--text-secondary);
 }
-
+ 
 .sidebar-footer a:hover {
     color: var(--text-primary);
 }
-
+ 
 .footer-credit {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-
+ 
 .donate-btn {
     display: inline-flex;
     align-items: center;
@@ -432,14 +433,14 @@ a:hover {
     transition: background 0.2s, border-color 0.2s;
     white-space: nowrap;
 }
-
+ 
 .donate-btn:hover {
     background: rgba(168, 85, 247, 0.25) !important;
     border-color: rgba(168, 85, 247, 0.6) !important;
     color: #c084fc !important;
 }
-
-
+ 
+ 
 /* ═════ TERMINAL HEADER ═════ */
 .terminal-container {
     flex: 1;
@@ -448,7 +449,7 @@ a:hover {
     min-width: 0;
     position: relative;
 }
-
+ 
 .terminal-header {
     padding: 14px 24px;
     display: flex;
@@ -463,44 +464,44 @@ a:hover {
     position: sticky;
     top: 0;
 }
-
+ 
 .header-left,
 .header-right {
     display: flex;
     align-items: center;
     gap: 16px;
 }
-
+ 
 .status-indicator {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-
+ 
 .status-led {
     width: 8px;
     height: 8px;
     border-radius: 50%;
 }
-
+ 
 .led-idle {
     background: var(--primary-green);
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
 }
-
+ 
 .led-thinking {
     background: var(--primary-purple);
     animation: pulse 1s infinite alternate;
     box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
 }
-
+ 
 #statusText {
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
 }
-
+ 
 .version-tag {
     font-size: 0.8rem;
     background: transparent;
@@ -510,7 +511,7 @@ a:hover {
     color: var(--primary-purple);
     text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
 }
-
+ 
 .icon-btn {
     background: none;
     border: none;
@@ -523,12 +524,12 @@ a:hover {
     border-radius: var(--radius-sm);
     transition: all 0.2s ease;
 }
-
+ 
 .icon-btn:hover {
     color: var(--text-primary);
     background: rgba(255, 255, 255, 0.08);
 }
-
+ 
 /* ═════ PROGRESS BAR ═════ */
 .progress-container {
     width: 100%;
@@ -537,14 +538,14 @@ a:hover {
     position: relative;
     z-index: 11;
 }
-
+ 
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--primary-purple), var(--primary-blue));
     width: 0%;
     transition: width 0.3s ease;
 }
-
+ 
 /* ═════ CHAT LOG ═════ */
 .chat-log {
     flex: 1;
@@ -557,22 +558,22 @@ a:hover {
     gap: 24px;
     scroll-behavior: smooth;
 }
-
+ 
 .message-wrap {
     width: 100%;
     max-width: var(--chat-max-width);
     display: flex;
     flex-direction: column;
 }
-
+ 
 .user-msg {
     align-items: flex-end;
 }
-
+ 
 .assistant-msg {
     align-items: flex-start;
 }
-
+ 
 .message-content {
     max-width: 85%;
     padding: 14px 20px;
@@ -581,7 +582,7 @@ a:hover {
     font-size: 1rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
-
+ 
 .user-msg .message-content {
     background: var(--user-bubble);
     color: var(--primary-purple);
@@ -590,7 +591,7 @@ a:hover {
     border-radius: var(--radius-sm);
     animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-
+ 
 .user-msg .message-content::before {
     content: "user@local:~$ ";
     color: var(--text-muted);
@@ -598,7 +599,7 @@ a:hover {
     display: block;
     margin-bottom: 0.5rem;
 }
-
+ 
 .assistant-msg .message-content {
     background: var(--assistant-bubble);
     color: var(--text-primary);
@@ -607,7 +608,7 @@ a:hover {
     border-radius: var(--radius-sm);
     animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-
+ 
 .assistant-msg .message-content::before {
     content: "root@james:~# ";
     color: var(--primary-blue);
@@ -615,14 +616,14 @@ a:hover {
     display: block;
     margin-bottom: 0.5rem;
 }
-
+ 
 .user-msg-container {
     display: flex;
     align-items: center;
     gap: 8px;
     justify-content: flex-end;
 }
-
+ 
 .edit-msg-btn {
     background: rgba(255, 255, 255, 0.1);
     border: none;
@@ -637,18 +638,18 @@ a:hover {
     transition: opacity 0.2s, transform 0.2s, background 0.2s;
     color: var(--text-secondary);
 }
-
+ 
 .user-msg-container:hover .edit-msg-btn {
     opacity: 0.6;
 }
-
+ 
 .edit-msg-btn:hover {
     opacity: 1 !important;
     background: rgba(255, 255, 255, 0.2);
     color: white;
     transform: scale(1.05);
 }
-
+ 
 /* Markdown styling inside messages */
 .message-content pre {
     background: #09090b;
@@ -660,7 +661,7 @@ a:hover {
     font-size: 0.85rem;
     margin: 1rem 0;
 }
-
+ 
 .message-content code {
     background: rgba(255, 255, 255, 0.1);
     color: #e2e8f0;
@@ -669,25 +670,25 @@ a:hover {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
     font-size: 0.85em;
 }
-
+ 
 .message-content p {
     margin: 0.5rem 0;
 }
-
+ 
 .message-content p:first-child {
     margin-top: 0;
 }
-
+ 
 .message-content p:last-child {
     margin-bottom: 0;
 }
-
+ 
 .message-content ul,
 .message-content ol {
     padding-left: 1.5rem;
     margin: 0.75rem 0;
 }
-
+ 
 .message-content blockquote {
     border-left: 4px solid var(--primary-purple);
     margin: 1rem 0;
@@ -696,7 +697,7 @@ a:hover {
     color: var(--text-secondary);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
-
+ 
 /* ═════ INPUT AREA ═════ */
 .input-area {
     padding: 0 16px 24px 16px;
@@ -706,7 +707,7 @@ a:hover {
     position: relative;
     z-index: 10;
 }
-
+ 
 .input-container {
     width: 100%;
     max-width: var(--chat-max-width);
@@ -714,7 +715,7 @@ a:hover {
     flex-direction: column;
     gap: 8px;
 }
-
+ 
 .input-wrapper {
     display: flex;
     background: var(--input-bg);
@@ -726,12 +727,12 @@ a:hover {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
 }
-
+ 
 .input-wrapper:focus-within {
     border-color: var(--primary-purple);
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15), 0 10px 25px -5px rgba(0, 0, 0, 0.5);
 }
-
+ 
 #cmdInput {
     flex: 1;
     background: transparent;
@@ -742,16 +743,16 @@ a:hover {
     outline: none;
     padding: 8px 0;
 }
-
+ 
 #cmdInput::placeholder {
     color: var(--text-muted);
 }
-
+ 
 #cmdInput:disabled {
     cursor: not-allowed;
     opacity: 0.5;
 }
-
+ 
 #sendBtn {
     width: 40px;
     height: 40px;
@@ -766,33 +767,33 @@ a:hover {
     transition: transform 0.2s, background 0.2s;
     flex-shrink: 0;
 }
-
+ 
 #sendBtn:hover:not(:disabled) {
     background: #e2e8f0;
     transform: scale(1.05);
 }
-
+ 
 #sendBtn:disabled {
     background: var(--disabled-gray);
     color: var(--text-muted);
     cursor: not-allowed;
 }
-
+ 
 #sendBtn.stop-btn {
     background: var(--danger-red);
     color: white;
 }
-
+ 
 #sendBtn.stop-btn:hover:not(:disabled) {
     background: #dc2626;
 }
-
+ 
 .input-footer-text {
     text-align: center;
     font-size: 0.75rem;
     color: var(--text-muted);
 }
-
+ 
 /* ═════ MODEL PANEL MODAL ═════ */
 .model-panel-overlay {
     display: none;
@@ -804,11 +805,11 @@ a:hover {
     z-index: 200;
     animation: fadeIn 0.2s ease;
 }
-
+ 
 .model-panel-overlay.visible {
     display: block;
 }
-
+ 
 .model-panel {
     position: fixed;
     bottom: 0;
@@ -826,11 +827,11 @@ a:hover {
     transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
 }
-
+ 
 .model-panel.open {
     transform: translateX(-50%) translateY(0);
 }
-
+ 
 .model-panel-header {
     display: flex;
     justify-content: space-between;
@@ -838,12 +839,12 @@ a:hover {
     padding: 20px 24px;
     border-bottom: 1px solid var(--border);
 }
-
+ 
 .model-panel-header h2 {
     font-size: 1.1rem;
     font-weight: 600;
 }
-
+ 
 .gpu-status-card {
     margin: 20px 24px 8px;
     padding: 16px;
@@ -854,41 +855,41 @@ a:hover {
     align-items: center;
     gap: 16px;
 }
-
+ 
 .gpu-ok {
     border-color: rgba(16, 185, 129, 0.3);
     background: rgba(16, 185, 129, 0.05);
 }
-
+ 
 .gpu-warn {
     border-color: rgba(245, 158, 11, 0.3);
     background: rgba(245, 158, 11, 0.05);
 }
-
+ 
 .gpu-none {
     border-color: rgba(239, 68, 68, 0.3);
     background: rgba(239, 68, 68, 0.05);
 }
-
+ 
 .gpu-status-icon {
     font-size: 24px;
 }
-
+ 
 .gpu-status-body {
     flex: 1;
 }
-
+ 
 .gpu-status-title {
     font-weight: 600;
     font-size: 0.95rem;
     margin-bottom: 4px;
 }
-
+ 
 .gpu-status-detail {
     font-size: 0.8rem;
     color: var(--text-secondary);
 }
-
+ 
 .gpu-status-badge {
     font-size: 0.75rem;
     font-weight: 700;
@@ -896,22 +897,22 @@ a:hover {
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.1);
 }
-
+ 
 .gpu-ok .gpu-status-badge {
     color: #34d399;
     background: rgba(16, 185, 129, 0.15);
 }
-
+ 
 .gpu-warn .gpu-status-badge {
     color: #fbbf24;
     background: rgba(245, 158, 11, 0.15);
 }
-
+ 
 .gpu-none .gpu-status-badge {
     color: #f87171;
     background: rgba(239, 68, 68, 0.15);
 }
-
+ 
 .model-panel-section-title {
     font-size: 0.8rem;
     font-weight: 700;
@@ -920,7 +921,7 @@ a:hover {
     color: var(--text-muted);
     padding: 16px 24px 8px;
 }
-
+ 
 .model-preset-list {
     flex: 1;
     overflow-y: auto;
@@ -929,14 +930,14 @@ a:hover {
     flex-direction: column;
     gap: 8px;
 }
-
+ 
 .preset-placeholder {
     text-align: center;
     color: var(--text-muted);
     padding: 30px;
     font-size: 0.9rem;
 }
-
+ 
 .preset-card {
     padding: 14px 16px;
     border-radius: var(--radius-md);
@@ -948,37 +949,37 @@ a:hover {
     gap: 16px;
     transition: all 0.2s;
 }
-
+ 
 .preset-card:hover:not(.preset-disabled) {
     background: rgba(139, 92, 246, 0.08);
     border-color: rgba(139, 92, 246, 0.4);
 }
-
+ 
 .preset-card.preset-selected {
     background: rgba(139, 92, 246, 0.15);
     border-color: var(--primary-purple);
 }
-
+ 
 .preset-icon {
     font-size: 1.2rem;
 }
-
+ 
 .preset-info {
     flex: 1;
 }
-
+ 
 .preset-label {
     font-weight: 500;
     font-size: 0.95rem;
     margin-bottom: 4px;
 }
-
+ 
 .preset-tags {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
 }
-
+ 
 .preset-pill {
     font-size: 0.65rem;
     font-weight: 700;
@@ -988,17 +989,17 @@ a:hover {
     background: var(--border-light);
     color: var(--text-secondary);
 }
-
+ 
 .pill-gpu {
     background: rgba(139, 92, 246, 0.2);
     color: #c4b5fd;
 }
-
+ 
 .pill-cpu {
     background: rgba(59, 130, 246, 0.2);
     color: #93c5fd;
 }
-
+ 
 .preset-check {
     width: 20px;
     height: 20px;
@@ -1009,12 +1010,12 @@ a:hover {
     justify-content: center;
     transition: all 0.2s;
 }
-
+ 
 .preset-card.preset-selected .preset-check {
     border-color: var(--primary-purple);
     background: var(--primary-purple);
 }
-
+ 
 .preset-card.preset-selected .preset-check::after {
     content: '';
     width: 6px;
@@ -1022,7 +1023,7 @@ a:hover {
     background: white;
     border-radius: 50%;
 }
-
+ 
 .model-panel-footer {
     display: flex;
     align-items: center;
@@ -1031,12 +1032,12 @@ a:hover {
     border-top: 1px solid var(--border);
     background: rgba(0, 0, 0, 0.2);
 }
-
+ 
 .active-model-container {
     display: flex;
     flex-direction: column;
 }
-
+ 
 .active-model-title {
     font-size: 0.7rem;
     color: var(--text-muted);
@@ -1044,13 +1045,13 @@ a:hover {
     font-weight: 700;
     margin-bottom: 2px;
 }
-
+ 
 .active-model-label {
     font-size: 0.9rem;
     color: var(--text-primary);
     font-weight: 500;
 }
-
+ 
 .apply-model-btn {
     padding: 10px 24px;
     background: var(--text-primary);
@@ -1061,72 +1062,72 @@ a:hover {
     cursor: pointer;
     transition: transform 0.2s, background 0.2s;
 }
-
+ 
 .apply-model-btn:hover:not(:disabled) {
     background: #e2e8f0;
     transform: scale(1.02);
 }
-
+ 
 .apply-model-btn:disabled {
     background: var(--disabled-gray);
     color: var(--text-muted);
     cursor: not-allowed;
 }
-
+ 
 /* ═════ ANIMATIONS & MISC ═════ */
 @keyframes slideInRight {
     from {
         opacity: 0;
         transform: translateY(10px);
     }
-
+ 
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
-
+ 
 @keyframes slideInLeft {
     from {
         opacity: 0;
         transform: translateY(10px);
     }
-
+ 
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
-
+ 
 @keyframes fadeIn {
     from {
         opacity: 0;
     }
-
+ 
     to {
         opacity: 1;
     }
 }
-
+ 
 @keyframes pulse {
     from {
         opacity: 0.6;
         transform: scale(0.9);
     }
-
+ 
     to {
         opacity: 1;
         transform: scale(1.1);
     }
 }
-
+ 
 /* Typing Indicator */
 .typing-indicator {
     display: flex;
     gap: 4px;
     padding: 4px 8px;
 }
-
+ 
 .typing-indicator span {
     display: inline-block;
     width: 6px;
@@ -1138,11 +1139,11 @@ a:hover {
     will-change: transform;
     animation: bounce 1.4s infinite ease-in-out both;
 }
-
+ 
 .typing-indicator span:nth-child(1) {
     animation-delay: -0.32s;
 }
-
+ 
 .typing-indicator span:nth-child(2) {
     animation-delay: -0.16s;
 }
@@ -1154,37 +1155,37 @@ a:hover {
 }
 
 @keyframes bounce {
-
+ 
     0%,
     80%,
     100% {
         transform: scale(0);
     }
-
+ 
     40% {
         transform: scale(1);
     }
 }
-
+ 
 /* Scrollbars */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
-
+ 
 ::-webkit-scrollbar-track {
     background: transparent;
 }
-
+ 
 ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 10px;
 }
-
+ 
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 }
-
+ 
 /* ═════ RESPONSIVE ═════ */
 @media (max-width: 768px) {
     .sidebar {
@@ -1192,11 +1193,11 @@ a:hover {
         height: 100%;
         box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
     }
-
+ 
     .sidebar.collapsed {
         box-shadow: none;
     }
-
+ 
     #sidebarOverlay {
         display: none;
         position: fixed;
@@ -1205,20 +1206,20 @@ a:hover {
         backdrop-filter: blur(2px);
         z-index: 40;
     }
-
+ 
     #sidebarOverlay.visible {
         display: block;
     }
-
+ 
     .message-content {
         max-width: 92%;
     }
-
+ 
     .input-wrapper {
         border-radius: var(--radius-lg);
     }
 }
-
+ 
 .copy-msg-btn {
     position: absolute;
     top: 8px;
@@ -1233,12 +1234,12 @@ a:hover {
     transition: opacity 0.2s;
     z-index: 5;
 }
-
+ 
 .copy-msg-btn:hover {
     opacity: 1;
     background: rgba(255,255,255,0.2);
 }
-
+ 
 .console-font {
     font-family: 'Courier New', Courier, monospace;
     white-space: pre-wrap;
@@ -1247,7 +1248,7 @@ a:hover {
     padding: 10px;
     border-radius: 4px;
 }
-
+ 
 /* ─────────────────────────────────────────
    APPEND MODE
 ───────────────────────────────────────── */
@@ -1266,25 +1267,25 @@ a:hover {
     animation: appendBannerIn 0.25s ease;
     overflow: hidden;
 }
-
+ 
 .append-mode-banner.hidden {
     display: none;
 }
-
+ 
 @keyframes appendBannerIn {
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-
+ 
 .append-mode-banner span {
     flex: 1;
     line-height: 1.4;
 }
-
+ 
 .append-mode-banner strong {
     color: #60a5fa;
 }
-
+ 
 #appendModeCancelBtn {
     background: rgba(59, 130, 246, 0.15);
     border: 1px solid rgba(59, 130, 246, 0.4);
@@ -1297,18 +1298,18 @@ a:hover {
     transition: background 0.2s, color 0.2s;
     flex-shrink: 0;
 }
-
+ 
 #appendModeCancelBtn:hover {
     background: rgba(59, 130, 246, 0.3);
     color: white;
 }
-
+ 
 /* Highlight the input wrapper when in append mode */
 .input-wrapper.append-active {
     border-color: rgba(59, 130, 246, 0.5) !important;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
-
+ 
 /* Append button on assistant messages */
 .append-msg-btn {
     position: absolute;
@@ -1326,17 +1327,17 @@ a:hover {
     z-index: 5;
     white-space: nowrap;
 }
-
+ 
 .assistant-msg-container:hover .append-msg-btn {
     opacity: 0.75;
 }
-
+ 
 .append-msg-btn:hover {
     opacity: 1 !important;
     background: rgba(59, 130, 246, 0.25);
     color: white;
 }
-
+ 
 /* ═════ NOTES BUTTON ═════ */
 #notesBtn {
     font-size: 1rem;
@@ -1356,7 +1357,7 @@ a:hover {
     0%, 100% { filter: grayscale(0) opacity(1); }
     50%       { filter: grayscale(0) opacity(0.75) drop-shadow(0 0 6px rgba(139,92,246,0.6)); }
 }
-
+ 
 /* ═════ NOTES PANEL ═════ */
 .notes-panel {
     max-width: 420px;
@@ -1365,7 +1366,7 @@ a:hover {
     display: flex;
     flex-direction: column;
 }
-
+ 
 .notes-panel-description {
     padding: 0 1.25rem 1rem;
     font-size: 0.85rem;
@@ -1373,7 +1374,7 @@ a:hover {
     line-height: 1.55;
     border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
 }
-
+ 
 .notes-list {
     flex: 1;
     overflow-y: auto;
@@ -1382,7 +1383,7 @@ a:hover {
     flex-direction: column;
     gap: 0.5rem;
 }
-
+ 
 .notes-empty {
     color: var(--text-secondary, rgba(148,163,184,0.7));
     font-size: 0.88rem;
@@ -1394,7 +1395,7 @@ a:hover {
     font-size: 0.8rem;
     opacity: 0.7;
 }
-
+ 
 .note-item {
     display: flex;
     align-items: flex-start;
@@ -1409,7 +1410,7 @@ a:hover {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: none; }
 }
-
+ 
 .note-text {
     flex: 1;
     font-size: 0.87rem;
@@ -1417,7 +1418,7 @@ a:hover {
     line-height: 1.5;
     word-break: break-word;
 }
-
+ 
 .note-delete-btn {
     background: none;
     border: none;
@@ -1432,7 +1433,7 @@ a:hover {
 .note-delete-btn:hover {
     color: #f87171;
 }
-
+ 
 .notes-clear-btn {
     background: rgba(239, 68, 68, 0.12) !important;
     color: #f87171 !important;
@@ -1441,7 +1442,7 @@ a:hover {
 .notes-clear-btn:hover {
     background: rgba(239, 68, 68, 0.25) !important;
 }
-
+ 
 /* ═════ NOTE TOAST ═════ */
 .note-toast {
     position: fixed;
@@ -1470,7 +1471,7 @@ a:hover {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
-
+ 
 .welcome-box {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1482,20 +1483,20 @@ a:hover {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     color: #e2e8f0;
 }
-
+ 
 .welcome-box-header {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 8px;
     color: #f8fafc;
 }
-
+ 
 .welcome-box-body {
     font-size: 1rem;
     color: #cbd5e1;
     margin-bottom: 12px;
 }
-
+ 
 .welcome-box-tools {
     display: flex;
     flex-wrap: wrap;
@@ -1503,7 +1504,7 @@ a:hover {
     gap: 8px;
     margin-top: 12px;
 }
-
+ 
 .tool-tag {
     background: rgba(16, 185, 129, 0.1);
     color: #34d399;
@@ -1513,7 +1514,7 @@ a:hover {
     font-size: 0.85rem;
     font-family: monospace;
 }
-
+ 
 /* HACKER THEME WELCOME */
 .hacker-theme {
     background: #0f172a;
@@ -1529,7 +1530,7 @@ a:hover {
     width: 90%;
     max-width: 640px;
 }
-
+ 
 .ascii-art {
     background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
     -webkit-background-clip: text;
@@ -1544,30 +1545,30 @@ a:hover {
     font-family: monospace;
     text-align: center;
 }
-
+ 
 .hacker-body {
     width: 100%;
 }
-
+ 
 .hacker-greeting {
     color: #10b981;
     font-weight: bold;
     margin: 0 0 10px 0;
 }
-
+ 
 .hacker-text {
     color: #94a3b8;
     margin: 0 0 14px 0;
     line-height: 1.5;
 }
-
+ 
 .hacker-list {
     list-style: none;
     padding: 0;
     margin: 0 0 14px 0;
     color: #94a3b8;
 }
-
+ 
 .hacker-list li {
     margin-bottom: 6px;
     display: flex;
@@ -1575,7 +1576,7 @@ a:hover {
     gap: 10px;
     line-height: 1.5;
 }
-
+ 
 .hacker-bullet {
     display: inline-block;
     width: 6px;
@@ -1586,16 +1587,16 @@ a:hover {
     position: relative;
     top: -1px;
 }
-
+ 
 .hacker-list strong {
     color: #10b981;
 }
-
+ 
 .hacker-prompt {
     color: #10b981;
     margin-top: 16px;
 }
-
+ 
 /* PURPLE ACCENTS */
 .new-thread-btn {
     background: transparent !important;
@@ -1605,7 +1606,7 @@ a:hover {
 .new-thread-btn:hover {
     background: rgba(168, 85, 247, 0.1) !important;
 }
-
+ 
 .chat-session-item.active {
     background: rgba(168, 85, 247, 0.1) !important;
     border-left-color: #a855f7 !important;
@@ -1616,7 +1617,7 @@ a:hover {
     color: #a855f7;
     margin-right: 4px;
 }
-
+ 
 .input-container:focus-within {
     border-color: #a855f7 !important;
     box-shadow: 0 0 0 2px rgba(168,85,247,0.2) !important;
@@ -1628,8 +1629,8 @@ a:hover {
 #sendBtn:hover:not(:disabled) {
     background: #9333ea !important;
 }
-
-
+ 
+ 
 .live-game-view {
     margin: 16px auto;
     background: var(--bg-surface);
@@ -1641,17 +1642,17 @@ a:hover {
     max-width: 100%;
     box-sizing: border-box;
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    ACCESSIBILITY — keyboard focus, reduced motion, contrast
    ═══════════════════════════════════════════════════════════ */
-
+ 
 /* Clear, high-visibility focus ring that fits the terminal aesthetic */
 :focus-visible {
     outline: 2px solid var(--primary-purple);
     outline-offset: 2px;
 }
-
+ 
 button:focus-visible,
 .icon-btn:focus-visible,
 .chat-item:focus-visible,
@@ -1666,7 +1667,7 @@ a:focus-visible {
     outline-offset: 2px;
     box-shadow: 0 0 0 4px rgba(0, 243, 255, 0.25);
 }
-
+ 
 /* Ensure mouse users don't get the ring (focus-visible handles this),
    but keep a subtle ring if a browser falls back to :focus */
 .chat-item:focus,
@@ -1674,7 +1675,7 @@ a:focus-visible {
     outline: 2px solid var(--primary-purple);
     outline-offset: 2px;
 }
-
+ 
 /* Chat list items should feel interactive when focused via keyboard */
 .chat-item[role="button"] {
     cursor: pointer;
@@ -1682,7 +1683,7 @@ a:focus-visible {
 .chat-item[role="button"]:focus-visible {
     background: rgba(0, 243, 255, 0.08);
 }
-
+ 
 /* Preset cards keyboard affordance */
 .preset-card[role="button"] {
     cursor: pointer;
@@ -1691,7 +1692,7 @@ a:focus-visible {
     border-color: var(--primary-purple);
     background: rgba(0, 243, 255, 0.06);
 }
-
+ 
 /* Respect user preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
     *,
@@ -1703,13 +1704,13 @@ a:focus-visible {
         scroll-behavior: auto !important;
     }
 }
-
+ 
 /* Slightly stronger placeholder contrast */
 #cmdInput::placeholder {
     color: #8b9cb3;
     opacity: 1;
 }
-
+ 
 /* Chat item keyboard row (role=button child) keeps flex layout intact */
 .chat-item-main {
     flex: 1;
@@ -1723,12 +1724,12 @@ a:focus-visible {
     outline-offset: 2px;
     border-radius: 4px;
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    LARGE SCREENS + TV (10-FOOT UI)
    Scales layout, type, and hit targets for big displays & TVs
    ═══════════════════════════════════════════════════════════ */
-
+ 
 /* —— Desktop / ultrawide: give chat more breathing room —— */
 @media (min-width: 1400px) {
     :root {
@@ -1742,7 +1743,7 @@ a:focus-visible {
         line-height: 1.65;
     }
 }
-
+ 
 @media (min-width: 1800px) {
     :root {
         --chat-max-width: 64rem;
@@ -1762,7 +1763,7 @@ a:focus-visible {
         font-size: 1.1rem;
     }
 }
-
+ 
 @media (min-width: 2560px) {
     :root {
         --chat-max-width: 72rem;
@@ -1789,109 +1790,175 @@ a:focus-visible {
         height: 48px;
     }
 }
-
+ 
+/* —— 4K (UHD) —— previously the scaling stopped dead at 2560px, so a 3840px+
+   display got the exact same absolute px/rem values as a 1440p monitor and
+   the UI shrank to a small island in the middle of the screen. */
+@media (min-width: 3840px) {
+    :root {
+        --chat-max-width: 92rem;
+    }
+    .sidebar {
+        width: 440px;
+    }
+    body {
+        font-size: 24px;
+    }
+    .message-content {
+        font-size: 1.4rem;
+        line-height: 1.8;
+    }
+    .chat-item {
+        padding: 18px 20px;
+        font-size: 1.3rem;
+    }
+    #cmdInput {
+        font-size: 1.4rem;
+    }
+    #sendBtn {
+        width: 60px;
+        height: 60px;
+    }
+}
+ 
+/* —— 8K —— same fixed-value problem again at double the resolution; without
+   this tier an 8K TV rendered identically to a 4K one, i.e. at roughly
+   quarter scale relative to the panel. */
+@media (min-width: 7680px) {
+    :root {
+        --chat-max-width: 140rem;
+    }
+    .sidebar {
+        width: 640px;
+    }
+    body {
+        font-size: 36px;
+    }
+    .message-content {
+        font-size: 2rem;
+        line-height: 1.8;
+    }
+    .chat-item {
+        padding: 26px 30px;
+        font-size: 1.9rem;
+    }
+    #cmdInput {
+        font-size: 2rem;
+    }
+    #sendBtn {
+        width: 88px;
+        height: 88px;
+    }
+}
+ 
 /* —— TV / 10-foot mode (body.tv-mode or html.tv-mode) ——
    Designed for viewing from ~10 feet with a remote or gamepad.
    Larger type, generous padding, big focus targets, high contrast. */
 .tv-mode,
 html.tv-mode {
-    --chat-max-width: min(72rem, 88vw);
+    /* clamp() instead of a fixed min(72rem, 88vw): the fixed 72rem cap won over
+       88vw on anything wider than ~1636px, so 4K/8K TVs got the identical
+       1440px-ish content width as a 1080p screen. clamp() keeps growing with
+       viewport width up to a much higher ceiling. */
+    --chat-max-width: clamp(48rem, 60vw, 160rem);
     --radius-sm: 8px;
     --radius-md: 10px;
     --radius-lg: 14px;
 }
-
+ 
 .tv-mode body,
 body.tv-mode {
-    font-size: 20px;
+    /* Was a fixed 20px regardless of panel size — identical on a 1080p TV
+       and an 8K TV. clamp() scales it with viewport width instead. */
+    font-size: clamp(20px, 1vw + 12px, 40px);
     line-height: 1.5;
 }
-
+ 
 body.tv-mode .sidebar {
     width: 340px;
 }
-
+ 
 body.tv-mode .sidebar.collapsed {
     width: 0;
     overflow: hidden;
     border: none;
 }
-
+ 
 body.tv-mode .terminal-header {
     padding: 18px 28px;
     min-height: 64px;
 }
-
+ 
 body.tv-mode .status-indicator,
 body.tv-mode #statusText {
     font-size: 1.05rem;
 }
-
+ 
 body.tv-mode .status-led {
     width: 14px;
     height: 14px;
 }
-
+ 
 body.tv-mode .icon-btn {
     width: 52px;
     height: 52px;
     min-width: 52px;
     min-height: 52px;
 }
-
+ 
 body.tv-mode .new-thread-btn {
     padding: 16px 20px;
     font-size: 1.1rem;
     min-height: 56px;
 }
-
+ 
 body.tv-mode .chat-item {
     padding: 18px 20px;
     font-size: 1.15rem;
     min-height: 56px;
 }
-
+ 
 body.tv-mode .delete-chat-btn {
     width: 44px;
     height: 44px;
     font-size: 1.25rem;
 }
-
+ 
 body.tv-mode .chat-log {
     padding: 24px 32px;
 }
-
+ 
 body.tv-mode .message-wrap {
     margin-bottom: 20px;
 }
-
+ 
 body.tv-mode .message-content {
     font-size: 1.25rem;
     line-height: 1.75;
     padding: 16px 20px;
     max-width: 90%;
 }
-
+ 
 body.tv-mode .user-msg .message-content {
     max-width: 80%;
 }
-
+ 
 body.tv-mode .input-area {
     padding: 20px 28px 28px;
 }
-
+ 
 body.tv-mode .input-wrapper {
     padding: 14px 14px 14px 24px;
     border-width: 2px;
     border-radius: 12px;
 }
-
+ 
 body.tv-mode #cmdInput {
     font-size: 1.25rem;
     padding: 12px 8px;
     min-height: 28px;
 }
-
+ 
 body.tv-mode #sendBtn,
 body.tv-mode #attachButton {
     width: 56px;
@@ -1900,12 +1967,12 @@ body.tv-mode #attachButton {
     min-height: 56px;
     font-size: 1.35rem;
 }
-
+ 
 body.tv-mode .input-footer-text {
     font-size: 0.95rem;
     margin-top: 10px;
 }
-
+ 
 /* Bigger focus rings for remote navigation */
 body.tv-mode :focus-visible,
 body.tv-mode button:focus-visible,
@@ -1918,40 +1985,40 @@ body.tv-mode .new-thread-btn:focus-visible {
     outline-offset: 4px;
     box-shadow: 0 0 0 6px rgba(0, 243, 255, 0.35);
 }
-
+ 
 /* Model / notes panels larger on TV */
 body.tv-mode .model-panel {
     max-width: min(720px, 92vw);
     max-height: 85vh;
     font-size: 1.1rem;
 }
-
+ 
 body.tv-mode .model-panel-header h2 {
     font-size: 1.5rem;
 }
-
+ 
 body.tv-mode .preset-card {
     padding: 18px 20px;
     min-height: 64px;
     font-size: 1.1rem;
 }
-
+ 
 body.tv-mode .apply-model-btn {
     padding: 16px 28px;
     font-size: 1.15rem;
     min-height: 56px;
 }
-
+ 
 body.tv-mode .welcome-box,
 body.tv-mode .hacker-theme {
     font-size: 1.15rem;
 }
-
+ 
 body.tv-mode .ascii-art {
     font-size: 0.85rem;
     line-height: 1.2;
 }
-
+ 
 /* Game board slightly larger on TV */
 body.tv-mode .live-game-view,
 body.tv-mode .game-board-message {
@@ -1959,9 +2026,9 @@ body.tv-mode .game-board-message {
     transform-origin: center top;
     margin-bottom: 24px;
 }
-
+ 
 /* Prefer reduced motion already handled globally; TV mode keeps it */
-
+ 
 /* Optional: when viewport is TV-sized even without UA detection,
    apply a lighter version of 10-foot scaling */
 @media (min-width: 1920px) and (min-height: 1080px) and (pointer: coarse) {

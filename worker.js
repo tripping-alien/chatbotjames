@@ -159,7 +159,7 @@ self.onmessage = async (e) => {
             try {
                 await new Promise((resolve) => setTimeout(resolve, 125));
                 const [gpuInfo, wasmCaps] = await Promise.all([detectGpu(), detectWasmCapabilities()]);
-                const mobile = isMobileDevice();
+                const mobile = isMobileDevice({ screenWidth: e.data.screenWidth, maxTouchPoints: e.data.maxTouchPoints });
                 const tv = isTVDevice();
                 await tryInitializeModels(
                     gpuInfo, mobile, tv,
