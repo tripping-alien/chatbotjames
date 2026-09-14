@@ -167,6 +167,7 @@ let _cannedGenActive = false;
 // ── Bug #3 guard: tracks consecutive invalid-move retries per background chat.
 // Without this a bad AI move causes an unbounded postQuery loop on the worker.
 const _bgChatMoveRetries = new Map(); // chatId → retry count
+const _chatToolDepths = new Map();
 
 workerController.onWorkerStatus = (status, message, e) => {
     if (status === 'done' || status === 'complete' || status === 'error' || status === 'aborted') {
@@ -312,6 +313,7 @@ workerController.onComplete = (chatId, targetId, message) => {
                         } else {
                             bgChat.messages.push({ role: 'system', content: `[System]: Failed to make move ${aiMove}. Invalid move.` });
                             const nextTargetId = Date.now().toString(36);
+                            _chatToolDepths.set(chatId, 0);
                             workerController.postQuery(getMessagesWindow(bgChat.messages), nextTargetId, chatId);
                         }
                     }
@@ -390,6 +392,7 @@ workerController.onAborted = (chatId, targetId, message) => {
                                 _bgChatMoveRetries.set(chatId, _retries);
                                 bgChat.messages.push({ role: 'system', content: `[System]: Failed to make move ${aiMove}. Invalid move. Try again.` });
                                 const nextTargetId = Date.now().toString(36);
+                                _chatToolDepths.set(chatId, 0);
                                 workerController.postQuery(getMessagesWindow(bgChat.messages), nextTargetId, chatId);
                             }
                         }
@@ -550,6 +553,7 @@ function sendMessage(preExecutedMove = null) {
     updateStatusLight('thinking');
     uiManager.updateStatusText('🧠 THINKING...');
 
+    _chatToolDepths.set(chatManager.currentChatId, 0);
     const messagesForModel = getMessagesWindow(chatManager.chatHistory);
     const targetId = getNextTargetId();
     updateLiveBubble('...', targetId);
@@ -637,7 +641,10 @@ window.simulateCannedResponse = function(text) {
 // executions from pushing duplicate history messages if the worker double-fires 'complete'.
 const _toolExecutionQueue = new Map();
 
-async function handleToolCalls(message, targetId, originChatId, _depth = 0) {
+async function handleToolCalls(message, targetId, originChatId) {
+    let _depth = _chatToolDepths.get(originChatId) || 0;
+    _chatToolDepths.set(originChatId, _depth + 1);
+
     const previous = _toolExecutionQueue.get(originChatId) || Promise.resolve();
     const current = previous.catch(() => {}).then(async () => {
         const isActiveChat = originChatId === chatManager.currentChatId;
@@ -669,9 +676,15 @@ async function handleToolCalls(message, targetId, originChatId, _depth = 0) {
     }
 
     if (calls.length === 0) {
+        targetHistory.push({ role: 'assistant', content: message });
         if (isActiveChat) {
+            chatManager.persistCurrentChat(() => gameController.getGameState());
+            renderChatLog();
             uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
+        } else {
+            import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
         }
+        workerController.activeGenerations.delete(originChatId);
         return;
     }
 
@@ -906,6 +919,7 @@ function initRecovery() {
         updateStatusLight('thinking');
         uiManager.updateStatusText('⏩ RESUMING...');
 
+        _chatToolDepths.set(chatManager.currentChatId, 0);
         const targetId = getNextTargetId();
         updateLiveBubble('...', targetId, true);
         workerController.postQuery(getMessagesWindow(chatManager.chatHistory), targetId, chatManager.currentChatId);

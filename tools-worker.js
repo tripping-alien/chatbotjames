@@ -291,6 +291,7 @@ function dateTool(params) {
     }
 
     if (action === 'diff') {
+        if (!date2) throw new Error("date2 is required for diff action");
         const d1 = new Date(date), d2 = new Date(date2);
         const diffMs = Math.abs(d2 - d1);
         return {
@@ -424,6 +425,7 @@ function getUnitType(unit) {
 
 function convertUnits(params) {
     const { amount, from, to, fromType } = params;
+    if (amount === undefined || from === undefined || to === undefined) throw new Error('Missing amount, from, or to');
     const numericAmount = Number(amount);
     if (!Number.isFinite(numericAmount)) throw new Error('Conversion amount must be a finite number');
     const fromKey = from.toLowerCase();
@@ -649,6 +651,7 @@ function colorTool(params) {
 async function hashTool(params) {
     const { algorithm, value } = params;
     if (!value) throw new Error('No value to hash');
+    if (!algorithm) throw new Error('No algorithm provided');
 
     const algo = algorithm.toLowerCase().replace('-', '');
 
