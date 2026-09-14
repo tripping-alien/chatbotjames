@@ -181,7 +181,20 @@ workerController.onWorkerStatus = (status, message, e) => {
         }
         if (status === 'aborted' && e.data.chatId) workerController.activeGenerations.delete(e.data.chatId);
         if (status === 'complete' && e.data.chatId) workerController.activeGenerations.delete(e.data.chatId);
-        if (status === 'error' && e.data.chatId) workerController.activeGenerations.delete(e.data.chatId);
+        if (status === 'error') {
+            const errChatId = e.data?.chatId;
+            if (errChatId) workerController.activeGenerations.delete(errChatId);
+            const errText = message || 'An unknown worker error occurred.';
+            if (errChatId && errChatId !== chatManager.currentChatId) {
+                const bgChat = chatManager.allChats.find(c => c.id === errChatId);
+                if (bgChat) {
+                    bgChat.messages.push({ role: 'system', content: `⚠️ Error: ${errText}` });
+                    import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
+                }
+            } else {
+                appendErrorToChat(errText);
+            }
+        }
     } else {
         if (!globalState.isGeneratingUI) {
             uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
@@ -847,8 +860,8 @@ async function handleToolCalls(message, targetId, originChatId) {
             if (isActiveChat) appendErrorToChat(toolResult);
         }
 
-        if (toolResult) {
-            const formattedResult = typeof toolResult === 'object' ? JSON.stringify(toolResult, null, 2) : toolResult;
+        if (toolResult !== undefined && toolResult !== null) {
+            const formattedResult = typeof toolResult === 'object' ? JSON.stringify(toolResult, null, 2) : String(toolResult);
             targetHistory.push({ role: 'system', content: `[Tool Result: ${toolName}]\n${formattedResult}` });
             if (isActiveChat) {
                 chatManager.persistCurrentChat(() => gameController.getGameState());
