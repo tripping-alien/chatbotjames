@@ -23,11 +23,11 @@ function normalizeError(err) {
     return msg;
 }
 
-function reportWorkerError(err, targetId) {
+function reportWorkerError(err, targetId, chatId) {
     const safeMsg = normalizeError(err);
     if (safeMsg !== 'AbortGeneration') {
         console.error('?', err);
-        self.postMessage({ status: 'error', message: safeMsg, targetId });
+        self.postMessage({ status: 'error', message: safeMsg, targetId, chatId });
     }
 }
 
@@ -185,11 +185,11 @@ self.onmessage = async (e) => {
 
     if (type === 'query') {
         if (isGenerating) {
-            reportWorkerError(new Error('JAMES is busy processing another request.'), targetId);
+            reportWorkerError(new Error('JAMES is busy processing another request.'), targetId, chatId);
             return;
         }
         if (!chatbot) {
-            reportWorkerError(new Error('Model is not initialized yet.'), targetId);
+            reportWorkerError(new Error('Model is not initialized yet.'), targetId, chatId);
             return;
         }
 
@@ -285,7 +285,7 @@ self.onmessage = async (e) => {
                     chatId
                 });
             } else {
-                reportWorkerError(err, targetId);
+                reportWorkerError(err, targetId, chatId);
             }
         } finally {
             isGenerating = false;
