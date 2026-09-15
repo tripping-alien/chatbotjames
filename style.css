@@ -2042,4 +2042,49 @@ body.tv-mode .game-board-message {
     body:not(.tv-mode) #cmdInput {
         font-size: 1.15rem;
     }
-    body:not(.tv-mode) .icon-btn {\n        width: 48px;\n        height: 48px;\n    }\n    body:not(.tv-mode) #sendBtn {\n        width: 52px;\n        height: 52px;\n    }\n}\n\n/* Typing indicator animation */\n.typing-indicator {\n    display: flex;\n    align-items: center;\n    justify-content: flex-start;\n    gap: 4px;\n    padding: 4px 8px;\n    min-height: 24px;\n}\n\n.typing-indicator span {\n    width: 6px;\n    height: 6px;\n    background-color: var(--primary-blue, #60a5fa);\n    border-radius: 50%;\n    animation: typing-bounce 1.4s infinite ease-in-out both;\n}\n\n.typing-indicator span:nth-child(1) {\n    animation-delay: -0.32s;\n}\n\n.typing-indicator span:nth-child(2) {\n    animation-delay: -0.16s;\n}\n\n@keyframes typing-bounce {\n    0%, 80%, 100% { \n        transform: scale(0);\n        opacity: 0.3;\n    } \n    40% { \n        transform: scale(1);\n        opacity: 1;\n    }\n}\n
+    body:not(.tv-mode) .icon-btn {
+        width: 48px;
+        height: 48px;
+    }
+    body:not(.tv-mode) #sendBtn {
+        width: 52px;
+        height: 52px;
+    }
+}
+
+/* Typing indicator animation */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 4px 8px;
+    min-height: 24px;
+}
+
+.typing-indicator span {
+    width: 6px;
+    height: 6px;
+    background-color: var(--primary-blue, #60a5fa);
+    border-radius: 50%;
+    animation: typing-bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing-bounce {
+    0%, 80%, 100% { 
+        transform: scale(0);
+        opacity: 0.3;
+    } 
+    40% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
