@@ -401,6 +401,8 @@ export class CheckersGame {
      * Fallback to coordinates parsing if necessary.
      */
     makeSanMove(san) {
+        const savedState = this.getState();
+
         // Try standard checkers notation first: numbers separated by -, x, or spaces
         const parts = san.split(/[-xX\s→>]+/).map(p => parseInt(p, 10)).filter(n => !isNaN(n) && n >= 1 && n <= 32);
         if (parts.length >= 2) {
@@ -415,7 +417,11 @@ export class CheckersGame {
             if (applied.length > 0 && applied.length === parts.length - 1) {
                 return applied; // Return only if the full chain was valid
             }
-            // If partial chain matched or failed, it might be coordinate notation? Let's fallback just in case.
+            // Restore state since partial chain failed
+            const parsedState = JSON.parse(savedState.board);
+            this.board = parsedState;
+            this.turn = savedState.turn;
+            this.mustJumpFrom = savedState.mustJumpFrom;
         }
 
         // Fallback: Coordinates parsing "5,2 to 4,3"

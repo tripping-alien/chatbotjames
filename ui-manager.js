@@ -81,7 +81,7 @@ class UIManager {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const nowCollapsed = sidebar?.classList.toggle('collapsed');
-        overlay?.classList.toggle('visible', !nowCollapsed);
+        overlay?.classList.toggle('visible', nowCollapsed === false);
         return nowCollapsed; // To save to localStorage
     }
 

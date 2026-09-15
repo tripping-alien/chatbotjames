@@ -35,20 +35,34 @@ export function setupToolsBridge(neuralLink) {
         log.style.outline = '';
         const files = Array.from(e.dataTransfer.files);
         if (!files.length) return;
-        // Process all dropped files, not just the first
+        
+        let combinedPrompt = "";
         for (const file of files) {
-            await handleFileUpload(file, neuralLink);
+            const prompt = await handleFileUpload(file, neuralLink);
+            if (prompt) combinedPrompt += prompt + "\n\n";
+        }
+        
+        if (combinedPrompt) {
+            neuralLink.DOM.cmd.value = combinedPrompt.trim();
+            neuralLink.submit();
         }
     });
 
-    // File input button (optional — add <input type="file" id="file-input" hidden> to HTML)
     const fileInput = document.getElementById('file-input');
     if (fileInput) {
         fileInput.addEventListener('change', async () => {
             const files = Array.from(fileInput.files);
             if (!files.length) return;
+            
+            let combinedPrompt = "";
             for (const file of files) {
-                await handleFileUpload(file, neuralLink);
+                const prompt = await handleFileUpload(file, neuralLink);
+                if (prompt) combinedPrompt += prompt + "\n\n";
+            }
+            
+            if (combinedPrompt) {
+                neuralLink.DOM.cmd.value = combinedPrompt.trim();
+                neuralLink.submit();
             }
             fileInput.value = '';
         });
@@ -82,9 +96,7 @@ async function handleFileUpload(file, neuralLink) {
 
     console.log(`📎 File uploaded: ${file.name} (${(file.size / 1024).toFixed(1)}KB)`);
 
-    // Inject as a user message
-    neuralLink.DOM.cmd.value = prompt;
-    neuralLink.submit();
+    return prompt;
 }
 
 // ── Clipboard reader (called from main thread on demand) ───────────────────
