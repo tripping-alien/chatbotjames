@@ -681,11 +681,31 @@ async function handleToolCalls(message, targetId, originChatId) {
             return;
         }
 
-    const regex = /```\s*tool:run\n?([\s\S]*?)```/g;
-    let match;
     const calls = [];
-    while ((match = regex.exec(message)) !== null) {
+    
+    // 1. ```tool:run ... ```
+    const runRegex = /```\s*tool:run\n?([\s\S]*?)```/g;
+    let match;
+    while ((match = runRegex.exec(message)) !== null) {
         calls.push(match[1].trim());
+    }
+
+    // 2. Code blocks containing "tool":
+    if (calls.length === 0) {
+        const codeRegex = /```(?:json)?\n?([\s\S]*?)```/g;
+        while ((match = codeRegex.exec(message)) !== null) {
+            if (match[1].includes('"tool"')) {
+                calls.push(match[1].trim());
+            }
+        }
+    }
+
+    // 3. Bare JSON (if the whole message is a JSON object)
+    if (calls.length === 0) {
+        const trimmed = message.trim();
+        if (trimmed.startsWith('{') && trimmed.endsWith('}') && trimmed.includes('"tool"')) {
+            calls.push(trimmed);
+        }
     }
 
     if (calls.length === 0) {

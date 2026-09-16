@@ -50,17 +50,49 @@ export function formatAssistantMessage(text) {
     // The trailing _END terminator matters: without it "…_XYZ_1" is a prefix of
     // "…_XYZ_10" and the restore loop corrupts the 11th block onwards.
     const TOOL_PLACEHOLDER = 'TOOLBOX_PLACEHOLDER_XYZ_'; // Unique placeholder
-    let processedText = text.replace(/```\s*tool:run\n?([\s\S]*?)```/g, (_, code) => {
-        const lines = code.trim().split('\n');
-        const toolName = escapeHTML(lines[0] || 'Unknown');
-        const params = lines.slice(1).map(l => escapeHTML(l)).join('<br>');
+    let processedText = text.replace(/```\s*(?:tool:run|json)?\n?([\s\S]*?)```/g, (match, code) => {
+        if (!code.includes('"tool"')) return match;
+        let toolName = 'Unknown';
+        let paramsHtml = '';
+        try {
+            const parsed = JSON.parse(code.trim());
+            toolName = escapeHTML(parsed.tool || parsed.name || 'Unknown');
+            const params = parsed.params || parsed.parameters || parsed.args || {};
+            paramsHtml = Object.entries(params).map(([k, v]) => `${escapeHTML(k)}: ${escapeHTML(String(v))}`).join('<br>');
+        } catch {
+            if (match.includes('tool:run')) {
+                const lines = code.trim().split('\n');
+                toolName = escapeHTML(lines[0] || 'Unknown');
+                paramsHtml = lines.slice(1).map(l => escapeHTML(l)).join('<br>');
+            } else {
+                return match;
+            }
+        }
         const html = `<div class="tool-usage-box" style="margin: 8px 0; padding: 10px; background: rgba(0,0,0,0.2); border-left: 3px solid #3b82f6; border-radius: 4px; font-family: monospace; font-size: 0.9em;">
             <div style="color: #60a5fa; font-weight: bold; margin-bottom: 4px;">\uD83D\uDD27 Tool: ${toolName}</div>
-            <div style="color: #94a3b8;">${params}</div>
+            <div style="color: #94a3b8;">${paramsHtml}</div>
         </div>`;
         const idx = toolBoxes.push(html) - 1;
         return `\n\n${TOOL_PLACEHOLDER}${idx}_END\n\n`;
     });
+
+    if (toolBoxes.length === 0) {
+        const trimmed = processedText.trim();
+        if (trimmed.startsWith('{') && trimmed.endsWith('}') && trimmed.includes('"tool"')) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                const toolName = escapeHTML(parsed.tool || parsed.name || 'Unknown');
+                const params = parsed.params || parsed.parameters || parsed.args || {};
+                const paramsHtml = Object.entries(params).map(([k, v]) => `${escapeHTML(k)}: ${escapeHTML(String(v))}`).join('<br>');
+                const html = `<div class="tool-usage-box" style="margin: 8px 0; padding: 10px; background: rgba(0,0,0,0.2); border-left: 3px solid #3b82f6; border-radius: 4px; font-family: monospace; font-size: 0.9em;">
+                    <div style="color: #60a5fa; font-weight: bold; margin-bottom: 4px;">\uD83D\uDD27 Tool: ${toolName}</div>
+                    <div style="color: #94a3b8;">${paramsHtml}</div>
+                </div>`;
+                const idx = toolBoxes.push(html) - 1;
+                processedText = `\n\n${TOOL_PLACEHOLDER}${idx}_END\n\n`;
+            } catch { }
+        }
+    }
 
     // ── Step 1.5: Extract <think> blocks ─────────────────────────────────────
     const thinkBoxes = [];
