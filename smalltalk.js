@@ -1512,8 +1512,63 @@ export class SmallTalkHandler {
                 ],
             },
 
+            // ── "How do you feel?" / Emotions ──────────────────────────────────
+            {
+                triggers: [
+                    'how do you feel', 'do you feel emotions', 'are you happy', 'are you sad',
+                    'do you have feelings', 'feeling okay', 'how are you feeling',
+                ],
+                responses: [
+                    "I don't have feelings in the human sense, but my code is running perfectly and I'm eager to help!",
+                    "I feel like processing some data! What's on your mind?",
+                    "I don't experience emotions, but I'm having a great time assisting you.",
+                ],
+            },
+
+            // ── AI Engineering / Tech ──────────────────────────────────────────
+            {
+                triggers: [
+                    'ai engineering', 'what is ai engineering', 'how to build ai',
+                    'prompt engineering', 'machine learning', 'tell me about ai engineering',
+                    'how do i become an ai engineer',
+                ],
+                responses: [
+                    "AI engineering involves building, training, and deploying machine learning models, as well as optimizing prompts and integrating LLMs into apps. Need help with a specific AI concept or some code?",
+                    "AI engineering bridges the gap between machine learning research and software development. I can help you with prompt engineering, Python code, or explaining concepts!",
+                    "It's a fast-growing field! If you're building an AI app, I can help you write code, design prompts, or explain the latest concepts.",
+                ],
+            },
+
+            // ── Edge Cases / Types ─────────────────────────────────────────────
+            {
+                triggers: [
+                    'null', 'undefined', 'nan', 'nil', 'none',
+                    'object object', 'undefined is not a function', 'typeerror',
+                    'boolean', 'string', 'number', 'array', 'object',
+                ],
+                responses: [
+                    "Ah, the classic developer edge cases! Dealing with a type error or just testing my parsing?",
+                    "Did something return undefined? Paste your code and let's find the bug.",
+                    "Is that a primitive type I hear? If you're stuck on a TypeError, I can help debug it.",
+                    "If you're testing my edge cases: congratulations, you found them! If you have a real error, paste the stack trace.",
+                ],
+            },
+
             // ── Final catch-all short affirmations already handled ─────────────
         ];
+
+        // ── Emojis Only Pattern ───────────────────────────────────────────────
+        this._emojiPattern = {
+            responses: [
+                "A picture is worth a thousand words! 🎨 What's on your mind?",
+                "Emojis are great, but I'm better with words. What can I do for you?",
+                "I see you! 😄 Need any help with something?",
+                "I read emojis, but I'm better at reading text! How can I help?",
+            ],
+            _hist: new Array(2),
+            _histLen: 0,
+            _histPos: 0,
+        };
 
         // ── Pre-compute normalised triggers ───────────────────────────────────
         // Each compiled pattern stores normalised triggers plus circular response history.
@@ -1670,7 +1725,15 @@ export class SmallTalkHandler {
     match(input) {
         if (!input || typeof input !== 'string') return null;
         const normalized = this._normalize(input);
-        if (!normalized) return null;
+        
+        if (!normalized) {
+            // If the input normalizes to empty (only symbols/emojis/spaces)
+            // check if it contains at least one pictographic emoji.
+            if (/[\p{Extended_Pictographic}]/u.test(input)) {
+                return this._pick(this._emojiPattern);
+            }
+            return null;
+        }
 
         const j = 'james';
 
