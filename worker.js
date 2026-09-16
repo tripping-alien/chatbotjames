@@ -285,6 +285,14 @@ self.onmessage = async (e) => {
                     chatId
                 });
             } else {
+                // Handle GPU OOM / Device Lost explicitly
+                const errMsg = err.message || String(err);
+                if (errMsg.includes('Device] is lost') || errMsg.includes('OutOfMemory') || errMsg.includes('OrtRun')) {
+                    try { if (chatbot) chatbot.dispose(); } catch (_) {}
+                    chatbot = null;
+                    activePreset = null;
+                    err = new Error('GPU Memory Exhausted or Device Lost. The model has been unloaded to prevent crashes. Please select a smaller model (e.g., 1.5B or 1B) or refresh the page.');
+                }
                 reportWorkerError(err, targetId, chatId);
             }
         } finally {
