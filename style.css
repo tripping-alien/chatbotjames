@@ -2067,6 +2067,7 @@ body.tv-mode .game-board-message {
     height: 6px;
     background-color: var(--primary-blue, #60a5fa);
     border-radius: 50%;
+    will-change: transform;
     animation: typing-bounce 1.4s infinite ease-in-out both;
 }
 
@@ -2076,6 +2077,10 @@ body.tv-mode .game-board-message {
 
 .typing-indicator span:nth-child(2) {
     animation-delay: -0.16s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0s;
 }
 
 @keyframes typing-bounce {
