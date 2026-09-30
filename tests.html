@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Router Unit Tests</title>
+    <style>
+        body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 20px; }
+        .pass { color: #3fb950; }
+        .fail { color: #f85149; font-weight: bold; }
+        .tool-title { color: #58a6ff; font-weight: bold; margin-top: 20px; }
+        .summary { margin-top: 30px; font-size: 1.2em; border-top: 1px solid #30363d; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>JAMES Tool Router - Unit Tests</h1>
+    <div id="output">Running tests...</div>
+
+    <script type="module">
+        import { toolRouter } from './tool-router.js';
+        
+        async function runTests() {
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            
+            const { ALL_RULES } = await import('./tools/router.js');
+            let total = 0, passed = 0;
+
+            for (const rule of ALL_RULES) {
+                const title = document.createElement('div');
+                title.className = 'tool-title';
+                title.textContent = `Testing Tool: [${rule.tool}]`;
+                output.appendChild(title);
+
+                if (!rule.examples || rule.examples.length === 0) {
+                    const noex = document.createElement('div');
+                    noex.style.color = '#8b949e';
+                    noex.textContent = '  (No examples found to test)';
+                    output.appendChild(noex);
+                    continue;
+                }
+
+                for (const example of rule.examples) {
+                    total++;
+                    const result = toolRouter.match(example);
+                    const el = document.createElement('div');
+                    
+                    if (result && result.tool === rule.tool) {
+                        passed++;
+                        el.className = 'pass';
+                        el.textContent = `  ✓ PASS: "${example}" -> routed to ${result.tool}`;
+                    } else {
+                        el.className = 'fail';
+                        const got = result ? result.tool : 'NULL';
+                        el.textContent = `  ✗ FAIL: "${example}" -> expected ${rule.tool}, but routed to ${got}`;
+                    }
+                    output.appendChild(el);
+                }
+            }
+
+            const summary = document.createElement('div');
+            summary.className = 'summary';
+            summary.innerHTML = `Tests completed.<br>Total: ${total}<br>Passed: <span class="${passed === total ? 'pass' : 'fail'}">${passed}</span><br>Failed: <span class="${passed !== total ? 'fail' : 'pass'}">${total - passed}</span>`;
+            output.appendChild(summary);
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

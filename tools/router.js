@@ -30,7 +30,7 @@ import { RULES as rulesPart2 } from './rules-part2.js';
 const uniqueRules = new Map();
 RULES.forEach(r => uniqueRules.set(r.tool, r));
 rulesPart2.forEach(r => uniqueRules.set(r.tool, r));
-const ALL_RULES = Array.from(uniqueRules.values());
+export const ALL_RULES = Array.from(uniqueRules.values());
 
 class ToolTriggerHandler {
     match(input) {
