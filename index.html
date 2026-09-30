@@ -204,7 +204,7 @@
                 </svg>
                 ✨ NEW THREAD
             </button>
-            <div id="chatList" class="chat-list" role="list" aria-label="Chat history">
+            <div id="chatList" class="chat-list" x-data role="list" aria-label="Chat history">
                 <template x-for="chat in $store.james.chats" :key="chat.id">
                     <div class="chat-item" :class="{ 'active': $store.james.currentChatId === chat.id }" :data-chat-id="chat.id" role="listitem">
                         <div class="chat-item-main" role="button" tabindex="0" :aria-label="'Open chat: ' + chat.name" @click="$store.james.loadChat(chat.id)" @keydown.enter.prevent="$store.james.loadChat(chat.id)" @keydown.space.prevent="$store.james.loadChat(chat.id)">
