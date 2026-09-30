@@ -143,6 +143,19 @@
     <!-- Code Syntax Highlighting Theme -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 
+    <!-- Global Functions -->
+    <script>
+        function triggerNativeShare() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'JAMES AI',
+                    text: 'Check out JAMES: a 100% private, local AI chatbot running entirely in the browser!',
+                    url: 'https://chatbotjames.onrender.com/'
+                }).catch(err => console.log('Share error:', err));
+            }
+        }
+    </script>
+
     <!-- UI State Management -->
     <script>
         document.addEventListener('alpine:init', () => {
@@ -358,20 +371,6 @@
     <!-- Note Toast Notification -->
     <div id="noteToast" class="note-toast" aria-live="polite"></div>
 
-    <!-- FAQ Modal for SEO and User Reference (Powered by Alpine.js) -->
-    <div id="faqPanelOverlay" class="model-panel-overlay" x-show="faqOpen" style="display: none;" @click="faqOpen = false"></div>
-    <div id="faqPanel" class="model-panel notes-panel" role="dialog" aria-modal="true" aria-label="Frequently Asked Questions" x-show="faqOpen" style="display: none;">
-        <div class="model-panel-header">
-            <h2>❓ FAQ</h2>
-            <button id="faqPanelClose" class="icon-btn" aria-label="Close" @click="faqOpen = false">✕</button>
-        </div>
-        <div class="notes-list" style="color: var(--text-color); font-size: 0.9rem; max-height: 60vh; overflow-y: auto;">
-            <p><strong>Is JAMES free to use?</strong><br>Yes, JAMES is completely free. No account, no subscription, no API key required.</p>
-            <p><strong>Does JAMES send my messages to a server?</strong><br>No. All AI inference runs locally in your browser using WebGPU or WebAssembly. Your messages never leave your device.</p>
-            <p><strong>Does JAMES work offline?</strong><br>Yes. After the model weights are downloaded once, JAMES works completely offline.</p>
-            <p><strong>What AI models does JAMES use?</strong><br>JAMES auto-selects from Qwen2.5, SmolLM2, Llama 3.2, DeepSeek R1, and Gemma 2 based on your hardware.</p>
-        </div>
-    </div>
 
     <!-- Share Modal for Backlinks (Powered by Alpine.js) -->
     <div id="sharePanelOverlay" class="model-panel-overlay" x-show="shareOpen" style="display: none;" @click="shareOpen = false"></div>
@@ -384,7 +383,7 @@
             Help the project grow! Sharing JAMES on your favorite platforms tells Google this project exists.
         </div>
         <div class="notes-list" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-            <button x-show="navigator.share" @click="navigator.share({ title: 'JAMES AI', text: 'Check out JAMES: a 100% private, local AI chatbot running entirely in the browser!', url: 'https://chatbotjames.onrender.com/' })" class="btn btn-primary" style="background: #2ea44f; color: white; text-align: center; border: none; cursor: pointer; padding: 0.5rem; font-family: inherit; font-weight: bold; border-radius: 4px;">📲 Share Native (Recommended)</button>
+            <button x-show="!!navigator.share" @click="triggerNativeShare()" class="btn btn-primary" style="background: #2ea44f; color: white; text-align: center; border: none; cursor: pointer; padding: 0.5rem; font-family: inherit; font-weight: bold; border-radius: 4px;">📲 Share Native (Recommended)</button>
 
             <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fchatbotjames.onrender.com%2F&text=Check%20out%20JAMES%3A%20a%20100%25%20private%2C%20local%20AI%20chatbot%20running%20entirely%20in%20the%20browser!%20%23LocalAI" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: #1DA1F2; color: white; text-align: center; text-decoration: none;">🐦 Share on X (Twitter)</a>
             
