@@ -539,6 +539,15 @@ function sendMessage(preExecutedMove = null) {
     const _chatLog = document.getElementById('chatLog');
     if (_chatLog) _chatLog.scrollTop = _chatLog.scrollHeight;
     workerController.postQuery(messagesForModel, targetId, chatManager.currentChatId);
+
+    // ── Automated Share Modal for Returning Users (2nd Message) ──
+    const msgCount = Number(safeLocalStorage.getItem('james-messages-sent') || '0') + 1;
+    safeLocalStorage.setItem('james-messages-sent', msgCount);
+    if (msgCount === 2 && safeLocalStorage.getItem('james-share-dismissed') !== 'true') {
+        setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('open-share-modal'));
+        }, 5000); 
+    }
 }
 
 function handleStopGeneration() {
@@ -1217,16 +1226,6 @@ dismissBtn?.addEventListener('click', () => {
     safeLocalStorage.setItem('james-pwa-dismissed', 'true');
 });
 
-// ── Automated Share Modal for Returning Users ───────────────────────────────
-const sessionCount = Number(safeLocalStorage.getItem('james-session-count') || '0') + 1;
-safeLocalStorage.setItem('james-session-count', sessionCount);
-
-if (sessionCount >= 2 && safeLocalStorage.getItem('james-share-dismissed') !== 'true') {
-    // Wait a few seconds so it doesn't interrupt the initial model loading screen
-    setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('open-share-modal'));
-    }, 4500); 
-}
 
 window.addEventListener('dismiss-share-modal', () => {
     safeLocalStorage.setItem('james-share-dismissed', 'true');
