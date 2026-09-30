@@ -691,14 +691,17 @@ move: 5,2 to 4,3  &lt;!-- Checkers row,col --&gt;</pre>
                 <div class="arch-diagram">
                     <strong>Browser Main Thread</strong>
                     <br>&rarr; app.js (UI & State)
+                    <br>&rarr; Alpine.js (Declarative UI State Management)
                     <br>&rarr; tools/ (Modular Tool Routing, Maps & Rules)
                     <br><br><strong>Web Worker (worker.js & worker-*.js)</strong>
                     <br>&rarr; Inference, Prompts & Hardware Detection
                     <br>&rarr; Transformers.js (WebGPU / WASM)
-                    <br><br><strong>Storage</strong>
-                    <br>&rarr; chat-db.js (IndexedDB)
+                    <br>&rarr; dayjs (Timezone & Date Logic)
+                    <br><br><strong>Storage & Rendering</strong>
+                    <br>&rarr; chat-db.js (IndexedDB via `idb`)
+                    <br>&rarr; message-renderer.js (Markdown via `marked` & `highlight.js`)
                 </div>
-                <p>The application is modularized for efficiency: the worker layer (split into multiple specialized <code>worker-*.js</code> modules) owns inference, fast heuristic handlers (like Smalltalk), and robust cross-platform hardware detection (via WebGPU, WebGL fallbacks, and multi-core RAM estimates). The main thread owns the UI, the modular tool routing system, and storage.
+                <p>The application is modularized for efficiency: the worker layer (split into multiple specialized <code>worker-*.js</code> modules) owns inference, fast heuristic handlers (like Smalltalk), date/time logic (via <code>dayjs</code>), and robust cross-platform hardware detection. The main thread owns the UI (progressively migrating to <code>Alpine.js</code>), the modular tool routing system, rendering (enhanced by <code>highlight.js</code>), and storage (powered by <code>idb</code>). All dependencies are imported directly in the browser via ESM CDNs, removing the need for a complex build step.
                 </p>
             </section>
             <section class="doc-section" id="privacy">

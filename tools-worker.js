@@ -1,6 +1,12 @@
 import { create as oramaCreate, insert as oramaInsert, search as oramaSearch } from './orama.js';
 import { performWebSearch } from './tools-search.js';
 import { evalMath } from './tool-router.js';
+import dayjs from 'https://esm.sh/dayjs@1.11.10';
+import utc from 'https://esm.sh/dayjs@1.11.10/plugin/utc.js';
+import timezone from 'https://esm.sh/dayjs@1.11.10/plugin/timezone.js';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 
 // tools-worker.js — handles all non-Python tool execution for JAMES
@@ -170,14 +176,12 @@ async function getCurrency(params) {
     };
 }
 
-// ── World time (Native Browser API) ───────────────────────────────────────
+// ── World time (Native Browser API -> dayjs) ───────────────────────────────────────
 async function getTime(params) {
     const { timezone } = params;
     try {
-        const d = new Date();
-        const timeString = d.toLocaleTimeString('en-US', { timeZone: timezone, hour: '2-digit', minute: '2-digit' });
-        const dateString = d.toLocaleDateString('en-US', { timeZone: timezone, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        return { timezone, time: timeString, date: dateString };
+        const d = dayjs().tz(timezone);
+        return { timezone, time: d.format('hh:mm A'), date: d.format('dddd, MMMM D, YYYY') };
     } catch {
         throw new Error(`Unknown timezone: ${timezone}`);
     }
@@ -281,19 +285,19 @@ function dateTool(params) {
     const { action, date, from_tz, to_tz, date2 } = params;
 
     if (action === 'now') {
-        const now = new Date();
+        const now = dayjs();
         return {
             iso: now.toISOString(),
-            local: now.toLocaleString(),
-            unix: Math.floor(now.getTime() / 1000),
-            utc: now.toUTCString()
+            local: now.format('YYYY-MM-DD HH:mm:ss'),
+            unix: now.unix(),
+            utc: now.utc().format()
         };
     }
 
     if (action === 'diff') {
         if (!date2) throw new Error("date2 is required for diff action");
-        const d1 = new Date(date), d2 = new Date(date2);
-        const diffMs = Math.abs(d2 - d1);
+        const d1 = dayjs(date), d2 = dayjs(date2);
+        const diffMs = Math.abs(d2.diff(d1));
         return {
             from: date, to: date2,
             days: Math.floor(diffMs / 86400000),
@@ -304,24 +308,24 @@ function dateTool(params) {
     }
 
     if (action === 'convert') {
-        const d = new Date(date);
+        const d = dayjs(date);
         return {
             input: date,
             from_tz: from_tz ?? 'local',
             to_tz: to_tz ?? 'UTC',
-            result: d.toLocaleString('en-US', { timeZone: to_tz ?? 'UTC' })
+            result: d.tz(to_tz ?? 'UTC').format('YYYY-MM-DD HH:mm:ss')
         };
     }
 
     if (action === 'parse') {
-        const d = new Date(date);
-        if (isNaN(d)) throw new Error(`Cannot parse date: ${date}`);
+        const d = dayjs(date);
+        if (!d.isValid()) throw new Error(`Cannot parse date: ${date}`);
         return {
             input: date,
             iso: d.toISOString(),
-            unix: Math.floor(d.getTime() / 1000),
-            day: d.toLocaleDateString('en-US', { weekday: 'long' }),
-            formatted: d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            unix: d.unix(),
+            day: d.format('dddd'),
+            formatted: d.format('MMMM D, YYYY')
         };
     }
 

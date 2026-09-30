@@ -1,6 +1,7 @@
 import { CONFIG } from './config.js';
 import { marked } from 'https://esm.sh/marked@11.1.0';
 import DOMPurify from 'https://esm.sh/dompurify@3.0.8';
+import hljs from 'https://esm.sh/highlight.js@11.9.0';
 
 /**
  * Cross-browser clipboard write with a document.execCommand fallback.
@@ -29,7 +30,11 @@ function _execCommandCopy(text) {
 // Configure marked to use GitHub Flavored Markdown and breaks
 marked.setOptions({
     gfm: true,
-    breaks: true
+    breaks: true,
+    highlight: function(code, lang) {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        return hljs.highlight(code, { language }).value;
+    }
 });
 
 const RENDER_WINDOW = CONFIG.ui.renderWindowMessages;

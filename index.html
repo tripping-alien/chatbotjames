@@ -139,9 +139,16 @@
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Code Syntax Highlighting Theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+    <!-- UI State Management -->
+    <script defer src="https://esm.sh/alpinejs@3.13.3"></script>
 </head>
 
-<body>
+<!-- We initialize alpine state on the body to control panels -->
+<body x-data="{ faqOpen: false }">
     <h1 class="sr-only">JAMES — Free Private Local AI Chatbot in Browser</h1>
     <!-- Install Banner -->
     <div id="installBanner" class="install-banner hidden">
@@ -169,7 +176,7 @@
             <div id="chatList" class="chat-list" role="list" aria-label="Chat history"></div>
             <div class="sidebar-footer">
                 <div class="footer-links">
-                    <a href="about.html">About</a> · <a href="docs.html">Docs</a> · <a href="#" id="faqBtn">FAQ</a>
+                    <a href="about.html">About</a> · <a href="docs.html">Docs</a> · <a href="#" id="faqBtn" @click.prevent="faqOpen = true">FAQ</a>
                 </div>
                 <div class="footer-credit">
                     <span>By Andrey Lopukhov</span>
@@ -324,12 +331,12 @@
     <!-- Note Toast Notification -->
     <div id="noteToast" class="note-toast" aria-live="polite"></div>
 
-    <!-- FAQ Modal for SEO and User Reference -->
-    <div id="faqPanelOverlay" class="model-panel-overlay"></div>
-    <div id="faqPanel" class="model-panel notes-panel" role="dialog" aria-modal="true" aria-label="Frequently Asked Questions">
+    <!-- FAQ Modal for SEO and User Reference (Powered by Alpine.js) -->
+    <div id="faqPanelOverlay" class="model-panel-overlay" x-show="faqOpen" style="display: none;" @click="faqOpen = false"></div>
+    <div id="faqPanel" class="model-panel notes-panel" role="dialog" aria-modal="true" aria-label="Frequently Asked Questions" x-show="faqOpen" style="display: none;">
         <div class="model-panel-header">
             <h2>❓ FAQ</h2>
-            <button id="faqPanelClose" class="icon-btn" aria-label="Close">✕</button>
+            <button id="faqPanelClose" class="icon-btn" aria-label="Close" @click="faqOpen = false">✕</button>
         </div>
         <div class="notes-list" style="color: var(--text-color); font-size: 0.9rem; max-height: 60vh; overflow-y: auto;">
             <p><strong>Is JAMES free to use?</strong><br>Yes, JAMES is completely free. No account, no subscription, no API key required.</p>

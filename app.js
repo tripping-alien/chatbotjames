@@ -1177,7 +1177,6 @@ document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     const panels = [
         { panel: 'notesPanel', overlay: 'notesPanelOverlay' },
-        { panel: 'faqPanel', overlay: 'faqPanelOverlay' },
         { panel: 'modelPanel', overlay: 'modelPanelOverlay' },
         { panel: 'recoveryModal', overlay: 'recoveryOverlay' },
     ];
@@ -1210,21 +1209,7 @@ function _setupNotesPanel() {
 }
 _setupNotesPanel();
 
-function _setupFaqPanel() {
-    const btn      = document.getElementById('faqBtn');
-    const panel    = document.getElementById('faqPanel');
-    const overlay  = document.getElementById('faqPanelOverlay');
-    const closeBtn = document.getElementById('faqPanelClose');
-    if (!btn || !panel) return;
-
-    const openPanel  = (e) => { e.preventDefault(); panel.classList.add('open'); overlay?.classList.add('visible'); };
-    const closePanel = () => { panel.classList.remove('open'); overlay?.classList.remove('visible'); };
-
-    btn.addEventListener('click', openPanel);
-    overlay?.addEventListener('click', closePanel);
-    closeBtn?.addEventListener('click', closePanel);
-}
-_setupFaqPanel();
+// The FAQ panel toggle is now declaratively handled via Alpine.js in index.html (faqOpen state)
 
 import('./tools-bridge.js').then(module => {
     module.setupToolsBridge({

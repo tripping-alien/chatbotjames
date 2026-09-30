@@ -1,5 +1,13 @@
 # JAMES (Just A Machine, Engineered for Speech)
 
+<p align="left">
+  <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg">
+  <img alt="Platform: WebGPU/WASM" src="https://img.shields.io/badge/Platform-WebGPU%20%7C%20WASM-orange.svg">
+  <img alt="Status: 100% Offline" src="https://img.shields.io/badge/Privacy-100%25%20Offline-success.svg">
+  <img alt="Built with Vanilla JS" src="https://img.shields.io/badge/Built%20with-Vanilla%20JS-f7df1e.svg?logo=javascript&logoColor=black">
+  <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
+</p>
+
 ![JAMES AI Preview](preview.png)
 
 JAMES is a fully local, browser-native AI assistant designed with privacy as the foundational principle. By leveraging WebAssembly and WebGPU, JAMES runs entirely client-side, ensuring your data never leaves your device. No cloud, no API calls, no accounts—just your machine.
@@ -22,10 +30,11 @@ The most significant feature of JAMES is the **Persistent Personal Memory** syst
 
 ## Tech Stack
 
-* **Frontend:** Vanilla JavaScript, HTML5, CSS3 (No heavy frameworks)
+* **Frontend:** Vanilla JavaScript & HTML5, supercharged by lightweight ESM modules (`Alpine.js` for UI state, `highlight.js` for syntax).
 * **Compute:** WebGPU for accelerated local model execution
 * **Runtime Environments:** ONNX Runtime Web & Pyodide (WASM)
-* **Storage:** IndexedDB for encrypted, persistent chat history and memory
+* **Storage:** IndexedDB (via `idb`) for encrypted, persistent chat history and memory
+* **Utilities:** `dayjs` for robust timezone and time-math operations
 
 ## Getting Started
 

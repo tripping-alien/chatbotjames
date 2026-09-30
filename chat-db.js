@@ -3,6 +3,7 @@
 // Callers see plain JS objects; encryption/decryption is fully transparent.
 
 import { initEncryption, encryptObject, decryptObject } from './crypto-utils.js';
+import { openDB } from 'https://esm.sh/idb@8.0.0';
 
 export const safeLocalStorage = {
     getItem: (key) => { try { return localStorage.getItem(key); } catch (e) { return null; } },
@@ -13,58 +14,36 @@ export const safeLocalStorage = {
 const IDB_NAME        = 'james-chats-db';
 const IDB_STORE       = 'chats';
 const IDB_NOTES_STORE = 'user-notes';
-let _idb = null;
-let _idbPromise = null; // Prevents concurrent open() races — callers share one promise
+let _idbPromise = null;
+
 const _chatWriteQueues = new Map();
 const _noteWriteQueues = new Map();
 
 export async function openChatDB() {
-    if (_idb) return _idb;
-    if (_idbPromise) return _idbPromise;
-    _idbPromise = new Promise((resolve, reject) => {
-        const req = indexedDB.open(IDB_NAME, 2); // v2 adds user-notes store
-        req.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(IDB_STORE)) {
-                db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+    if (!_idbPromise) {
+        _idbPromise = openDB(IDB_NAME, 2, {
+            upgrade(db) {
+                if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+                if (!db.objectStoreNames.contains(IDB_NOTES_STORE)) db.createObjectStore(IDB_NOTES_STORE, { keyPath: 'id' });
             }
-            if (!db.objectStoreNames.contains(IDB_NOTES_STORE)) {
-                db.createObjectStore(IDB_NOTES_STORE, { keyPath: 'id' });
-            }
-        };
-        req.onsuccess = (e) => { _idb = e.target.result; resolve(_idb); };
-        req.onerror   = (e) => { _idbPromise = null; reject(e.target.error); };
-    });
+        });
+    }
     return _idbPromise;
 }
 
 // ─── Chat Storage ─────────────────────────────────────────────────────────────
 
-/**
- * Fire-and-forget: encrypt and persist a single chat to IndexedDB.
- * Stored format: { id, data: { iv, ct } }  (only `id` is plaintext for the keyPath)
- */
 export function dbSaveChat(chat) {
-    if (!chat) return;
+    if (!chat) return Promise.resolve();
     const { id } = chat;
-    const payload = {
-        name: chat.name,
-        messages: chat.messages,
-        gameState: chat.gameState ?? null
-    };
+    const payload = { name: chat.name, messages: chat.messages, gameState: chat.gameState ?? null };
+    
     const previous = _chatWriteQueues.get(id) || Promise.resolve();
-    const current = previous
-        .catch(() => {})
-        .then(async () => {
-            const [data, db] = await Promise.all([encryptObject(payload), openChatDB()]);
-            await new Promise((resolve, reject) => {
-                const tx = db.transaction(IDB_STORE, 'readwrite');
-                tx.objectStore(IDB_STORE).put({ id, data });
-                tx.oncomplete = resolve;
-                tx.onerror = () => reject(tx.error);
-                tx.onabort = () => reject(tx.error || new Error('IDB chat save aborted'));
-            });
-        });
+    const current = previous.catch(() => {}).then(async () => {
+        const [data, db] = await Promise.all([encryptObject(payload), openChatDB()]);
+        await db.put(IDB_STORE, { id, data });
+    });
+    
     _chatWriteQueues.set(id, current);
     current.catch(e => console.warn('IDB save failed:', e)).finally(() => {
         if (_chatWriteQueues.get(id) === current) _chatWriteQueues.delete(id);
@@ -72,21 +51,13 @@ export function dbSaveChat(chat) {
     return current;
 }
 
-/** Fire-and-forget: delete a chat from IndexedDB by id. */
 export function dbDeleteChat(id) {
     const previous = _chatWriteQueues.get(id) || Promise.resolve();
-    const current = previous
-        .catch(() => {})
-        .then(async () => {
-            const db = await openChatDB();
-            await new Promise((resolve, reject) => {
-                const tx = db.transaction(IDB_STORE, 'readwrite');
-                tx.objectStore(IDB_STORE).delete(id);
-                tx.oncomplete = resolve;
-                tx.onerror = () => reject(tx.error);
-                tx.onabort = () => reject(tx.error || new Error('IDB chat delete aborted'));
-            });
-        });
+    const current = previous.catch(() => {}).then(async () => {
+        const db = await openChatDB();
+        await db.delete(IDB_STORE, id);
+    });
+    
     _chatWriteQueues.set(id, current);
     current.catch(e => console.warn('IDB delete failed:', e)).finally(() => {
         if (_chatWriteQueues.get(id) === current) _chatWriteQueues.delete(id);
@@ -94,53 +65,34 @@ export function dbDeleteChat(id) {
     return current;
 }
 
-/** Load all chats, sorted newest-first. Decrypts each row transparently. */
 export async function dbLoadAllChats() {
-    await initEncryption(); // Ensure key is ready before any decrypt
+    await initEncryption();
     try {
         const db = await openChatDB();
-        const rows = await new Promise((resolve, reject) => {
-            const tx  = db.transaction(IDB_STORE, 'readonly');
-            const req = tx.objectStore(IDB_STORE).openCursor(null, 'prev');
-            const result = [];
-            req.onsuccess = (e) => {
-                const cursor = e.target.result;
-                if (cursor) {
-                    result.push(cursor.value);
-                    cursor.continue();
-                } else {
-                    resolve(result);
-                }
-            };
-            req.onerror = (e) => reject(e.target.error);
-        });
-
-        const chats = await Promise.all(rows.map(async row => {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        let cursor = await tx.store.openCursor(null, 'prev');
+        const chats = [];
+        
+        while (cursor) {
             try {
-                if (row.data) {
-                    // Encrypted format (v2+)
-                    const payload = await decryptObject(row.data);
-                    return { id: row.id, ...payload };
+                if (cursor.value.data) {
+                    const payload = await decryptObject(cursor.value.data);
+                    chats.push({ id: cursor.value.id, ...payload });
+                } else {
+                    chats.push(cursor.value);
                 }
-                // Legacy unencrypted format — return as-is (migration path)
-                return row;
             } catch (e) {
-                console.warn(`⚠️ Could not decrypt chat ${row.id} — skipping:`, e);
-                return null;
+                console.warn(`⚠️ Could not decrypt chat ${cursor.value.id}:`, e);
             }
-        }));
-
-        return chats.filter(Boolean);
+            cursor = await cursor.continue();
+        }
+        return chats;
     } catch (e) {
-        console.warn('IDB load failed, falling back to empty state:', e);
+        console.warn('IDB load failed, returning empty state:', e);
         return [];
     }
 }
 
-/**
- * One-time migration: move existing safeLocalStorage chats into IndexedDB,
- * then clear the old key so this only runs once.
- */
 export async function migrateFromLocalStorage() {
     const raw = safeLocalStorage.getItem('chatbot-chats');
     if (!raw) return;
@@ -148,44 +100,27 @@ export async function migrateFromLocalStorage() {
         const chats = JSON.parse(raw);
         if (Array.isArray(chats) && chats.length > 0) {
             console.log(`📦 Migrating ${chats.length} chat(s) from localStorage → encrypted IndexedDB…`);
-            await openChatDB();
-            // Await all saves; if any throws, the catch block intercepts and removeItem is NOT called.
             await Promise.all(chats.map(chat => dbSaveChat(chat)));
             safeLocalStorage.removeItem('chatbot-chats');
-            console.log('✅ Migration complete (chats now encrypted)');
+            console.log('✅ Migration complete');
         }
     } catch (e) {
-        console.warn('localStorage migration failed. No data was deleted:', e);
+        console.warn('Migration failed:', e);
     }
 }
 
 // ─── User Notes Storage ───────────────────────────────────────────────────────
-// Each note: { id: string (UUID), text: string, timestamp: number }
-// Stored format: { id, data: { iv, ct } }
 
-/** Encrypt and persist a single note. Returns a promise. */
 export function dbSaveNote(note) {
     if (!note) return Promise.resolve();
     const { id } = note;
     const payload = { text: note.text, timestamp: note.timestamp };
     
     const previous = _noteWriteQueues.get(id) || Promise.resolve();
-    const current = previous
-        .catch(() => {})
-        .then(async () => {
-            const [data, db] = await Promise.all([encryptObject(payload), openChatDB()]);
-            await new Promise((resolve, reject) => {
-                try {
-                    const tx = db.transaction(IDB_NOTES_STORE, 'readwrite');
-                    tx.objectStore(IDB_NOTES_STORE).put({ id, data });
-                    tx.oncomplete = resolve;
-                    tx.onerror = () => reject(tx.error);
-                    tx.onabort = () => reject(tx.error || new Error('IDB note save aborted'));
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        });
+    const current = previous.catch(() => {}).then(async () => {
+        const [data, db] = await Promise.all([encryptObject(payload), openChatDB()]);
+        await db.put(IDB_NOTES_STORE, { id, data });
+    });
         
     _noteWriteQueues.set(id, current);
     current.catch(e => console.warn('IDB note save failed:', e)).finally(() => {
@@ -194,18 +129,11 @@ export function dbSaveNote(note) {
     return current;
 }
 
-/** Load all notes, sorted oldest-first. Decrypts each row transparently. */
 export async function dbLoadNotes() {
     await initEncryption();
     try {
-        const db   = await openChatDB();
-        const rows = await new Promise((resolve, reject) => {
-            const tx  = db.transaction(IDB_NOTES_STORE, 'readonly');
-            const req = tx.objectStore(IDB_NOTES_STORE).getAll();
-            req.onsuccess = (e) => resolve(e.target.result || []);
-            req.onerror   = (e) => reject(e.target.error);
-        });
-
+        const db = await openChatDB();
+        const rows = await db.getAll(IDB_NOTES_STORE);
         const notes = await Promise.all(rows.map(async row => {
             try {
                 const payload = await decryptObject(row.data);
@@ -215,41 +143,26 @@ export async function dbLoadNotes() {
                 return null;
             }
         }));
-
-        return notes
-            .filter(Boolean)
-            .sort((a, b) => a.timestamp - b.timestamp);
+        return notes.filter(Boolean).sort((a, b) => a.timestamp - b.timestamp);
     } catch (e) {
         console.warn('IDB notes load failed:', e);
         return [];
     }
 }
 
-/** Delete a single note by id. Resolves once the transaction has committed. */
 export async function dbDeleteNote(id) {
     try {
         const db = await openChatDB();
-        await new Promise((resolve, reject) => {
-            const tx = db.transaction(IDB_NOTES_STORE, 'readwrite');
-            tx.objectStore(IDB_NOTES_STORE).delete(id);
-            tx.oncomplete = () => resolve();
-            tx.onerror    = (e) => reject(e.target.error);
-        });
+        await db.delete(IDB_NOTES_STORE, id);
     } catch (e) {
         console.warn('IDB note delete failed:', e);
     }
 }
 
-/** Wipe all notes. Returns a promise. */
 export async function dbClearNotes() {
     try {
         const db = await openChatDB();
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(IDB_NOTES_STORE, 'readwrite');
-            tx.objectStore(IDB_NOTES_STORE).clear();
-            tx.oncomplete = resolve;
-            tx.onerror    = (e) => reject(e.target.error);
-        });
+        await db.clear(IDB_NOTES_STORE);
     } catch (e) {
         console.warn('IDB notes clear failed:', e);
     }
