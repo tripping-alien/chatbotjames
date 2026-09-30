@@ -81,7 +81,7 @@
             // Attempt capture
             const c_m3 = checkers.move('18x11');
             assert(c_m3 !== null, 'Valid capture move 18x11 works');
-            assert(c_m3.jump === true, 'Move is registered as a jump');
+            assert(c_m3.jumped && c_m3.jumped.length > 0, 'Move is registered as a jump');
             
             // Force capture rule test
             const chk2 = new CheckersGame();
@@ -104,8 +104,9 @@
             const p1 = parseUserMove('e2 to e4', testGame);
             assert(p1 && p1.move.san === 'e4', 'Parses "e2 to e4"');
             
-            const p2 = parseUserMove('pawn in front of the king', testGame);
-            assert(p2 && p2.move.san === 'e4' || p2.move.san === 'e3', 'Parses natural language "pawn in front of king"');
+            const testGame2 = new ChessGame();
+            const p2 = parseUserMove('pawn in front of the king', testGame2);
+            assert(p2 && (p2.move.san === 'e4' || p2.move.san === 'e3'), 'Parses natural language "pawn in front of king"');
 
             // Summary
             const summary = document.createElement('div');
