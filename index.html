@@ -149,6 +149,14 @@
 
 <!-- We initialize alpine state on the body to control panels -->
 <body x-data="{ faqOpen: false }">
+    <!-- Rich Noscript for SEO crawlers and users without JS -->
+    <noscript>
+        <div style="padding: 20px; background: #000; color: #0f0; font-family: monospace;">
+            <h1>JAMES — Free Private Local AI Chatbot in Browser</h1>
+            <p>JAMES is a retro hacker terminal AI assistant that runs 100% locally in your web browser using WebGPU and WebAssembly. Your data never leaves your device. Features include Llama 3.2, Qwen2.5, DeepSeek R1, in-browser Python execution via Pyodide, offline PWA capabilities, and encrypted chat history.</p>
+            <p><strong>Please enable JavaScript to use the JAMES local AI terminal.</strong></p>
+        </div>
+    </noscript>
     <h1 class="sr-only">JAMES — Free Private Local AI Chatbot in Browser</h1>
     <!-- Install Banner -->
     <div id="installBanner" class="install-banner hidden">
@@ -173,7 +181,16 @@
                 </svg>
                 ✨ NEW THREAD
             </button>
-            <div id="chatList" class="chat-list" role="list" aria-label="Chat history"></div>
+            <div id="chatList" class="chat-list" role="list" aria-label="Chat history">
+                <template x-for="chat in $store.james.chats" :key="chat.id">
+                    <div class="chat-item" :class="{ 'active': $store.james.currentChatId === chat.id }" :data-chat-id="chat.id" role="listitem">
+                        <div class="chat-item-main" role="button" tabindex="0" :aria-label="'Open chat: ' + chat.name" @click="$store.james.loadChat(chat.id)" @keydown.enter.prevent="$store.james.loadChat(chat.id)" @keydown.space.prevent="$store.james.loadChat(chat.id)">
+                            <span style="pointer-events: none;" x-text="chat.name"></span>
+                        </div>
+                        <button type="button" class="delete-chat-btn" :aria-label="'Delete chat: ' + chat.name" @click.stop="$store.james.deleteChat(chat.id)">x</button>
+                    </div>
+                </template>
+            </div>
             <div class="sidebar-footer">
                 <div class="footer-links">
                     <a href="about.html">About</a> · <a href="docs.html">Docs</a> · <a href="#" id="faqBtn" @click.prevent="faqOpen = true">FAQ</a>

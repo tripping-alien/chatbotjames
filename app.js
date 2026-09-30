@@ -1,3 +1,7 @@
+import dayjs from 'https://esm.sh/dayjs@1.11.10';
+import relativeTime from 'https://esm.sh/dayjs@1.11.10/plugin/relativeTime.js';
+dayjs.extend(relativeTime);
+
 import { globalState } from './global-state.js';
 import { chatManager } from './chat-manager.js';
 import { gameController } from './game-controller.js?v=5';
@@ -66,78 +70,46 @@ window.globalState = globalState;
 window.sendMessage = sendMessage;
 
 
-// Chat Manager Callbacks
-chatManager.onChatListUpdated = () => {
-    const chatListEl = document.getElementById('chatList');
-    if (!chatListEl) return;
-    chatListEl.innerHTML = '';
-    chatManager.allChats.forEach(chat => {
-        const chatItem = document.createElement('div');
-        chatItem.className = 'chat-item';
-        chatItem.dataset.chatId = chat.id;
-        chatItem.setAttribute('role', 'listitem');
-
-        // Make the whole row keyboard-activatable
-        const rowBtn = document.createElement('div');
-        rowBtn.className = 'chat-item-main';
-        rowBtn.setAttribute('role', 'button');
-        rowBtn.tabIndex = 0;
-        rowBtn.setAttribute('aria-label', `Open chat: ${chat.name}`);
-
-        const chatText = document.createElement('span');
-        chatText.textContent = chat.name;
-        chatText.style.pointerEvents = 'none';
-        rowBtn.appendChild(chatText);
-
-        const openChat = () => {
+// Initialize Alpine Store for UI state
+document.addEventListener('alpine:init', () => {
+    Alpine.store('james', {
+        chats: [],
+        currentChatId: null,
+        
+        loadChat(id) {
             chatManager.loadChatHistory(
-                chat.id,
+                id,
                 () => gameController.getGameState(),
                 (state) => gameController.restoreGameState(state),
                 safeLocalStorage
             );
             if (window.innerWidth <= 768) uiManager.closeSidebar();
-        };
-        rowBtn.onclick = openChat;
-        rowBtn.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                openChat();
-            }
-        });
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.type = 'button';
-        deleteBtn.textContent = 'x';
-        deleteBtn.className = 'delete-chat-btn';
-        deleteBtn.setAttribute('aria-label', `Delete chat: ${chat.name}`);
-        deleteBtn.onclick = (e) => {
-            e.stopPropagation();
+        },
+        
+        deleteChat(id) {
             chatManager.deleteChat(
-                chat.id,
+                id,
                 safeLocalStorage,
                 () => gameController.getGameState(),
                 (state) => gameController.restoreGameState(state),
                 () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice(), true)
             );
-        };
-
-        chatItem.appendChild(rowBtn);
-        chatItem.appendChild(deleteBtn);
-        chatListEl.appendChild(chatItem);
+        }
     });
+});
 
-    updateChatListActive(chatManager.currentChatId);
+// Chat Manager Callbacks
+chatManager.onChatListUpdated = () => {
+    if (window.Alpine) {
+        Alpine.store('james').chats = [...chatManager.allChats];
+        Alpine.store('james').currentChatId = chatManager.currentChatId;
+    }
 };
 
-function updateChatListActive(chatId) {
-    document.querySelectorAll('#chatList .chat-item').forEach(item => {
-        item.classList.toggle('active', chatId != null && Number(item.dataset.chatId) === chatId);
-    });
-}
-
 chatManager.onChatChanged = (chatId) => {
-    updateChatListActive(chatId);
+    if (window.Alpine) {
+        Alpine.store('james').currentChatId = chatId;
+    }
     renderChatLog();
 };
 
@@ -1156,7 +1128,10 @@ function _updateNotesUI(notes) {
 
     notesList.innerHTML = notes.map(note => `
         <div class="note-item" style="padding:0.75rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
-            <div style="font-size:0.9rem;line-height:1.4;flex:1;">${escapeHTML(note.text)}</div>
+            <div style="flex:1;">
+                <div style="font-size:0.9rem;line-height:1.4;">${escapeHTML(note.text)}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;">Saved ${dayjs(note.timestamp).fromNow()}</div>
+            </div>
             <button class="icon-btn" onclick="window._deleteNote('${note.id}')" title="Delete Note" style="padding:4px;color:var(--error-color);">🗑️</button>
         </div>
     `).join('');
