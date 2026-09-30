@@ -702,7 +702,7 @@ move: 5,2 to 4,3  &lt;!-- Checkers row,col --&gt;</pre>
                     <br>&rarr; chat-db.js (IndexedDB via `idb`)
                     <br>&rarr; message-renderer.js (Markdown via `marked` & `highlight.js`)
                 </div>
-                <p>The application is modularized for efficiency: the worker layer (split into multiple specialized <code>worker-*.js</code> modules) owns inference, fast heuristic handlers (like Smalltalk), date/time logic (via <code>dayjs</code>), and robust cross-platform hardware detection. The main thread owns the UI (progressively migrating to <code>Alpine.js</code>), the modular tool routing system, rendering (enhanced by <code>highlight.js</code>), and storage (powered by <code>idb</code>). All dependencies are imported directly in the browser via ESM CDNs, removing the need for a complex build step.
+                <p>The application is modularized for efficiency: the worker layer (split into multiple specialized <code>worker-*.js</code> modules) owns inference, fast heuristic handlers (like Smalltalk), date/time logic (via <code>dayjs</code>), and robust cross-platform hardware detection. The main thread owns the UI, the Web Audio API sound engine, the smart Desktop Notifications engine, the modular tool routing system, rendering (enhanced by <code>highlight.js</code>), and unified storage (powered by <code>idb</code>). All dependencies are imported directly in the browser via ESM CDNs, removing the need for a complex build step. The frontend architecture is 100% Vanilla JS, optimized for performance without framework overhead.
                 </p>
             </section>
             <section class="doc-section" id="privacy">
@@ -725,7 +725,7 @@ move: 5,2 to 4,3  &lt;!-- Checkers row,col --&gt;</pre>
                         </tr>
                         <tr>
                             <td>Session metadata</td>
-                            <td>IndexedDB / localStorage</td>
+                            <td>IndexedDB</td>
                             <td>None</td>
                         </tr>
                         <tr>

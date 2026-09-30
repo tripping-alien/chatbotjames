@@ -22,6 +22,9 @@ JAMES is a fully local, browser-native AI assistant designed with privacy as the
 * **Playable Minigames:** Play fully interactive, rule-enforced Chess and Checkers directly in the chat with AI-powered moves.
 * **Web Search:** Capable of fetching live web content, weather, and Wikipedia summaries on demand.
 * **Offline-Capable:** Once the model is cached locally, no active internet connection is needed to chat.
+* **Premium Glassmorphic UI:** Features rich CSS-only gradients, sleek slide-up modal animations, and a polished retro-terminal aesthetic.
+* **Algorithmic Audio Engine:** Zero-dependency Web Audio API provides satisfying, dynamic sound cues for sending, receiving, and model-load events.
+* **Smart Desktop Notifications:** Intelligently alerts you when long-running local generations finish, but only if you've minimized the window or switched tabs.
 
 ## Genesis AI & Living Memory
 
@@ -33,10 +36,10 @@ The most significant feature of JAMES is the **Persistent Personal Memory** syst
 
 ## Tech Stack
 
-* **Frontend:** Vanilla JavaScript & HTML5, supercharged by lightweight ESM modules (`Alpine.js` for reactive UI state, `highlight.js` for syntax).
+* **Frontend:** 100% Vanilla JavaScript & HTML5 (`highlight.js` for syntax). Custom state management, optimized to avoid heavy framework overhead.
 * **Compute:** WebGPU for accelerated local model execution via Transformers.js
 * **Runtime Environments:** ONNX Runtime Web & Pyodide (WASM)
-* **Storage:** IndexedDB (via `idb`) for encrypted, persistent chat history and memory
+* **Storage:** Unified IndexedDB (via `idb`) for fully asynchronous, blocking-free storage of encrypted chat history, memory, and application configuration.
 * **Utilities:** `dayjs` for robust timezone and time-math operations
 * **Testing:** Custom zero-dependency automated unit test runner (`tests.html`)
 
