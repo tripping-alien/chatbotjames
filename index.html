@@ -148,7 +148,7 @@
 </head>
 
 <!-- We initialize alpine state on the body to control panels -->
-<body x-data="{ faqOpen: false }">
+<body x-data="{ faqOpen: false, shareOpen: false }" @open-share-modal.window="shareOpen = true">
     <!-- Rich Noscript for SEO crawlers and users without JS -->
     <noscript>
         <div style="padding: 20px; background: #000; color: #0f0; font-family: monospace;">
@@ -193,7 +193,7 @@
             </div>
             <div class="sidebar-footer">
                 <div class="footer-links">
-                    <a href="about.html">About</a> · <a href="docs.html">Docs</a> · <a href="#" id="faqBtn" @click.prevent="faqOpen = true">FAQ</a>
+                    <a href="about.html">About</a> · <a href="docs.html">Docs</a> · <a href="#" id="faqBtn" @click.prevent="faqOpen = true">FAQ</a> · <a href="#" @click.prevent="shareOpen = true">Share</a>
                 </div>
                 <div class="footer-credit">
                     <span>By Andrey Lopukhov</span>
@@ -360,6 +360,29 @@
             <p><strong>Does JAMES send my messages to a server?</strong><br>No. All AI inference runs locally in your browser using WebGPU or WebAssembly. Your messages never leave your device.</p>
             <p><strong>Does JAMES work offline?</strong><br>Yes. After the model weights are downloaded once, JAMES works completely offline.</p>
             <p><strong>What AI models does JAMES use?</strong><br>JAMES auto-selects from Qwen2.5, SmolLM2, Llama 3.2, DeepSeek R1, and Gemma 2 based on your hardware.</p>
+        </div>
+    </div>
+
+    <!-- Share Modal for Backlinks (Powered by Alpine.js) -->
+    <div id="sharePanelOverlay" class="model-panel-overlay" x-show="shareOpen" style="display: none;" @click="shareOpen = false"></div>
+    <div id="sharePanel" class="model-panel notes-panel" role="dialog" aria-modal="true" aria-label="Share JAMES" x-show="shareOpen" style="display: none;">
+        <div class="model-panel-header">
+            <h2>🚀 Share JAMES</h2>
+            <button id="sharePanelClose" class="icon-btn" aria-label="Close" @click="shareOpen = false">✕</button>
+        </div>
+        <div class="notes-panel-description">
+            Help the project grow! Sharing JAMES on your favorite platforms tells Google this project exists.
+        </div>
+        <div class="notes-list" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+            <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fchatbotjames.onrender.com%2F&text=Check%20out%20JAMES%3A%20a%20100%25%20private%2C%20local%20AI%20chatbot%20running%20entirely%20in%20the%20browser!%20%23LocalAI" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: #1DA1F2; color: white; text-align: center; text-decoration: none;">🐦 Share on X (Twitter)</a>
+            
+            <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fchatbotjames.onrender.com%2F&title=JAMES%3A%20A%20100%25%20private%20local%20AI%20chatbot%20running%20entirely%20in%20the%20browser%20via%20WebGPU" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: #FF4500; color: white; text-align: center; text-decoration: none;">🤖 Share on Reddit</a>
+            
+            <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fchatbotjames.onrender.com%2F&t=JAMES%3A%20100%25%20Private%20Local%20AI%20Chatbot%20in%20the%20Browser" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: #FF6600; color: white; text-align: center; text-decoration: none;"> HackerNews</a>
+            
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fchatbotjames.onrender.com%2F" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: #0077b5; color: white; text-align: center; text-decoration: none;">💼 Share on LinkedIn</a>
+
+            <button class="icon-btn" style="margin-top: 1rem; color: var(--text-muted); font-size: 0.85rem; text-decoration: underline;" @click="shareOpen = false; $dispatch('dismiss-share-modal')">Don't show this again (Never)</button>
         </div>
     </div>
 
