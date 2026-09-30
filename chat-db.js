@@ -31,6 +31,19 @@ export const safeLocalStorage = {
 export async function initConfigCache() {
     try {
         const db = await openChatDB();
+
+        // Migrate all existing configuration from localStorage to IDB
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('james-') || key.startsWith('chatbot-'))) {
+                const val = localStorage.getItem(key);
+                const existing = await db.get(IDB_CONFIG_STORE, key);
+                if (existing === undefined && val !== null) {
+                    await db.put(IDB_CONFIG_STORE, val, key);
+                }
+            }
+        }
+
         const keys = await db.getAllKeys(IDB_CONFIG_STORE);
         for (const k of keys) {
             _configCache.set(k, await db.get(IDB_CONFIG_STORE, k));
