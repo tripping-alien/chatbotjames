@@ -2,6 +2,30 @@ import { CONFIG } from './config.js';
 import { marked } from 'https://esm.sh/marked@11.1.0';
 import DOMPurify from 'https://esm.sh/dompurify@3.0.8';
 
+/**
+ * Cross-browser clipboard write with a document.execCommand fallback.
+ * navigator.clipboard requires HTTPS + focus; execCommand works everywhere
+ * but is deprecated. We try the modern API first and fall back gracefully.
+ */
+function copyToClipboard(text) {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        return navigator.clipboard.writeText(text).catch(() => _execCommandCopy(text));
+    }
+    return Promise.resolve(_execCommandCopy(text));
+}
+function _execCommandCopy(text) {
+    try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+    } catch (_) { /* silent fail */ }
+}
+
 // Configure marked to use GitHub Flavored Markdown and breaks
 marked.setOptions({
     gfm: true,
@@ -234,7 +258,7 @@ export function updateLiveBubble(text, targetId, force = false) {
         copyBtn.innerHTML = '📋';
         copyBtn.title = 'Copy message';
         copyBtn.setAttribute('aria-label', 'Copy message to clipboard');
-        copyBtn.onclick = () => navigator.clipboard.writeText(text);
+        copyBtn.onclick = () => copyToClipboard(text);
         container.appendChild(copyBtn);
 
         messageWrap.appendChild(container);
@@ -343,7 +367,7 @@ export function createMessageElement(msg, historyIdx = -1, isLastAssistant = fal
         const gameStateIdx = textToCopy.indexOf('\n\n[Game State]');
         if (gameStateIdx !== -1) textToCopy = textToCopy.substring(0, gameStateIdx).trim();
     }
-    copyBtn.onclick = () => navigator.clipboard.writeText(textToCopy);
+    copyBtn.onclick = () => copyToClipboard(textToCopy);
 
     if (msg.role === 'assistant') {
         messageContent.innerHTML = formatAssistantMessage(msg.content);

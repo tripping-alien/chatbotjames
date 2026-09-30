@@ -9,6 +9,7 @@
     background: rgba(255, 255, 255, 0.03);
     border: 1px dashed rgba(148, 163, 184, 0.15);
     cursor: pointer;
+    -webkit-user-select: none;
     user-select: none;
     transition: background 0.2s, color 0.2s;
 }
@@ -529,6 +530,9 @@ a:hover {
     padding: 6px;
     border-radius: var(--radius-sm);
     transition: all 0.2s ease;
+    /* Eliminate 300ms tap delay on mobile; also prevent text selection on rapid taps */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
  
 .icon-btn:hover {
@@ -556,6 +560,10 @@ a:hover {
 .chat-log {
     flex: 1;
     overflow-y: auto;
+    /* Prevent iOS rubber-banding from propagating to the body and causing
+       layout flicker; also stops unintentional pull-to-refresh on Android */
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch; /* smooth momentum scrolling on older iOS */
     padding: 32px 16px 20px 16px;
     display: flex;
     flex-direction: column;
@@ -707,6 +715,9 @@ a:hover {
 /* ═════ INPUT AREA ═════ */
 .input-area {
     padding: 0 16px 24px 16px;
+    /* iOS notch / home-bar safe area — ensures the input is never hidden
+       behind the device chrome on iPhone X+ and Android with gesture nav */
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
     background: linear-gradient(180deg, transparent, var(--bg-main) 20%);
     display: flex;
     justify-content: center;
@@ -731,6 +742,7 @@ a:hover {
     transition: border-color 0.3s, box-shadow 0.3s;
     align-items: center;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
  
@@ -744,10 +756,18 @@ a:hover {
     background: transparent;
     border: none;
     color: var(--text-primary);
-    font-size: 1rem;
+    font-size: 1rem; /* ≥16px prevents iOS Safari auto-zoom on focus */
     font-family: inherit;
     outline: none;
     padding: 8px 0;
+    /* Remove browser-default appearance on iOS/Android */
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0; /* iOS rounds textarea/input corners by default */
+    /* Eliminate the 300ms tap delay on older Android/iOS browsers */
+    touch-action: manipulation;
+    /* Disable iOS's tap highlight flash */
+    -webkit-tap-highlight-color: transparent;
 }
  
 #cmdInput::placeholder {
@@ -772,6 +792,8 @@ a:hover {
     cursor: pointer;
     transition: transform 0.2s, background 0.2s;
     flex-shrink: 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
  
 #sendBtn:hover:not(:disabled) {
@@ -804,6 +826,8 @@ a:hover {
 .model-panel-overlay {
     display: none;
     position: fixed;
+    /* `inset` shorthand not supported in Safari < 14.1 — explicit fallback: */
+    top: 0; right: 0; bottom: 0; left: 0;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
@@ -822,6 +846,7 @@ a:hover {
     left: 50%;
     transform: translateX(-50%) translateY(100%);
     width: min(600px, 95vw);
+    max-height: 85vh;  /* fallback for older browsers */
     max-height: 85dvh;
     background: var(--panel-bg);
     border: 1px solid var(--border-light);
@@ -1147,9 +1172,22 @@ a:hover {
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 }
+
+/* Firefox scrollbar styling (no pseudo-element support) */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
  
 /* ═════ RESPONSIVE ═════ */
 @media (max-width: 768px) {
+    /* The JS sets --vh to 1% of window.innerHeight on load and resize.
+       This compensates for mobile browsers' dynamic address bar causing
+       100vh to include hidden chrome, which clips the UI bottom. */
+    body {
+        height: calc(var(--vh, 1vh) * 100);
+    }
+
     .sidebar {
         position: absolute;
         height: 100%;
@@ -1163,6 +1201,7 @@ a:hover {
     #sidebarOverlay {
         display: none;
         position: fixed;
+        top: 0; right: 0; bottom: 0; left: 0;
         inset: 0;
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(2px);

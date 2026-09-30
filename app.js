@@ -967,6 +967,26 @@ window.uiManager = uiManager;
 // ==========================================
 // INITIALIZATION
 // ==========================================
+
+// ── Mobile viewport height fix ──────────────────────────────────────────────
+// Mobile browsers (iOS Safari, Chrome on Android) include their address bar
+// chrome in 100vh, which clips the bottom of the UI.  We update a --vh CSS
+// custom property on load and on every resize so that layout code can use
+//   height: calc(var(--vh, 1vh) * 100)
+// instead of 100vh and always get the *visible* viewport height.
+(function setupVH() {
+    function setVH() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    setVH();
+    window.addEventListener('resize', setVH);
+    // visualViewport fires on iOS when the software keyboard appears/hides
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', setVH);
+    }
+})();
+
 function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }

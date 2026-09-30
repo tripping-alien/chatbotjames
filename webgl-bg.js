@@ -10,7 +10,8 @@ const initWebGLBackground = () => {
     canvas.style.pointerEvents = 'none';
     document.body.appendChild(canvas);
 
-    const gl = canvas.getContext('webgl');
+    // `webgl` is standard; `experimental-webgl` is the older Safari/iOS alias
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     if (!gl) return; // Fallback silently if WebGL is not supported
 
     const vertexShaderSource = `
