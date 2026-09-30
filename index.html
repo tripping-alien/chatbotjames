@@ -154,11 +154,11 @@
             });
         });
     </script>
-    <script defer src="https://esm.sh/alpinejs@3.13.3"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 </head>
 
 <!-- We initialize alpine state on the body to control panels -->
-<body x-data="{ faqOpen: false, shareOpen: false }" @open-share-modal.window="shareOpen = true">
+<body x-data="{ shareOpen: false }" @open-share-modal.window="shareOpen = true">
     <!-- Rich Noscript for SEO crawlers and users without JS -->
     <noscript>
         <div style="padding: 20px; background: #000; color: #0f0; font-family: monospace;">
@@ -203,7 +203,7 @@
             </div>
             <div class="sidebar-footer">
                 <div class="footer-links">
-                    <a href="about.html">About</a> · <a href="docs.html">Docs</a> · <a href="#" id="faqBtn" @click.prevent="faqOpen = true">FAQ</a> · <a href="#" @click.prevent="shareOpen = true">Share</a>
+                    <a href="about.html">About</a> · <a href="docs.html">Docs</a> · <a href="faq.html">FAQ</a> · <a href="#" @click.prevent="shareOpen = true">Share</a>
                 </div>
                 <div class="footer-credit">
                     <span>By Andrey Lopukhov</span>

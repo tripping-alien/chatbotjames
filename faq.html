@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ — JAMES AI Chatbot</title>
+    <meta name="description" content="Frequently Asked Questions about JAMES: the free, private, retro terminal AI chatbot that runs entirely in your web browser.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { overflow: auto; background-color: transparent; }
+        .page-shell { min-height: 100vh; background-color: transparent; }
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(6, 9, 19, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+        .nav-brand { color: var(--primary-purple); text-decoration: none; font-weight: 700; letter-spacing: 0.14em; }
+        .nav-links { display: flex; gap: 1.5rem; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.08em; transition: color 0.2s ease; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-blue); }
+        .page-content { max-width: 1080px; margin: 0 auto; padding: 3rem 2rem 4rem; }
+        .hero { padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); }
+        .eyebrow { display: inline-block; margin-bottom: 1rem; font-size: 0.78rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--text-secondary); }
+        .hero-title { font-size: clamp(2.6rem, 5vw, 4.4rem); line-height: 1; margin-bottom: 1rem; color: var(--primary-purple); }
+        .hero-copy { max-width: 760px; line-height: 1.85; color: var(--text-primary); margin-bottom: 1.75rem; }
+        .section-block { margin-top: 3rem; display: grid; gap: 1.75rem; }
+        .card { background: var(--assistant-bubble); border: 1px solid var(--border); padding: 1.75rem; transition: transform 0.2s ease, border-color 0.2s ease; margin-bottom: 1rem; }
+        .card:hover { transform: translateY(-2px); border-color: var(--primary-purple); }
+        .card h3 { margin-bottom: 0.9rem; color: var(--primary-blue); font-size: 1.1rem; }
+        .card p { color: var(--text-secondary); line-height: 1.75; }
+        .page-footer { border-top: 1px solid var(--border); margin-top: 3rem; padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; color: var(--text-secondary); font-size: 0.85rem; flex-wrap: wrap; }
+        .page-footer a { color: var(--text-secondary); text-decoration: none; }
+        .page-footer a:hover { color: var(--primary-blue); }
+        @media (max-width: 620px) { nav { flex-direction: column; align-items: flex-start; gap: 1rem; } }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <nav>
+            <a class="nav-brand" href="index.html">JAMES</a>
+            <div class="nav-links">
+                <a href="index.html">Terminal</a>
+                <a href="about.html">About</a>
+                <a href="docs.html">Docs</a>
+                <a href="faq.html" class="active">FAQ</a>
+            </div>
+        </nav>
+        <main class="page-content">
+            <section class="hero">
+                <span class="eyebrow">Project / Support</span>
+                <h1 class="hero-title">Frequently Asked Questions</h1>
+                <p class="hero-copy">Everything you need to know about how JAMES works, privacy guarantees, hardware requirements, and capabilities.</p>
+            </section>
+            
+            <section class="section-block">
+                <article class="card">
+                    <h3>Is JAMES free to use?</h3>
+                    <p>Yes, JAMES is completely free. No account, no subscription, no API key required. It is open-source under the MIT License.</p>
+                </article>
+                <article class="card">
+                    <h3>Does JAMES send my messages to a server?</h3>
+                    <p>No. All AI inference runs locally in your browser using WebGPU or WebAssembly (WASM). Your messages never leave your device unless you explicitly use a tool that fetches external data (like weather or Wikipedia lookup).</p>
+                </article>
+                <article class="card">
+                    <h3>Does JAMES work offline?</h3>
+                    <p>Yes. After the model weights are downloaded once and cached, JAMES works completely offline. The app can also be installed as a Progressive Web App (PWA) for a native-like offline experience.</p>
+                </article>
+                <article class="card">
+                    <h3>What AI models does JAMES use?</h3>
+                    <p>JAMES automatically selects the best model for your hardware from a range including Qwen2.5 0.5B, SmolLM2 1.7B, Llama 3.2 1B, Llama 3.2 3B, DeepSeek R1 1.5B, Phi-3.5 mini 3.8B, and Gemma 2 2B. GPU models run via WebGPU; CPU fallbacks use WASM.</p>
+                </article>
+                <article class="card">
+                    <h3>What browser do I need?</h3>
+                    <p>Chrome 113+ or Edge 113+ is recommended for WebGPU acceleration. Firefox works via WebAssembly (WASM). Safari has limited WebGPU support.</p>
+                </article>
+                <article class="card">
+                    <h3>Is JAMES open source?</h3>
+                    <p>Yes. JAMES is open source under the MIT License. The full source code is available on GitHub.</p>
+                </article>
+                <article class="card">
+                    <h3>Can JAMES run Python code?</h3>
+                    <p>Yes. JAMES includes an in-browser Python execution engine powered by Pyodide (a WebAssembly port of CPython). You can run real Python code including NumPy, math, and algorithms entirely in the browser.</p>
+                </article>
+                <article class="card">
+                    <h3>Is JAMES a ChatGPT alternative?</h3>
+                    <p>JAMES is a free, private, offline-capable ChatGPT alternative that runs entirely in your browser with no account or API key. Unlike ChatGPT, your data never leaves your device.</p>
+                </article>
+                <article class="card">
+                    <h3>Does JAMES store chat history?</h3>
+                    <p>Yes. Chat history is stored locally in your browser using encrypted IndexedDB storage. It never leaves your device and can be cleared at any time.</p>
+                </article>
+            </section>
+            
+            <footer class="page-footer">
+                <span>JAMES // Genesis</span>
+                <span>By <a href="https://github.com/tripping-alien" target="_blank" rel="noopener">Andrey Lopukhov</a></span>
+                <span><a href="index.html">Terminal</a> · <a href="about.html">About</a> · MIT License</span>
+            </footer>
+        </main>
+    </div>
+    <script src="webgl-bg.js"></script>
+</body>
+</html>
