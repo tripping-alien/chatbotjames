@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About JAMES AI — Free Private Retro Terminal AI Chatbot</title>
-    <meta name="description" content="JAMES is a completely free, 100% private retro terminal AI chatbot that runs entirely in your web browser using WebGPU. No account, no login, no server. On-device Llama 3.2, Qwen2.5, DeepSeek, in-browser Python, live web search, and full offline PWA support.">
-    <meta name="keywords" content="about JAMES AI, local AI chatbot, private AI browser, retro terminal AI, hacker terminal chat, offline AI chatbot, browser AI no server, WebGPU AI chatbot, Llama 3.2 in browser, Qwen2.5 browser, DeepSeek browser, in-browser Python Pyodide, AI web search browser, AI chess game, offline AI PWA, self-hosted AI browser, encrypted AI chat">
+    <meta name="description" content="JAMES is a completely free, 100% private retro terminal AI chatbot that runs entirely in your web browser. Features on-device Llama 3.2, Qwen2.5, DeepSeek, in-browser Python, live web search, zero-delay smalltalk, advanced hardware detection, and full offline PWA support.">
+    <meta name="keywords" content="about JAMES AI, local AI chatbot, private AI browser, retro terminal AI, hacker terminal chat, offline AI chatbot, WebGPU AI chatbot, Llama 3.2 in browser, Qwen2.5 browser, DeepSeek browser, in-browser Python, AI web search, instant AI smalltalk, WebGL hardware detection, offline AI PWA, self-hosted AI browser, encrypted AI chat">
     <meta name="author" content="Andrey Lopukhov">
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -48,9 +48,11 @@
         "WebAssembly CPU fallback",
         "In-browser Python (Pyodide)",
         "Live web search, weather, Wikipedia",
+        "Instant zero-delay smalltalk",
         "Chess and checkers games",
         "Unit converter, currency, calculator",
         "Password and UUID generator",
+        "Advanced WebGL hardware detection",
         "Offline PWA support",
         "Encrypted local chat history"
       ],
@@ -227,8 +229,12 @@
                         <p>Inference runs off the main thread so the UI remains smooth. The worker logic is split into specialized modules for efficiency.</p>
                     </article>
                     <article class="card">
-                        <h3>Dynamic Models</h3>
-                        <p>Automatically evaluates your hardware capabilities (RAM, WebGPU) to select the optimal model for your device.</p>
+                        <h3>Dynamic Models & Detection</h3>
+                        <p>Automatically evaluates your hardware (RAM, WebGPU, WebGL fallback) with advanced heuristics to select the optimal model for your device, including accurate iPadOS detection.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Zero-delay Smalltalk</h3>
+                        <p>A fast, built-in heuristic engine instantly handles greetings, jokes, philosophy, and common banter without spinning up the heavy LLM.</p>
                     </article>
                     <article class="card">
                         <h3>Smart UI Modes</h3>
@@ -274,6 +280,10 @@
                     <article class="card">
                         <h3>Can JAMES write and run code?</h3>
                         <p>Yes! JAMES has a fully integrated Python environment (Pyodide). You can ask it to write Python code for math, data processing, or algorithms, and it will execute the code directly inside your browser and return the results.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Does JAMES do smalltalk?</h3>
+                        <p>Absolutely. JAMES features an instant smalltalk engine that instantly replies to greetings, jokes, philosophical questions, and fun Easter eggs, bypassing the AI model for zero-delay banter.</p>
                     </article>
                 </div>
             </section>

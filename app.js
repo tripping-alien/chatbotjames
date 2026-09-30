@@ -177,7 +177,7 @@ workerController.onWorkerStatus = (status, message, e) => {
         if (!_cannedGenActive && !isToolCall) {
             uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
             updateStatusLight('idle');
-            uiManager.updateStatusText('✅ READY');
+            uiManager.updateStatusText('READY');
         }
         if (status === 'aborted' && e.data.chatId) workerController.activeGenerations.delete(e.data.chatId);
         if (status === 'complete' && e.data.chatId) workerController.activeGenerations.delete(e.data.chatId);
@@ -200,8 +200,8 @@ workerController.onWorkerStatus = (status, message, e) => {
             uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
             updateStatusLight('thinking');
         }
-        if (status === 'thinking') uiManager.updateStatusText('🧠 THINKING...');
-        if (status === 'streaming') uiManager.updateStatusText('💬 RESPONDING...');
+        if (status === 'thinking') uiManager.updateStatusText('THINKING...');
+        if (status === 'streaming') uiManager.updateStatusText('RESPONDING...');
     }
 };
 
@@ -223,7 +223,7 @@ workerController.onDownloadProgress = (loaded, total, file) => {
     const mbLoaded = (loaded / 1024 / 1024).toFixed(1);
     const mbTotal = (total / 1024 / 1024).toFixed(1);
     uiManager.updateStatusMeta(`Downloading: ${file || 'weights'} (${mbLoaded}/${mbTotal} MB)`);
-    uiManager.updateStatusText(`⬇️ DOWNLOADING (${Math.round(percent)}%)...`);
+    uiManager.updateStatusText(`DOWNLOADING (${Math.round(percent)}%)...`);
 };
 
 workerController.onWorkerDone = (data) => {
@@ -232,7 +232,7 @@ workerController.onWorkerDone = (data) => {
         const deviceTag = data.isTV ? ' · TV Mode' : data.isMobile ? ' · Lightweight Mode' : '';
         uiManager.updateStatusMeta(`JAMES is online (${backend}${deviceTag})`);
         uiManager.updateProgress(100);
-        uiManager.updateStatusText('✅ READY');
+        uiManager.updateStatusText('READY');
 
         const runningPreset = globalState.presets.find(
             p => p.backend === data.backend && p.dtype === data.dtype && p.model === data.model
@@ -564,7 +564,7 @@ function sendMessage(preExecutedMove = null) {
 
     uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
     updateStatusLight('thinking');
-    uiManager.updateStatusText('🧠 THINKING...');
+    uiManager.updateStatusText('THINKING...');
 
     _chatToolDepths.set(chatManager.currentChatId, 0);
     const messagesForModel = getMessagesWindow(chatManager.chatHistory);
@@ -579,7 +579,7 @@ function sendMessage(preExecutedMove = null) {
 function handleStopGeneration() {
     if (workerController.activeGenerations.has(chatManager.currentChatId)) {
         workerController.worker.postMessage({ type: 'abort', targetId: workerController.activeGenerations.get(chatManager.currentChatId) });
-        uiManager.updateStatusText('🛑 STOPPING...');
+        uiManager.updateStatusText('STOPPING...');
     }
 }
 
@@ -593,7 +593,7 @@ window.simulateCannedResponse = function(text) {
 
     uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
     updateStatusLight('thinking');
-    uiManager.updateStatusText('🧠 THINKING...');
+    uiManager.updateStatusText('THINKING...');
 
     const targetId = getNextTargetId();
     workerController.activeGenerations.set(chatManager.currentChatId, targetId);
@@ -607,7 +607,7 @@ window.simulateCannedResponse = function(text) {
             if (globalState.cannedGenId === currentGenId) _cannedGenActive = false;
             return;
         }
-        uiManager.updateStatusText('💬 RESPONDING...');
+        uiManager.updateStatusText('RESPONDING...');
 
         let chars = 0;
 
@@ -632,7 +632,7 @@ window.simulateCannedResponse = function(text) {
                     _cannedGenActive = false;
                     uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
                     updateStatusLight('idle');
-                    uiManager.updateStatusText('✅ READY');
+                    uiManager.updateStatusText('READY');
                     workerController.activeGenerations.delete(chatManager.currentChatId);
                 }
                 return;
@@ -782,7 +782,7 @@ async function handleToolCalls(message, targetId, originChatId) {
             }
         }
 
-        if (isActiveChat) uiManager.updateStatusText(`⚙️ RUNNING ${toolName.toUpperCase()}...`);
+        if (isActiveChat) uiManager.updateStatusText(`RUNNING ${toolName.toUpperCase()}...`);
         let toolResult = null;
 
         try {
@@ -893,7 +893,7 @@ async function handleToolCalls(message, targetId, originChatId) {
     }
 
         if (isActiveChat) {
-            uiManager.updateStatusText('🧠 THINKING...');
+            uiManager.updateStatusText('THINKING...');
             const nextTargetId = getNextTargetId();
             workerController.postQuery(getMessagesWindow(targetHistory), nextTargetId, originChatId);
             updateLiveBubble('...', nextTargetId);
@@ -950,7 +950,7 @@ function initRecovery() {
         closePopup();
         uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
         updateStatusLight('thinking');
-        uiManager.updateStatusText('⏩ RESUMING...');
+        uiManager.updateStatusText('RESUMING...');
 
         _chatToolDepths.set(chatManager.currentChatId, 0);
         const targetId = getNextTargetId();
@@ -1069,7 +1069,7 @@ if (isTVDevice()) uiManager.initTVMode();
 uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
 const _savedLastPresetId = safeLocalStorage.getItem('james-last-preset-id');
 workerController.initWorkers(safeLocalStorage);
-uiManager.updateStatusText(_savedLastPresetId ? '⏩ RESUMING LAST MODEL…' : '⚡ INITIALIZING...');
+uiManager.updateStatusText(_savedLastPresetId ? 'RESUMING LAST MODEL…' : 'INITIALIZING...');
 
 const newChatBtn = document.getElementById('newChatBtn');
 if (newChatBtn) {
@@ -1122,7 +1122,7 @@ setupModelPanel({
         uiManager.updateProgress(0);
         uiManager.updateStatusMeta('Loading selected model…');
         uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
-        uiManager.updateStatusText('⬇️ LOADING MODEL…');
+        uiManager.updateStatusText('LOADING MODEL…');
         workerController.worker.postMessage({ type: 'init', forcePresetId: selectedId, screenWidth: window.screen?.width, maxTouchPoints: navigator.maxTouchPoints });
     }
 });

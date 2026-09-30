@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JAMES AI Docs — Retro Terminal Local Browser AI | Tools & Models Guide</title>
     <meta name="description"
-        content="Complete documentation for JAMES AI: how to use the free private browser retro terminal chatbot, all available tools (in-browser Python, live web search, chess, etc.), WebGPU model selection, offline PWA setup, and encrypted local storage architecture.">
+        content="Complete documentation for JAMES AI: how to use the free private browser retro terminal chatbot, all available tools (in-browser Python, live web search, chess, etc.), WebGPU models, zero-delay smalltalk, advanced hardware detection, offline PWA setup, and encrypted local storage architecture.">
     <meta name="keywords"
-        content="JAMES AI documentation, retro terminal AI docs, hacker terminal AI guide, local AI chatbot docs, browser AI tools guide, in-browser Python Pyodide docs, WebGPU AI tutorial, offline AI assistant docs, AI web search tool, AI chess game docs, Llama 3.2 browser setup, Qwen2.5 browser, DeepSeek R1 browser, offline AI PWA install, private AI chat no server, encrypted IndexedDB chat history, open source AI chatbot MIT, free AI chatbot no account, ChatGPT alternative offline">
+        content="JAMES AI documentation, retro terminal AI docs, hacker terminal AI guide, local AI chatbot docs, browser AI tools guide, in-browser Python Pyodide docs, WebGPU AI tutorial, offline AI assistant docs, AI web search tool, AI chess game docs, Llama 3.2 browser setup, zero-delay smalltalk, instant AI responses, WebGL hardware detection, Qwen2.5 browser, DeepSeek R1 browser, offline AI PWA install, private AI chat no server, encrypted IndexedDB chat history, open source AI chatbot MIT, free AI chatbot no account, ChatGPT alternative offline">
     <meta name="author" content="Andrey Lopukhov">
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -40,9 +40,9 @@
       "@context": "https://schema.org",
       "@type": "TechArticle",
       "headline": "JAMES AI Documentation — Retro Terminal Local Browser AI Chatbot",
-      "description": "Complete reference for JAMES AI: all built-in tools (Python/Pyodide, web search, weather, Wikipedia, chess, checkers, unit converter, currency, password generator, UUID, ASCII art, color palette, timer, clipboard, base64, hash), WebGPU and WASM model selection (Llama 3.2, Qwen2.5, DeepSeek R1, SmolLM2, Phi-3.5, Gemma 2), offline PWA installation, and encrypted local storage architecture in a hacker terminal UI.",
+      "description": "Complete reference for JAMES AI: all built-in tools (Python/Pyodide, web search, weather, Wikipedia, chess, checkers, unit converter, currency, password generator, UUID, ASCII art, color palette, timer, clipboard, base64, hash), zero-delay smalltalk handler, WebGPU and WASM model selection (Llama 3.2, Qwen2.5, DeepSeek R1, SmolLM2, Phi-3.5, Gemma 2), advanced hardware detection (WebGL fallback), offline PWA installation, and encrypted local storage architecture in a hacker terminal UI.",
       "url": "https://chatbotjames.onrender.com/docs.html",
-      "keywords": "retro terminal AI docs, hacker terminal AI, local AI chatbot, browser AI tools, WebGPU LLM, in-browser Python, Pyodide, offline AI, private AI, Llama 3.2, Qwen2.5, DeepSeek",
+      "keywords": "retro terminal AI docs, hacker terminal AI, local AI chatbot, browser AI tools, WebGPU LLM, in-browser Python, Pyodide, offline AI, private AI, Llama 3.2, zero-delay smalltalk, hardware detection",
       "articleSection": "AI Tools, WebGPU Models, Privacy Architecture, Offline PWA",
       "author": { "@type": "Person", "name": "Andrey Lopukhov", "url": "https://github.com/tripping-alien" },
       "publisher": { "@type": "Person", "name": "Andrey Lopukhov" },
@@ -349,6 +349,7 @@
             <div class="sidebar-section">
                 <p class="sidebar-section-label">Using JAMES</p>
                 <a class="sidebar-link" href="#threads">Threads</a>
+                <a class="sidebar-link" href="#smalltalk">Smalltalk</a>
                 <a class="sidebar-link" href="#stop">Stop Generation</a>
                 <a class="sidebar-link" href="#python">Python Execution</a>
             </div>
@@ -436,6 +437,11 @@
                     <li>Use the <strong>×</strong> button to delete a thread permanently.</li>
                     <li>The active thread and its history are stored in <strong>IndexedDB</strong> and restored on revisit.</li>
                 </ul>
+            </section>
+            <section class="doc-section" id="smalltalk">
+                <h2>Smalltalk & Instant Responses</h2>
+                <p>JAMES features a built-in <strong>SmallTalkHandler</strong> that intercepts common conversational inputs (e.g., greetings, farewells, simple math, philosophy, jokes) and responds instantly without invoking the heavier LLM. This provides a snappy, zero-delay conversational experience, saving battery and compute.</p>
+                <div class="callout">Try asking JAMES about its favorite color, how to survive a zombie apocalypse, or tell it a joke!</div>
             </section>
             <section class="doc-section" id="stop">
                 <h2>Stop Generation</h2>
@@ -692,7 +698,7 @@ move: 5,2 to 4,3  &lt;!-- Checkers row,col --&gt;</pre>
                     <br><br><strong>Storage</strong>
                     <br>&rarr; chat-db.js (IndexedDB)
                 </div>
-                <p>The application is modularized for efficiency: the worker layer (split into multiple specialized <code>worker-*.js</code> modules) owns inference and model state. The main thread owns the UI, the modular tool routing system, and storage.
+                <p>The application is modularized for efficiency: the worker layer (split into multiple specialized <code>worker-*.js</code> modules) owns inference, fast heuristic handlers (like Smalltalk), and robust cross-platform hardware detection (via WebGPU, WebGL fallbacks, and multi-core RAM estimates). The main thread owns the UI, the modular tool routing system, and storage.
                 </p>
             </section>
             <section class="doc-section" id="privacy">

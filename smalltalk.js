@@ -646,7 +646,7 @@ export class SmallTalkHandler {
                     "you're cute", 'date me',
                 ],
                 responses: [
-                    "I appreciate the sentiment! I'm just an AI, though. 🤖💙",
+                    "I appreciate the sentiment! I'm just an AI, though. 🤖",
                     "You're very kind! But my heart is strictly digital.",
                     "I think we should just be friends. Good, helpful friends!",
                     "Flattered! But I'll stick to being your reliable assistant.",
@@ -928,7 +928,7 @@ export class SmallTalkHandler {
                 ],
                 responses: [
                     "I'm a fan of all pets, though I'm partial to rubber ducks for debugging. 🦆",
-                    "Dogs or cats? I like whichever one isn't currently chewing on your computer's power cord. 🐈🐕",
+                    "Dogs or cats? I like whichever one isn't currently chewing on your computer's power cord. 🐕",
                     "Pets are great! I don't need feeding or walking, which makes me a very low-maintenance alternative.",
                     "Aww! Give your pet a digital pat on the head from me. 🐾",
                 ],
