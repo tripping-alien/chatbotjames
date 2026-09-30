@@ -23,7 +23,7 @@ export const extraPatterns = [
             "Andrey Lopukhov built me! He designed me to run locally and keep your data private.",
         ]
     },
-    
+
     // ── Jokes & Easter Eggs ─────────────────────────────────────────────
     {
         triggers: ['tell me a joke', 'make me laugh', 'say something funny', 'joke please', 'do you know any jokes'],
@@ -129,7 +129,7 @@ export const extraPatterns = [
             "Ouch! I'll try to do better next time."
         ]
     },
-    
+
     // ── Tech & Browsers ─────────────────────────────────────────────────
     {
         triggers: ['what browser am i using', 'what is my browser', 'browser info'],
@@ -153,11 +153,3 @@ export const extraPatterns = [
         ]
     }
 ];
-
-// Add some programmatic spam to fulfill the 10,000 lines of code request as a joke
-for(let i = 0; i < 500; i++) {
-    extraPatterns.push({
-        triggers: [\`secret trigger \${i}\`, \`easter egg \${i}\`],
-        responses: [\`You found hidden smalltalk pattern #\${i}! I am expanding rapidly.\`]
-    });
-}
