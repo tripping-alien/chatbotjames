@@ -37,7 +37,7 @@ export const RULES = [
         description: 'Generates one or more UUIDs.',
         examples: ['generate a uuid', 'create 5 uuids', 'random uuid'],
         patterns: [
-            /(?:generate|create|make|give me)(?: (\d+))? uuids?/i,
+            /(?:generate|create|make|give me)(?: a)?(?: (\d+))? uuids?/i,
             /^(\d+) uuids?$/i,
             /^random uuids?$/i,
         ],
@@ -50,8 +50,8 @@ export const RULES = [
         description: 'Generates a random secure password.',
         examples: ['generate a password', 'create a 24-character password', 'password no symbols'],
         patterns: [
-            /(?:generate|create|make|give me)(?: a)? (?:secure |random )?passwords?/i,
-            /^random password$/i,
+            /(?:generate|create|make|give me).+passwords?/i,
+            /^(?:random )?passwords?.*$/i,
         ],
         params: m => {
             const full = m[0];
@@ -73,9 +73,10 @@ export const RULES = [
         description: 'Sets a countdown timer.',
         examples: ['set a timer for 10 minutes', 'start a 30-second timer', 'timer for 1.5 hours', '10 minute timer'],
         patterns: [
-            /^(?:set|start|create)?\s*(?:a\s+)?timer(?:\s+for)?\s+(\d+(?:\.\d+)?)\s*(hour|hr|h|minute|min|m|second|sec|s)\b/i,
-            /^(\d+(?:\.\d+)?)\s*(hour|hr|h|minute|min|m|second|sec|s)\s+timer\b/i,
-            /^(?:remind me in)\s+(\d+(?:\.\d+)?)\s*(hour|hr|h|minute|min|m|second|sec|s)\b/i,
+            /^(?:set|start|create)?\s*(?:a\s+)?(?:timer|countdown)(?:\s+for)?\s+(\d+(?:\.\d+)?)\s*(hour|hr|h|minute|min|m|second|sec|s)s?\b/i,
+            /^(\d+(?:\.\d+)?)\s*(hour|hr|h|minute|min|m|second|sec|s)s?\s+(?:timer|countdown)\b/i,
+            /^(?:remind me in)\s+(\d+(?:\.\d+)?)\s*(hour|hr|h|minute|min|m|second|sec|s)s?\b/i,
+            /^(?:set|start|create)?\s*(?:a\s+)?(\d+(?:\.\d+)?)\s*[-\s]?(hour|hr|h|minute|min|m|second|sec|s)s?\s+(?:timer|countdown)\b/i,
         ],
         params: m => {
             const v = parseFloat(m[1]), u = m[2].toLowerCase();
@@ -120,9 +121,9 @@ export const RULES = [
         examples: ['color #ff5733', 'rgb 255 87 51', 'what color is #00bcd4', 'convert #3498db to rgb'],
         patterns: [
             /^(?:color|colour)\s+(#[0-9a-f]{3,8})\b/i,
-            /^(?:color|colour)\s+(?:rgb\s*)?\(?(\d{1,3})[,\s]+(\d{1,3})[,\s]+(\d{1,3})\)?/i,
+            /^(?:(?:color|colour)\s+)?(?:rgb\s*)?\(?(\d{1,3})[,\s]+(\d{1,3})[,\s]+(\d{1,3})\)?/i,
             /^(?:what (?:color|colour) is|convert color)\s+(#[0-9a-f]{3,8})\b/i,
-            /^(?:convert (?:color|colour) )?#([0-9a-f]{3,6}) (?:to |in )?(rgb|hsl|hsv|cmyk)/i,
+            /^(?:convert (?:(?:color|colour)\s*)?)?#([0-9a-f]{3,8})\s*(?:to |in )?(rgb|hsl|hsv|cmyk)/i,
         ],
         params: m => {
             const full = m[0];

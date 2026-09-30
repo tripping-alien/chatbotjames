@@ -18,6 +18,9 @@ JAMES is a fully local, browser-native AI assistant designed with privacy as the
 * **Frictionless Access:** Start chatting instantly. No sign-ups, logins, or accounts are required.
 * **Browser-Powered Performance:** Utilizes WASM and WebGPU for fast, hardware-accelerated client-side model execution.
 * **Integrated Python Runtime:** Powered by Pyodide, allowing JAMES to execute Python code securely within the browser environment.
+* **Zero-Delay Smalltalk Engine:** Instantly responds to greetings, jokes, and easter eggs (like HAL 9000 & Portal) without waiting for the heavy LLM to spin up.
+* **Playable Minigames:** Play fully interactive, rule-enforced Chess and Checkers directly in the chat with AI-powered moves.
+* **Web Search:** Capable of fetching live web content, weather, and Wikipedia summaries on demand.
 * **Offline-Capable:** Once the model is cached locally, no active internet connection is needed to chat.
 
 ## Genesis AI & Living Memory
@@ -30,11 +33,12 @@ The most significant feature of JAMES is the **Persistent Personal Memory** syst
 
 ## Tech Stack
 
-* **Frontend:** Vanilla JavaScript & HTML5, supercharged by lightweight ESM modules (`Alpine.js` for UI state, `highlight.js` for syntax).
-* **Compute:** WebGPU for accelerated local model execution
+* **Frontend:** Vanilla JavaScript & HTML5, supercharged by lightweight ESM modules (`Alpine.js` for reactive UI state, `highlight.js` for syntax).
+* **Compute:** WebGPU for accelerated local model execution via Transformers.js
 * **Runtime Environments:** ONNX Runtime Web & Pyodide (WASM)
 * **Storage:** IndexedDB (via `idb`) for encrypted, persistent chat history and memory
 * **Utilities:** `dayjs` for robust timezone and time-math operations
+* **Testing:** Custom zero-dependency automated unit test runner (`tests.html`)
 
 ## Getting Started
 

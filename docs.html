@@ -446,7 +446,7 @@
             </section>
             <section class="doc-section" id="stop">
                 <h2>Stop Generation</h2>
-                <p>The stop button terminates the worker and restarts generation state.</p>
+                <p>The stop button instantly halts any active generation by refreshing the page. This prevents the worker from getting stuck in an unresponsive state and ensures a clean environment for your next prompt.</p>
                 <ol>
                     <li>Worker is terminated immediately.</li>
                     <li>Partial streamed text is saved if available.</li>

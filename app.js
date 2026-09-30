@@ -551,9 +551,9 @@ function sendMessage(preExecutedMove = null) {
 }
 
 function handleStopGeneration() {
-    if (workerController.activeGenerations.has(chatManager.currentChatId)) {
-        workerController.worker.postMessage({ type: 'abort', targetId: workerController.activeGenerations.get(chatManager.currentChatId) });
-        uiManager.updateStatusText('STOPPING...');
+    if (workerController.activeGenerations.has(chatManager.currentChatId) || globalState.isGeneratingUI) {
+        uiManager.updateStatusText('RESTARTING...');
+        location.reload();
     }
 }
 
