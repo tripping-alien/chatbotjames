@@ -74,7 +74,7 @@
 }
  
 #installBtn {
-    background: var(--primary-purple);
+    background: var(--primary-gradient);
     color: #fff;
     border: none;
     padding: 8px 16px;
@@ -82,11 +82,11 @@
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
+    transition: filter 0.2s, transform 0.2s;
 }
  
 #installBtn:hover {
-    background: var(--primary-purple-hover);
+    filter: brightness(1.1);
     transform: scale(1.05);
 }
  
@@ -131,13 +131,17 @@
     --sidebar-bg: #090e1c;
     --panel-bg: #0b1021;
  
-    /* Accents */
+    /* Accents & Gradients */
     --primary-purple: #00f3ff;
     --primary-purple-hover: #00c3cc;
     --primary-blue: #00ff66;
     --primary-green: #00ff66;
     --danger-red: #ff0055;
- 
+    
+    --primary-gradient: linear-gradient(135deg, var(--primary-purple), var(--primary-green));
+    --primary-gradient-hover: linear-gradient(135deg, var(--primary-purple-hover), #00cc52);
+    --bg-gradient: radial-gradient(circle at top center, #0a1122, var(--bg-main) 70%);
+
     /* Borders & Bubbles */
     --border: rgba(0, 243, 255, 0.25);
     --border-light: rgba(0, 243, 255, 0.15);
@@ -175,8 +179,8 @@
  
 body {
     font-family: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
-    background-color: transparent;
-    background-image: none;
+    background-color: var(--bg-main);
+    background-image: var(--bg-gradient);
     color: var(--text-primary);
     text-shadow: 0 0 2px rgba(0, 243, 255, 0.3);
     height: 100vh; /* fallback for browsers/WebViews without dvh support */
@@ -1533,7 +1537,7 @@ a:hover {
 }
  
 .ascii-art {
-    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    background: var(--primary-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
