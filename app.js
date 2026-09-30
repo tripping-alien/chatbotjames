@@ -70,35 +70,26 @@ window.globalState = globalState;
 window.sendMessage = sendMessage;
 
 
-// Initialize Alpine Store for UI state
-function initAlpineStore() {
-    Alpine.store('james', {
-        chats: [],
-        currentChatId: null,
-        
-        loadChat(id) {
-            chatManager.loadChatHistory(
-                id,
-                () => gameController.getGameState(),
-                (state) => gameController.restoreGameState(state),
-                safeLocalStorage
-            );
-            if (window.innerWidth <= 768) uiManager.closeSidebar();
-        },
-        
-        deleteChat(id) {
-            chatManager.deleteChat(
-                id,
-                safeLocalStorage,
-                () => gameController.getGameState(),
-                (state) => gameController.restoreGameState(state),
-                () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice(), true)
-            );
-        }
-    });
-}
-if (window.Alpine) initAlpineStore();
-else document.addEventListener('alpine:init', initAlpineStore);
+// Export chat actions to the global scope for the inline Alpine store to call
+window._alpineLoadChat = (id) => {
+    chatManager.loadChatHistory(
+        id,
+        () => gameController.getGameState(),
+        (state) => gameController.restoreGameState(state),
+        safeLocalStorage
+    );
+    if (window.innerWidth <= 768) uiManager.closeSidebar();
+};
+
+window._alpineDeleteChat = (id) => {
+    chatManager.deleteChat(
+        id,
+        safeLocalStorage,
+        () => gameController.getGameState(),
+        (state) => gameController.restoreGameState(state),
+        () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice(), true)
+    );
+};
 
 // Chat Manager Callbacks
 chatManager.onChatListUpdated = () => {

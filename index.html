@@ -144,6 +144,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 
     <!-- UI State Management -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('james', {
+                chats: [],
+                currentChatId: null,
+                loadChat(id) { window._alpineLoadChat && window._alpineLoadChat(id) },
+                deleteChat(id) { window._alpineDeleteChat && window._alpineDeleteChat(id) }
+            });
+        });
+    </script>
     <script defer src="https://esm.sh/alpinejs@3.13.3"></script>
 </head>
 
