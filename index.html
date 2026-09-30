@@ -170,8 +170,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 </head>
 
-<!-- We initialize alpine state on the body to control panels -->
-<body x-data="{ shareOpen: false }" @open-share-modal.window="shareOpen = true">
+<!-- We use vanilla JS to control panels for maximum compatibility with the legacy architecture -->
+<body>
     <!-- Rich Noscript for SEO crawlers and users without JS -->
     <noscript>
         <div style="padding: 20px; background: #000; color: #0f0; font-family: monospace;">
@@ -216,7 +216,7 @@
             </div>
             <div class="sidebar-footer">
                 <div class="footer-links">
-                    <a href="about.html">About</a> · <a href="docs.html">Docs</a> · <a href="faq.html">FAQ</a> · <a href="#" @click.prevent="shareOpen = true">Share</a>
+                    <a href="about.html">About</a> · <a href="docs.html">Docs</a> · <a href="faq.html">FAQ</a> · <a href="#" id="shareBtn">Share</a>
                 </div>
                 <div class="footer-credit">
                     <span>By Andrey Lopukhov</span>
@@ -372,18 +372,18 @@
     <div id="noteToast" class="note-toast" aria-live="polite"></div>
 
 
-    <!-- Share Modal for Backlinks (Powered by Alpine.js) -->
-    <div id="sharePanelOverlay" class="model-panel-overlay" x-show="shareOpen" style="display: none;" @click="shareOpen = false"></div>
-    <div id="sharePanel" class="model-panel notes-panel" role="dialog" aria-modal="true" aria-label="Share JAMES" x-show="shareOpen" style="display: none;">
+    <!-- Share Modal for Backlinks -->
+    <div id="sharePanelOverlay" class="model-panel-overlay" style="display: none;"></div>
+    <div id="sharePanel" class="model-panel notes-panel" role="dialog" aria-modal="true" aria-label="Share JAMES" style="display: none;">
         <div class="model-panel-header">
             <h2>🚀 Share JAMES</h2>
-            <button id="sharePanelClose" class="icon-btn" aria-label="Close" @click="shareOpen = false">✕</button>
+            <button id="sharePanelClose" class="icon-btn" aria-label="Close">✕</button>
         </div>
         <div class="notes-panel-description">
             Help the project grow! Sharing JAMES on your favorite platforms tells Google this project exists.
         </div>
         <div class="notes-list" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-            <button x-show="!!navigator.share" @click="triggerNativeShare()" class="btn btn-primary" style="background: #2ea44f; color: white; text-align: center; border: none; cursor: pointer; padding: 0.5rem; font-family: inherit; font-weight: bold; border-radius: 4px;">📲 Share Native (Recommended)</button>
+            <button id="nativeShareBtn" class="btn btn-primary" style="background: #2ea44f; color: white; text-align: center; border: none; cursor: pointer; padding: 0.5rem; font-family: inherit; font-weight: bold; border-radius: 4px;">📲 Share Native (Recommended)</button>
 
             <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fchatbotjames.onrender.com%2F&text=Check%20out%20JAMES%3A%20a%20100%25%20private%2C%20local%20AI%20chatbot%20running%20entirely%20in%20the%20browser!%20%23LocalAI" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: #1DA1F2; color: white; text-align: center; text-decoration: none;">🐦 Share on X (Twitter)</a>
             
@@ -393,7 +393,7 @@
             
             <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fchatbotjames.onrender.com%2F" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background: #0077b5; color: white; text-align: center; text-decoration: none;">💼 Share on LinkedIn</a>
 
-            <button class="icon-btn" style="margin-top: 1rem; color: var(--text-muted); font-size: 0.85rem; text-decoration: underline;" @click="shareOpen = false; $dispatch('dismiss-share-modal')">Don't show this again (Never)</button>
+            <button id="neverShareBtn" class="icon-btn" style="margin-top: 1rem; color: var(--text-muted); font-size: 0.85rem; text-decoration: underline;">Don't show this again (Never)</button>
         </div>
     </div>
 

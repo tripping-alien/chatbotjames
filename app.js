@@ -12,7 +12,7 @@ import { workerController, hasToolCalls } from './worker-controller.js';
 import { smallTalk } from './smalltalk.js?v=3';
 
 import { CONFIG } from './config.js';
-import { safeLocalStorage, dbSaveNote, dbDeleteNote, dbClearNotes } from './chat-db.js';
+import { safeLocalStorage, dbSaveNote, dbDeleteNote, dbClearNotes, initConfigCache } from './chat-db.js';
 import { playSendSound } from './audio-wakelock.js';
 import { getNextTargetId } from './stream-manager.js';
 import {
@@ -214,6 +214,18 @@ workerController.onWorkerDone = (data) => {
     
     if (window._chatsLoadedForRecovery) {
         initRecovery();
+    }
+
+    // ── Automated Share Modal for Returning Users (2nd Model Load) ──
+    const loadCount = Number(safeLocalStorage.getItem('james-model-loads') || '0') + 1;
+    safeLocalStorage.setItem('james-model-loads', loadCount);
+    if (loadCount === 2 && safeLocalStorage.getItem('james-share-dismissed') !== 'true') {
+        setTimeout(() => {
+            const overlay = document.getElementById('sharePanelOverlay');
+            const panel = document.getElementById('sharePanel');
+            if (overlay) overlay.style.display = 'block';
+            if (panel) panel.style.display = 'block';
+        }, 5000); 
     }
 };
 
@@ -539,15 +551,6 @@ function sendMessage(preExecutedMove = null) {
     const _chatLog = document.getElementById('chatLog');
     if (_chatLog) _chatLog.scrollTop = _chatLog.scrollHeight;
     workerController.postQuery(messagesForModel, targetId, chatManager.currentChatId);
-
-    // ── Automated Share Modal for Returning Users (2nd Message) ──
-    const msgCount = Number(safeLocalStorage.getItem('james-messages-sent') || '0') + 1;
-    safeLocalStorage.setItem('james-messages-sent', msgCount);
-    if (msgCount === 2 && safeLocalStorage.getItem('james-share-dismissed') !== 'true') {
-        setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('open-share-modal'));
-        }, 5000); 
-    }
 }
 
 function handleStopGeneration() {
@@ -1006,6 +1009,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 (async () => {
+    await initConfigCache();
     await chatManager.loadSavedChats((await import('./chat-db.js')).migrateFromLocalStorage, (await import('./crypto-utils.js')).initEncryption);
     const lastChatId = Number(safeLocalStorage.getItem('james-last-chat-id'));
     const lastChat = chatManager.allChats.find(c => c.id === lastChatId);
@@ -1226,8 +1230,35 @@ dismissBtn?.addEventListener('click', () => {
     safeLocalStorage.setItem('james-pwa-dismissed', 'true');
 });
 
+// ── Vanilla JS Share Modal Logic ──
+const shareBtn = document.getElementById('shareBtn');
+const shareOverlay = document.getElementById('sharePanelOverlay');
+const sharePanel = document.getElementById('sharePanel');
+const shareClose = document.getElementById('sharePanelClose');
+const nativeShareBtn = document.getElementById('nativeShareBtn');
+const neverShareBtn = document.getElementById('neverShareBtn');
 
-window.addEventListener('dismiss-share-modal', () => {
-    safeLocalStorage.setItem('james-share-dismissed', 'true');
+function closeShareModal() {
+    if (shareOverlay) shareOverlay.style.display = 'none';
+    if (sharePanel) sharePanel.style.display = 'none';
+}
+
+shareBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (shareOverlay) shareOverlay.style.display = 'block';
+    if (sharePanel) sharePanel.style.display = 'block';
 });
+
+shareClose?.addEventListener('click', closeShareModal);
+shareOverlay?.addEventListener('click', closeShareModal);
+
+nativeShareBtn?.addEventListener('click', () => {
+    triggerNativeShare();
+});
+
+neverShareBtn?.addEventListener('click', () => {
+    safeLocalStorage.setItem('james-share-dismissed', 'true');
+    closeShareModal();
+});
+
 

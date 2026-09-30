@@ -23,7 +23,7 @@
             const output = document.getElementById('output');
             output.innerHTML = '';
             
-            const { ALL_RULES } = await import('./tools/router.js');
+            const { ALL_RULES } = await import('./tools/router.js?v=' + Date.now());
             let total = 0, passed = 0;
 
             for (const rule of ALL_RULES) {

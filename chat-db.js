@@ -4,16 +4,46 @@
 
 import { initEncryption, encryptObject, decryptObject } from './crypto-utils.js';
 import { openDB } from 'https://esm.sh/idb@8.0.0';
+const _configCache = new Map();
 
 export const safeLocalStorage = {
-    getItem: (key) => { try { return localStorage.getItem(key); } catch (e) { return null; } },
-    setItem: (key, val) => { try { localStorage.setItem(key, val); } catch (e) { } },
-    removeItem: (key) => { try { localStorage.removeItem(key); } catch (e) { } }
+    getItem(key) {
+        if (_configCache.has(key)) return _configCache.get(key);
+        try {
+            return localStorage.getItem(key);
+        } catch (e) {
+            return null;
+        }
+    },
+    setItem(key, val) {
+        _configCache.set(key, val);
+        openChatDB().then(db => db.put(IDB_CONFIG_STORE, val, key)).catch(()=>{});
+        try { localStorage.setItem(key, val); } catch (e) {}
+    },
+    removeItem(key) {
+        _configCache.delete(key);
+        openChatDB().then(db => db.delete(IDB_CONFIG_STORE, key)).catch(()=>{});
+        try { localStorage.removeItem(key); } catch (e) {}
+    }
 };
+
+// Initialize the memory cache from IDB on app startup
+export async function initConfigCache() {
+    try {
+        const db = await openChatDB();
+        const keys = await db.getAllKeys(IDB_CONFIG_STORE);
+        for (const k of keys) {
+            _configCache.set(k, await db.get(IDB_CONFIG_STORE, k));
+        }
+    } catch (e) {
+        console.warn('Failed to init config cache from IDB', e);
+    }
+}
 
 const IDB_NAME        = 'james-chats-db';
 const IDB_STORE       = 'chats';
 const IDB_NOTES_STORE = 'user-notes';
+const IDB_CONFIG_STORE= 'config';
 let _idbPromise = null;
 
 const _chatWriteQueues = new Map();
@@ -25,6 +55,7 @@ export async function openChatDB() {
             upgrade(db) {
                 if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE, { keyPath: 'id' });
                 if (!db.objectStoreNames.contains(IDB_NOTES_STORE)) db.createObjectStore(IDB_NOTES_STORE, { keyPath: 'id' });
+                if (!db.objectStoreNames.contains(IDB_CONFIG_STORE)) db.createObjectStore(IDB_CONFIG_STORE);
             }
         });
     }

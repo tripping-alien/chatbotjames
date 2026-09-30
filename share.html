@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share JAMES AI — Spread the Word</title>
+    <meta name="description" content="Help keep JAMES AI alive by sharing it with others! Grassroots sharing is the only way a free, private, no-ads AI project can grow.">
+    
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.ico">
+    <link rel="apple-touch-icon" href="preview.png">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        body {
+            background-color: var(--bg-color, #0d1117);
+            color: var(--text-color, #c9d1d9);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .share-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .share-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-color, #30363d);
+            padding-bottom: 20px;
+        }
+        
+        .share-header h1 {
+            color: var(--accent-color, #58a6ff);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .share-content {
+            background-color: rgba(22, 27, 34, 0.8);
+            border: 1px solid var(--border-color, #30363d);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .share-content h2 {
+            color: var(--accent-color, #58a6ff);
+            margin-top: 0;
+        }
+
+        .share-content p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .share-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .share-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: inherit;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .share-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .share-btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-native { background: #2ea44f; color: white; font-size: 1.4rem; padding: 20px; box-shadow: 0 0 15px rgba(46, 164, 79, 0.4); }
+        .btn-twitter { background: #1DA1F2; color: white; }
+        .btn-reddit { background: #FF4500; color: white; }
+        .btn-hn { background: #FF6600; color: white; }
+        .btn-linkedin { background: #0077b5; color: white; }
+
+        .back-nav {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .back-nav a {
+            color: var(--accent-color, #58a6ff);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-nav a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="share-container">
+        <div class="share-header">
+            <h1>🚀 Spread the Word</h1>
+            <p>Help keep JAMES AI alive and growing.</p>
+        </div>
+
+        <div class="share-content">
+            <h2>Why Sharing Matters</h2>
+            <p>
+                JAMES AI is a fully open-source, 100% private, browser-based AI terminal. 
+                It runs completely locally on your device using WebGPU—which means <strong>zero tracking, zero accounts, and zero cloud servers</strong>.
+            </p>
+            <p>
+                Unlike massive corporate AI products backed by billions of dollars in VC funding, JAMES is built by a single developer (Andrey Lopukhov). 
+                There is no marketing budget, no ads, and no premium subscriptions.
+            </p>
+            <p>
+                <strong>The only way a project like this survives and grows is through grassroots support.</strong> 
+                If you believe in privacy-first AI, offline capability, and open-source tools, please take a second to share JAMES with your network, your coworkers, or your friends.
+            </p>
+
+            <div class="share-buttons">
+                <!-- Native Share -->
+                <button id="bigNativeShareBtn" class="share-btn btn-native" style="display: none;">📲 Share Native (Recommended)</button>
+                
+                <!-- Fallback Links -->
+                <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fchatbotjames.onrender.com%2F&text=Check%20out%20JAMES%3A%20a%20100%25%20private%2C%20local%20AI%20chatbot%20running%20entirely%20in%20the%20browser!%20%23LocalAI" target="_blank" rel="noopener noreferrer" class="share-btn btn-twitter">🐦 Share on X (Twitter)</a>
+                <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fchatbotjames.onrender.com%2F&title=JAMES%3A%20A%20100%25%20private%20local%20AI%20chatbot%20running%20entirely%20in%20the%20browser%20via%20WebGPU" target="_blank" rel="noopener noreferrer" class="share-btn btn-reddit">🤖 Share on Reddit</a>
+                <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fchatbotjames.onrender.com%2F&t=JAMES%3A%20100%25%20Private%20Local%20AI%20Chatbot%20in%20the%20Browser" target="_blank" rel="noopener noreferrer" class="share-btn btn-hn"> HackerNews</a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fchatbotjames.onrender.com%2F" target="_blank" rel="noopener noreferrer" class="share-btn btn-linkedin">💼 Share on LinkedIn</a>
+            </div>
+        </div>
+
+        <div class="back-nav">
+            <a href="index.html">← Back to Terminal</a>
+        </div>
+    </div>
+
+    <script>
+        // Only show native share button if the browser supports it
+        if (navigator.share) {
+            const nativeBtn = document.getElementById('bigNativeShareBtn');
+            nativeBtn.style.display = 'block';
+            nativeBtn.addEventListener('click', () => {
+                navigator.share({
+                    title: 'JAMES AI',
+                    text: 'Check out JAMES: a 100% private, local AI chatbot running entirely in the browser!',
+                    url: 'https://chatbotjames.onrender.com/'
+                }).catch(err => console.log('Share error:', err));
+            });
+        }
+    </script>
+</body>
+</html>
