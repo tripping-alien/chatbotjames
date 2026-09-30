@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAMES Games Unit Tests</title>
+    <style>
+        body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 20px; }
+        .pass { color: #3fb950; }
+        .fail { color: #f85149; font-weight: bold; }
+        .group-title { color: #58a6ff; font-weight: bold; margin-top: 20px; font-size: 1.2em; }
+        .summary { margin-top: 30px; font-size: 1.2em; border-top: 1px solid #30363d; padding-top: 10px; }
+        .test-case { margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <h1>JAMES Games Unit Tests (Chess & Checkers)</h1>
+    <div id="output">Running tests...</div>
+
+    <script type="module">
+        import { ChessGame, CheckersGame, parseUserMove, extractAIMove } from './game-logic.js';
+        
+        let total = 0, passed = 0;
+        const output = document.getElementById('output');
+
+        function assert(condition, message) {
+            total++;
+            const el = document.createElement('div');
+            el.className = 'test-case ' + (condition ? 'pass' : 'fail');
+            el.textContent = condition ? `  ✓ PASS: ${message}` : `  ✗ FAIL: ${message}`;
+            output.appendChild(el);
+            if (condition) passed++;
+        }
+
+        function group(name) {
+            const el = document.createElement('div');
+            el.className = 'group-title';
+            el.textContent = `Testing: [${name}]`;
+            output.appendChild(el);
+        }
+
+        async function runTests() {
+            output.innerHTML = '';
+            
+            // --- Chess Tests ---
+            group('ChessGame');
+            const chess = new ChessGame();
+            assert(chess.getTurn() === 'w', 'Initial turn is white');
+            
+            const m1 = chess.move('e2', 'e4');
+            assert(m1 !== null, 'Valid move e2 to e4 works');
+            assert(chess.getTurn() === 'b', 'Turn flips to black after move');
+            
+            const m2 = chess.move('e7', 'e6');
+            assert(m2 !== null, 'Valid black move e7 to e6 works');
+            
+            const m3 = chess.move('e4', 'e6');
+            assert(m3 === null, 'Invalid move blocked');
+            
+            const m4 = chess.makeSanMove('Nf3');
+            assert(m4 && m4.length > 0, 'SAN move Nf3 works');
+            
+            // --- AI Move Extraction (Chess) ---
+            group('Chess Move Extraction');
+            assert(extractAIMove('my move is e4', chess) === 'e4', 'Extracts direct move');
+            assert(extractAIMove('I will play Nf3', chess) === 'Nf3', 'Extracts piece move');
+            assert(extractAIMove('O-O', chess) === 'O-O', 'Extracts castling');
+
+            // --- Checkers Tests ---
+            group('CheckersGame');
+            const checkers = new CheckersGame();
+            assert(checkers.turn === 'w', 'Initial checkers turn is white (bottom, moving up)');
+            
+            const c_m1 = checkers.move('22-18');
+            assert(c_m1 !== null, 'Valid PDN move 22-18 works (White)');
+            assert(checkers.turn === 'b', 'Turn flips to black');
+            
+            const c_m2 = checkers.move('11-15');
+            assert(c_m2 !== null, 'Valid PDN move 11-15 works (Black)');
+            
+            // Attempt capture
+            const c_m3 = checkers.move('18x11');
+            assert(c_m3 !== null, 'Valid capture move 18x11 works');
+            assert(c_m3.jump === true, 'Move is registered as a jump');
+            
+            // Force capture rule test
+            const chk2 = new CheckersGame();
+            // Setup a forced jump scenario
+            // We just do manual valid moves leading to it
+            chk2.move('22-18');
+            chk2.move('11-15');
+            // White MUST jump 18x11
+            const illegal = chk2.move('24-20');
+            assert(illegal === null, 'Illegal move blocked when capture is available');
+            
+            // --- Checkers Move Extraction ---
+            group('Checkers Move Extraction');
+            assert(extractAIMove('I will play 22-18', checkers) === '22-18', 'Extracts PDN format');
+            assert(extractAIMove('my move is 11x15', checkers) === '11x15', 'Extracts capture format');
+
+            // --- User Move Parsing ---
+            group('parseUserMove helper');
+            const testGame = new ChessGame();
+            const p1 = parseUserMove('e2 to e4', testGame);
+            assert(p1 && p1.move.san === 'e4', 'Parses "e2 to e4"');
+            
+            const p2 = parseUserMove('pawn in front of the king', testGame);
+            assert(p2 && p2.move.san === 'e4' || p2.move.san === 'e3', 'Parses natural language "pawn in front of king"');
+
+            // Summary
+            const summary = document.createElement('div');
+            summary.className = 'summary';
+            summary.innerHTML = `Tests completed.<br>Total: ${total}<br>Passed: <span class="${passed === total ? 'pass' : 'fail'}">${passed}</span><br>Failed: <span class="${passed !== total ? 'fail' : 'pass'}">${total - passed}</span>`;
+            output.appendChild(summary);
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>
