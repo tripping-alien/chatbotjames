@@ -9,6 +9,22 @@ export function setupDownloadManager(env, selfRef) {
     selfRef.fetch = customFetch;
     env.fetch = customFetch;
 
+    // Active AbortController for the current download session.
+    // Replaced every time a new model init starts.
+    let _downloadAbortController = new AbortController();
+
+    /** Cancel any in-flight downloads and return a fresh signal for the next batch. */
+    selfRef.abortDownloads = function () {
+        _downloadAbortController.abort();
+        _downloadAbortController = new AbortController();
+        return _downloadAbortController.signal;
+    };
+
+    /** Return the signal for the current download session. */
+    selfRef.getDownloadSignal = function () {
+        return _downloadAbortController.signal;
+    };
+
     function shouldUseDownloadCache(url) {
         if (url.endsWith('.wasm')) return false;
         return (
@@ -46,15 +62,16 @@ export function setupDownloadManager(env, selfRef) {
         selfRef.postMessage({ status: 'downloading', loaded, total, file: url });
     }
 
-    async function fetchHead(url) {
+    async function fetchHead(url, signal) {
         const response = await nativeFetch(
-            new Request(url, { method: 'HEAD', mode: 'cors', credentials: 'omit' })
+            new Request(url, { method: 'HEAD', mode: 'cors', credentials: 'omit' }),
+            { signal }
         );
         if (!response.ok) throw new Error(`HEAD failed for ${url}: ${response.status}`);
         return response;
     }
 
-    async function downloadChunk(url, range) {
+    async function downloadChunk(url, range, signal) {
         const response = await nativeFetch(
             new Request(url, {
                 method: 'GET',
@@ -62,7 +79,8 @@ export function setupDownloadManager(env, selfRef) {
                 credentials: 'omit',
                 headers: { Range: `bytes=${range.start}-${range.end}` },
                 cache: 'no-store',
-            })
+            }),
+            { signal }
         );
         if (!(response.ok || response.status === 206)) {
             throw new Error(`Chunk download failed: ${response.status} ${response.statusText}`);
@@ -70,9 +88,10 @@ export function setupDownloadManager(env, selfRef) {
         return response.arrayBuffer();
     }
 
-    async function fetchWithProgress(url, total = 0) {
+    async function fetchWithProgress(url, total = 0, signal) {
         const response = await nativeFetch(
-            new Request(url, { method: 'GET', mode: 'cors', credentials: 'omit' })
+            new Request(url, { method: 'GET', mode: 'cors', credentials: 'omit' }),
+            { signal }
         );
         if (!response.ok) throw new Error(`Download failed: ${response.status}`);
         
@@ -90,6 +109,7 @@ export function setupDownloadManager(env, selfRef) {
         const chunks = [];
         
         while (true) {
+            if (signal?.aborted) throw new DOMException('Download aborted', 'AbortError');
             const { done, value } = await reader.read();
             if (done) break;
             chunks.push(value);
@@ -103,15 +123,16 @@ export function setupDownloadManager(env, selfRef) {
         }));
     }
 
-    async function downloadAndCache(url) {
+    async function downloadAndCache(url, signal) {
         const cached = await cacheMatch(url);
         if (cached) return cached;
 
         let head;
         try {
-            head = await fetchHead(url);
-        } catch {
-            return fetchWithProgress(url);
+            head = await fetchHead(url, signal);
+        } catch (headErr) {
+            if (headErr?.name === 'AbortError') throw headErr; // propagate abort, don't fall back
+            return fetchWithProgress(url, 0, signal);
         }
 
         const total = Number(head.headers.get('content-length')) || 0;
@@ -119,7 +140,7 @@ export function setupDownloadManager(env, selfRef) {
         const acceptRanges = (head.headers.get('accept-ranges') || '').toLowerCase();
 
         if (!total || !acceptRanges.includes('bytes')) {
-            return fetchWithProgress(url, total);
+            return fetchWithProgress(url, total, signal);
         }
 
         const ranges = [];
@@ -158,7 +179,7 @@ export function setupDownloadManager(env, selfRef) {
                 const index = nextIndex++;
                 active++;
 
-                downloadChunk(url, ranges[index])
+                downloadChunk(url, ranges[index], signal)
                     .then(chunk => {
                         if (failed || settled) return;
                         results[index] = chunk;
@@ -204,9 +225,11 @@ export function setupDownloadManager(env, selfRef) {
             return cached;
         }
 
+        const signal = selfRef.getDownloadSignal ? selfRef.getDownloadSignal() : undefined;
         try {
-            return await downloadAndCache(request.url);
+            return await downloadAndCache(request.url, signal);
         } catch (err) {
+            if (err?.name === 'AbortError') throw err; // propagate abort, don't fall back
             console.warn('Custom fetch failed, falling back to native fetch:', err);
             return nativeFetch(resource instanceof Request ? resource.clone() : new Request(resource, init));
         }

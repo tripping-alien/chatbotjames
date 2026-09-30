@@ -158,6 +158,12 @@
     --radius-md: 6px;
     --radius-lg: 8px;
     --radius-xl: 12px;
+
+    /* Legacy aliases — referenced by older CSS blocks; kept for compatibility */
+    --border-color: rgba(0, 243, 255, 0.25);   /* alias of --border */
+    --text-color: #e0fbfc;                      /* alias of --text-primary */
+    --surface-color: #090e1c;                   /* alias of --sidebar-bg */
+    --bg-surface: #0b1021;                      /* alias of --panel-bg */
 }
  
 * {
@@ -1121,51 +1127,7 @@ a:hover {
     }
 }
  
-/* Typing Indicator */
-.typing-indicator {
-    display: flex;
-    gap: 4px;
-    padding: 4px 8px;
-}
- 
-.typing-indicator span {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: var(--text-secondary);
-    border-radius: 50%;
-    /* will-change: transform enables GPU compositing on mobile browsers (iOS Safari,
-       Android Chrome) so the scale animation is not dropped on the main thread */
-    will-change: transform;
-    animation: bounce 1.4s infinite ease-in-out both;
-}
- 
-.typing-indicator span:nth-child(1) {
-    animation-delay: 0s;
-}
- 
-.typing-indicator span:nth-child(2) {
-    animation-delay: 0.16s;
-}
-
-/* Third dot must be explicit — without this it inherits delay: 0s but some
-   mobile browsers reset it, breaking the stagger sequence. */
-.typing-indicator span:nth-child(3) {
-    animation-delay: 0.32s;
-}
-
-@keyframes bounce {
- 
-    0%,
-    80%,
-    100% {
-        transform: scale(0.001);
-    }
- 
-    40% {
-        transform: scale(1);
-    }
-}
+/* Typing Indicator - canonical definition is in the TYPING INDICATOR section below */
  
 /* Scrollbars */
 ::-webkit-scrollbar {
@@ -2052,43 +2014,45 @@ body.tv-mode .game-board-message {
     }
 }
 
-/* Typing indicator animation */
+/* ═════ TYPING INDICATOR ═════
+   Single canonical definition — the earlier placeholder is a stub.
+   Using negative delays so the animation is already in progress on mount,
+   which prevents the awkward "all dots start together" flash on mobile.
+   will-change: transform offloads to the GPU compositor so the animation
+   is not dropped on the main thread on iOS Safari / Android Chrome.
+*/
 .typing-indicator {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 4px;
-    padding: 4px 8px;
-    min-height: 24px;
+    gap: 5px;
+    padding: 6px 10px;
+    min-height: 28px;
 }
 
 .typing-indicator span {
-    width: 6px;
-    height: 6px;
-    background-color: var(--primary-blue, #60a5fa);
+    display: inline-block; /* required on some mobile browsers */
+    width: 7px;
+    height: 7px;
+    background-color: var(--text-secondary, #94a3b8);
     border-radius: 50%;
-    will-change: transform;
+    flex-shrink: 0;
+    /* GPU-composited: keeps animation alive even when the main thread is busy */
+    will-change: transform, opacity;
     animation: typing-bounce 1.4s infinite ease-in-out both;
 }
 
-.typing-indicator span:nth-child(1) {
-    animation-delay: -0.32s;
-}
-
-.typing-indicator span:nth-child(2) {
-    animation-delay: -0.16s;
-}
-
-.typing-indicator span:nth-child(3) {
-    animation-delay: 0s;
-}
+/* Negative delays: dots are already mid-animation on first paint — no startup lag */
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+.typing-indicator span:nth-child(3) { animation-delay:    0s;  }
 
 @keyframes typing-bounce {
-    0%, 80%, 100% { 
-        transform: scale(0);
-        opacity: 0.3;
-    } 
-    40% { 
+    0%, 80%, 100% {
+        transform: scale(0.3);
+        opacity: 0.4;
+    }
+    40% {
         transform: scale(1);
         opacity: 1;
     }

@@ -954,7 +954,9 @@ function initRecovery() {
 
         _chatToolDepths.set(chatManager.currentChatId, 0);
         const targetId = getNextTargetId();
-        updateLiveBubble('...', targetId, true);
+        // Omit force=true so the bubble is created fresh (force=true bails if no existing bubble in DOM)
+        workerController.activeGenerations.set(chatManager.currentChatId, targetId);
+        updateLiveBubble('...', targetId);
         workerController.postQuery(getMessagesWindow(chatManager.chatHistory), targetId, chatManager.currentChatId);
     }, { once: true });
 }
@@ -1150,9 +1152,6 @@ document.getElementById('notesClearBtn')?.addEventListener('click', async () => 
     }
 });
 
-function _setupNotesPanel() {
-    const btn      = document.getElementById('notesBtn');
-    
 // ── Accessibility: Escape closes any open modal panel ───────────────────────
 document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
@@ -1175,7 +1174,9 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-const panel    = document.getElementById('notesPanel');
+function _setupNotesPanel() {
+    const btn      = document.getElementById('notesBtn');
+    const panel    = document.getElementById('notesPanel');
     const overlay  = document.getElementById('notesPanelOverlay');
     const closeBtn = document.getElementById('notesPanelClose');
     if (!btn || !panel) return;

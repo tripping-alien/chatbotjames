@@ -143,11 +143,14 @@ self.onmessage = async (e) => {
 
     if (type === 'init') {
         const requestedPresetId = e.data.forcePresetId || null;
-        // If an init is already in-flight, record the latest requested preset and bail.
-        // The in-flight handler will pick it up once it finishes.
+        // If an init is already in-flight, abort its downloads immediately and
+        // queue the new preset — it will run as soon as the current init unwinds.
         if (_initLock) {
             _pendingInitPreset = requestedPresetId;
-            console.warn('[worker] init already in-flight, queuing preset:', requestedPresetId);
+            // Cancel any in-flight chunk fetches so we don't waste bandwidth
+            // downloading a model the user just switched away from.
+            if (typeof self.abortDownloads === 'function') self.abortDownloads();
+            console.warn('[worker] download aborted; queuing new preset:', requestedPresetId);
             return;
         }
 
@@ -168,7 +171,10 @@ self.onmessage = async (e) => {
                     wasmCaps
                 );
             } catch (err) {
-                reportWorkerError(err, undefined);
+                // Ignore AbortErrors — they mean the user switched models mid-download
+                if (err?.name !== 'AbortError') {
+                    reportWorkerError(err, undefined);
+                }
             } finally {
                 _initLock = false;
                 // If a new switch arrived while we were loading, run it now.
