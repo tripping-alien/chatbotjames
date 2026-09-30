@@ -62,6 +62,10 @@ export function playSendSound() {
     _playTone({ freq: 880, type: 'sine', gainPeak: 0.10, duration: 0.10, rampUp: 0.005, rampDown: 0.09 });
 }
 
+export function playReceiveSound() {
+    _playTone({ freq: 659.25, type: 'sine', gainPeak: 0.06, duration: 0.15, rampUp: 0.02, rampDown: 0.13 }); // E5
+}
+
 export function playDoneSound() {
     _playTone({ freq: 523.25, type: 'sine', gainPeak: 0.10, duration: 0.18, rampUp: 0.01 }); // C5
     setTimeout(() => _playTone({ freq: 783.99, type: 'sine', gainPeak: 0.08, duration: 0.22, rampUp: 0.01 }), 120); // G5

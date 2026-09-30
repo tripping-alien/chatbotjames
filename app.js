@@ -13,7 +13,7 @@ import { smallTalk } from './smalltalk.js?v=3';
 
 import { CONFIG } from './config.js';
 import { safeLocalStorage, dbSaveNote, dbDeleteNote, dbClearNotes, initConfigCache } from './chat-db.js';
-import { playSendSound } from './audio-wakelock.js';
+import { playSendSound, playDoneSound, playReceiveSound } from './audio-wakelock.js';
 import { getNextTargetId } from './stream-manager.js';
 import {
     setupMessageRenderer,
@@ -198,6 +198,7 @@ workerController.onWorkerDone = (data) => {
         uiManager.updateStatusMeta(`JAMES is online (${backend}${deviceTag})`);
         uiManager.updateProgress(100);
         uiManager.updateStatusText('READY');
+        playDoneSound();
 
         const runningPreset = globalState.presets.find(
             p => p.backend === data.backend && p.dtype === data.dtype && p.model === data.model
@@ -247,6 +248,7 @@ workerController.onThinking = (chatId, targetId) => {
 workerController.onComplete = (chatId, targetId, message) => {
     import('./stream-manager.js').then(sm => sm.flushStreamQueue(targetId));
     if (chatId === chatManager.currentChatId) {
+        playReceiveSound();
         if (!message || message.trim() === '') {
             const bubble = document.getElementById(`bubble-${targetId}`);
             if (bubble && bubble.parentElement) {
@@ -604,6 +606,7 @@ window.simulateCannedResponse = function(text) {
                     chatManager.chatHistory.push({ role: 'assistant', content: text });
                     chatManager.persistCurrentChat(() => gameController.getGameState());
                     renderChatLog();
+                    playReceiveSound();
                 } finally {
                     // We are the latest gen — safe to unconditionally clear the lock.
                     _cannedGenActive = false;
