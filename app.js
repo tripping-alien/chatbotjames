@@ -27,6 +27,20 @@ import {
 import { setupModelPanel, updateModelInfo, refreshPresetCards } from './model-panel.js';
 import { UserInputProcessor } from './input-processor.js';
 
+// ── Notification Engine ──
+function sendNotification(title, body) {
+    if (document.visibilityState === 'visible') return; 
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        try {
+            const notif = new Notification(title, { body, icon: 'preview.png' });
+            notif.onclick = () => {
+                window.focus();
+                notif.close();
+            };
+        } catch(e) {}
+    }
+}
+
 // ==========================================
 // MANAGER WIRING & CALLBACKS
 // ==========================================
@@ -199,6 +213,7 @@ workerController.onWorkerDone = (data) => {
         uiManager.updateProgress(100);
         uiManager.updateStatusText('READY');
         playDoneSound();
+        sendNotification("JAMES AI", "Model loaded and ready to chat.");
 
         const runningPreset = globalState.presets.find(
             p => p.backend === data.backend && p.dtype === data.dtype && p.model === data.model
@@ -249,6 +264,7 @@ workerController.onComplete = (chatId, targetId, message) => {
     import('./stream-manager.js').then(sm => sm.flushStreamQueue(targetId));
     if (chatId === chatManager.currentChatId) {
         playReceiveSound();
+        sendNotification("JAMES AI", "Response completed.");
         if (!message || message.trim() === '') {
             const bubble = document.getElementById(`bubble-${targetId}`);
             if (bubble && bubble.parentElement) {
@@ -546,6 +562,11 @@ function sendMessage(preExecutedMove = null) {
     uiManager.updateStatusText('THINKING...');
 
     _chatToolDepths.set(chatManager.currentChatId, 0);
+    // Request notification permission if not yet decided, useful for long local generations
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+
     const messagesForModel = getMessagesWindow(chatManager.chatHistory);
     const targetId = getNextTargetId();
     updateLiveBubble('...', targetId);
