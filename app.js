@@ -223,8 +223,8 @@ workerController.onWorkerDone = (data) => {
         setTimeout(() => {
             const overlay = document.getElementById('sharePanelOverlay');
             const panel = document.getElementById('sharePanel');
-            if (overlay) overlay.style.display = 'block';
-            if (panel) panel.style.display = 'block';
+            if (overlay) overlay.classList.add('visible');
+            if (panel) panel.classList.add('open');
         }, 5000); 
     }
 };
@@ -1239,14 +1239,14 @@ const nativeShareBtn = document.getElementById('nativeShareBtn');
 const neverShareBtn = document.getElementById('neverShareBtn');
 
 function closeShareModal() {
-    if (shareOverlay) shareOverlay.style.display = 'none';
-    if (sharePanel) sharePanel.style.display = 'none';
+    if (shareOverlay) shareOverlay.classList.remove('visible');
+    if (sharePanel) sharePanel.classList.remove('open');
 }
 
 shareBtn?.addEventListener('click', (e) => {
     e.preventDefault();
-    if (shareOverlay) shareOverlay.style.display = 'block';
-    if (sharePanel) sharePanel.style.display = 'block';
+    if (shareOverlay) shareOverlay.classList.add('visible');
+    if (sharePanel) sharePanel.classList.add('open');
 });
 
 shareClose?.addEventListener('click', closeShareModal);
