@@ -71,7 +71,7 @@ window.sendMessage = sendMessage;
 
 
 // Initialize Alpine Store for UI state
-document.addEventListener('alpine:init', () => {
+function initAlpineStore() {
     Alpine.store('james', {
         chats: [],
         currentChatId: null,
@@ -96,7 +96,9 @@ document.addEventListener('alpine:init', () => {
             );
         }
     });
-});
+}
+if (window.Alpine) initAlpineStore();
+else document.addEventListener('alpine:init', initAlpineStore);
 
 // Chat Manager Callbacks
 chatManager.onChatListUpdated = () => {
@@ -1228,7 +1230,7 @@ dismissBtn?.addEventListener('click', () => {
 const sessionCount = Number(safeLocalStorage.getItem('james-session-count') || '0') + 1;
 safeLocalStorage.setItem('james-session-count', sessionCount);
 
-if (sessionCount === 2 && safeLocalStorage.getItem('james-share-dismissed') !== 'true') {
+if (sessionCount >= 2 && safeLocalStorage.getItem('james-share-dismissed') !== 'true') {
     // Wait a few seconds so it doesn't interrupt the initial model loading screen
     setTimeout(() => {
         window.dispatchEvent(new CustomEvent('open-share-modal'));
