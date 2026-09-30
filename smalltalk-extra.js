@@ -138,22 +138,6 @@ export const extraPatterns = [
             "Catch you later!"
         ]
     },
-    {
-        triggers: ['yes', 'yeah', 'yep', 'yup', 'yea', 'of course', 'sure', 'absolutely', 'ok', 'okay', 'k', 'kk', 'sounds good'],
-        responses: [
-            "Awesome! Let me know what you want to do next.",
-            "Great! I'm ready when you are.",
-            "Understood!"
-        ]
-    },
-    {
-        triggers: ['no', 'nope', 'nah', 'not really', 'no thanks', 'n'],
-        responses: [
-            "No problem! Let me know if you change your mind.",
-            "Alright, no worries!",
-            "Got it."
-        ]
-    },
     
     // ── Tech & Browsers ─────────────────────────────────────────────────
     {
