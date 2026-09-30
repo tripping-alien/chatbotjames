@@ -19,6 +19,8 @@
  * Vastly expanded: dozens of new categories, richer multilingual coverage,
  * more response variety, easter eggs, and conversational breadth.
  */
+import { extraPatterns } from './smalltalk-extra.js';
+
 export class SmallTalkHandler {
     constructor() {
         // ── Raw pattern definitions ────────────────────────────────────────────
@@ -1655,6 +1657,7 @@ export class SmallTalkHandler {
 
         // ── Pre-compute normalised triggers ───────────────────────────────────
         // Each compiled pattern stores normalised triggers plus circular response history.
+        rawPatterns.push(...extraPatterns);
         this._patterns = rawPatterns.map(p => {
             const n = p.responses.length;
             const histSize = Math.max(1, Math.floor(n / 2));

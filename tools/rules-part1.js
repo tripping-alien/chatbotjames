@@ -11,7 +11,7 @@ export const RULES = [
             /^show commands?(?:\s+(\w+))?\??$/i,
             /^show (?:me )?(?:all )?commands?(?:\s+for\s+(\w+))?\??$/i,
             /^show (?:me )?(?:all )?tools?(?:\s+for\s+(\w+))?\??$/i,
-            /^list (?:all )?commands?(?:\s+(\w+))?\??$/i,
+            /^list (?:all )?(?:commands?|tools?)(?:\s+(\w+))?\??$/i,
         ],
         params: m => {
             const toolName = m[1]?.toLowerCase().trim() ?? null;
@@ -25,7 +25,7 @@ export const RULES = [
         description: 'Fetches the content of a specific webpage or URL.',
         examples: ['fetch page https://example.com', 'read url https://github.com', 'get webpage content https://news.ycombinator.com'],
         patterns: [
-            /^(?:fetch|read|get)\s+(?:page|url|webpage|content)\s+(https?:\/\/[^\s]+)$/i,
+            /^(?:fetch|read|get)\s+(?:page|url|webpage(?: content)?|content)\s+(https?:\/\/[^\s]+)$/i,
             /^(?:fetch|read|get)\s+(https?:\/\/[^\s]+)$/i,
         ],
         params: m => ({ url: m[1] }),
@@ -56,7 +56,7 @@ export const RULES = [
         examples: ['weather in Tokyo', "what's the forecast for Paris", 'temperature in Berlin', 'Tokyo weather'],
         patterns: [
             /^(?:what(?:'s| is)(?: the)?)?\s*weather(?:\s+like)?(?:\s+(?:in|at|for))?\s+(.+)/i,
-            /^(?:forecast|temperature|temp)(?:\s+(?:in|at|for))?\s+(.+)/i,
+            /^(?:what(?:'s| is)(?: the)?)?\s*(?:forecast|temperature|temp)(?:\s+(?:in|at|for))?\s+(.+)/i,
             /^how(?:'s| is)(?: the)? weather(?:\s+(?:in|at|for))?\s+(.+)/i,
             /^(?:is it|will it be)\s+(?:rain|snow|cold|hot|warm)\w*(?:\s+(?:in|at|for))?\s+(.+)/i,
             /^(.+)\s+weather\??$/i,
@@ -97,8 +97,8 @@ export const RULES = [
         description: 'Converts an amount between currencies.',
         examples: ['100 USD to EUR', 'convert $50 to pounds', '200 euros in dollars'],
         patterns: [
-            /^([€£¥₪₹₩₺₽$]|R\$)\s*(\d+(?:[.,]\d+)?)\s+(?:in|to|into)\s+([A-Za-z]{2,20}(?:\s+[A-Za-z]+)?)/i,
-            /(?:how much is |convert )?(\d+(?:[.,]\d+)?)\s+([A-Za-z]{2,20}(?:\s+[A-Za-z]+)?)\s+(?:in|to|into)\s+([A-Za-z]{2,20}(?:\s+[A-Za-z]+)?)/i,
+            /^(?:how much is |convert )?([€£¥₪₹₩₺₽$]|R\$)\s*(\d+(?:[.,]\d+)?)\s+(?:in|to|into)\s+([A-Za-z]{2,20}(?:\s+[A-Za-z]+)?)/i,
+            /^(?:how much is |convert )?(\d+(?:[.,]\d+)?)\s+([A-Za-z]{2,20}(?:\s+[A-Za-z]+)?)\s+(?:in|to|into)\s+([A-Za-z]{2,20}(?:\s+[A-Za-z]+)?)/i,
         ],
         params: m => {
             const isSymbolForm = /^[€£¥₪₹₩₺₽$]|^R\$/i.test(m[1]);
