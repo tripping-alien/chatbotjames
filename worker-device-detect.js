@@ -5,7 +5,11 @@ export function isMobileDevice(hints = {}) {
     const maxTouchPoints = hints.maxTouchPoints ?? navigator.maxTouchPoints;
     const isNarrowScreen = typeof screenWidth === 'number' && screenWidth < 1024;
     const hasTouchPoints = typeof maxTouchPoints === 'number' && maxTouchPoints > 1;
-    return isMobileUA || (hasTouchPoints && isNarrowScreen);
+    
+    // iPadOS 13+ reports as MacIntel but has touch support
+    const isMacTouch = (navigator.platform === 'MacIntel' && hasTouchPoints);
+
+    return isMobileUA || isMacTouch || (hasTouchPoints && isNarrowScreen);
 }
 
 export function isTVDevice() {
@@ -103,6 +107,25 @@ export async function detectGpu() {
         console.warn('GPU info hidden by browser privacy settings:', e.message);
     }
 
+    // WebGL fallback if WebGPU is missing or didn't provide vendor/description
+    if (!vendor && !description) {
+        try {
+            const canvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(1, 1) : null;
+            if (canvas) {
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || '';
+                        description = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '';
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn('WebGL fallback failed:', err.message);
+        }
+    }
+
     let normalizedVendor = vendor;
     const vendorLower = vendor.toLowerCase();
     if (vendorLower === 'google' || vendorLower.includes('angle') || vendorLower === '') {
@@ -134,5 +157,15 @@ export async function detectGpu() {
 }
 
 export function getDeviceRamGB() {
-    return navigator.deviceMemory || 4;
+    if (navigator.deviceMemory) {
+        return navigator.deviceMemory;
+    }
+    // Safari/Firefox don't support deviceMemory, use heuristics
+    const cores = navigator.hardwareConcurrency || 4;
+    const isMac = /Mac/.test(navigator.platform || navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (isMac && navigator.maxTouchPoints > 1);
+    
+    if (isIOS) return cores >= 6 ? 6 : 4;
+    if (isMac) return cores >= 8 ? 8 : 8; // Macs generally have at least 8GB
+    return cores >= 8 ? 8 : 4; // Generic fallback
 }

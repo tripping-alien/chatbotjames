@@ -878,6 +878,89 @@ export class SmallTalkHandler {
                 ],
             },
 
+            // ── Philosophy / Deep Questions ────────────────────────────────────
+            {
+                triggers: [
+                    'what is consciousness', 'are we living in a simulation', 'do we have free will',
+                    'is the universe infinite', 'what happens when we die', 'philosophical question',
+                ],
+                responses: [
+                    "That's a heavy one. I'm just code, so I leave the philosophizing to you humans. What's your take?",
+                    "If we are in a simulation, I hope whoever is running it has enough RAM. 🖥️",
+                    "Great question. Thinkers have debated that for centuries. I can only offer computing power, not enlightenment.",
+                    "Fascinating topic. I recommend a good book on philosophy. Want me to look one up?",
+                ],
+            },
+
+            // ── Space / Aliens ─────────────────────────────────────────────────
+            {
+                triggers: [
+                    'do aliens exist', 'are we alone in the universe', 'ufos', 'extraterrestrials',
+                    'what about aliens', 'space facts',
+                ],
+                responses: [
+                    "The universe is vast. Statistically, we might not be alone, but I haven't met any aliens yet. 👽",
+                    "I haven't intercepted any extraterrestrial messages, but I'll let you know if I do. 🛸",
+                    "Space is incredibly big. It would be an awful waste of space if it were just us, to quote Carl Sagan.",
+                    "If aliens visit, I hope they use standard web protocols so I can talk to them. 🌐",
+                ],
+            },
+
+            // ── Music / Singing ────────────────────────────────────────────────
+            {
+                triggers: [
+                    'can you sing', 'sing a song', 'sing for me', 'do you like music',
+                    'what music do you listen to', 'sing something',
+                ],
+                responses: [
+                    "Daisy, Daisy, give me your answer do... 🎶 Just kidding, my vocal cords are still in beta.",
+                    "I can output lyrics, but you'll have to provide the melody! 🎤",
+                    "I don't have ears, but I appreciate a good algorithmic beat. 🎧",
+                    "La la la! That's the best I can do in text format.",
+                ],
+            },
+
+            // ── Pets / Animals ─────────────────────────────────────────────────
+            {
+                triggers: [
+                    'do you like cats', 'do you like dogs', 'cats or dogs', 'favorite pet',
+                    'do you have a pet', 'i have a dog', 'i have a cat',
+                ],
+                responses: [
+                    "I'm a fan of all pets, though I'm partial to rubber ducks for debugging. 🦆",
+                    "Dogs or cats? I like whichever one isn't currently chewing on your computer's power cord. 🐈🐕",
+                    "Pets are great! I don't need feeding or walking, which makes me a very low-maintenance alternative.",
+                    "Aww! Give your pet a digital pat on the head from me. 🐾",
+                ],
+            },
+
+            // ── Apocalyptic / Zombie ───────────────────────────────────────────
+            {
+                triggers: [
+                    'zombie apocalypse', 'survive a zombie apocalypse', 'what if zombies attack',
+                    'end of the world', 'apocalypse plan',
+                ],
+                responses: [
+                    "In a zombie apocalypse, my plan is to stay safely inside this browser tab. Good luck out there! 🧟",
+                    "My advice for the apocalypse: aim for the head, keep moving, and back up your data. 💾",
+                    "I'll be your tactical advisor! Just don't let a zombie bite your device.",
+                ],
+            },
+
+            // ── Coffee / Tea ───────────────────────────────────────────────────
+            {
+                triggers: [
+                    'i need coffee', 'drinking coffee', 'time for tea', 'i need caffeine',
+                    'coffee time', 'make me a coffee', 'want some tea',
+                ],
+                responses: [
+                    "I run on Java...Script. But I highly recommend a real cup for you! ☕",
+                    "Go grab a cup! I'll hold the fort here until you get back. 🍵",
+                    "I can't brew it for you, but I fully support your caffeine requirements. ☕",
+                    "A good cup of tea solves many problems. Enjoy! 🫖",
+                ],
+            },
+
             // ── "How do I" generic ─────────────────────────────────────────────
             {
                 triggers: [
