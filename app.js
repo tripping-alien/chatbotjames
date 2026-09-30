@@ -1285,4 +1285,40 @@ neverShareBtn?.addEventListener('click', () => {
     closeShareModal();
 });
 
+// ── 7-Day Retention Greeting ──
+setTimeout(() => {
+    const lastVisit = safeLocalStorage.getItem('james-last-visit');
+    const now = Date.now();
+    if (lastVisit) {
+        const diff = now - parseInt(lastVisit, 10);
+        if (diff > 7 * 24 * 60 * 60 * 1000) { // 7 days in ms
+            const toast = document.createElement('div');
+            toast.className = 'model-panel notes-panel';
+            toast.style.width = 'min(400px, 90vw)';
+            toast.style.padding = '30px 20px';
+            toast.style.textAlign = 'center';
+            toast.style.zIndex = '9999';
+            toast.style.bottom = '20px';
+            toast.style.borderRadius = '16px';
+            toast.style.borderBottom = '1px solid var(--border-light)';
+            toast.innerHTML = `
+                <div style="font-size: 3.5rem; margin-bottom: 15px;">👋</div>
+                <h3 style="margin: 0 0 10px 0; color: var(--accent-color); font-size: 1.5rem;">Long time no see!</h3>
+                <p style="margin: 0; font-size: 1rem; color: var(--text-color);">I've been sitting in your browser for over a week waiting for you. Let's get back to work! 🚀</p>
+            `;
+            document.body.appendChild(toast);
+            
+            requestAnimationFrame(() => {
+                toast.classList.add('open');
+            });
+
+            setTimeout(() => {
+                toast.classList.remove('open');
+                setTimeout(() => toast.remove(), 400);
+            }, 6000);
+        }
+    }
+    safeLocalStorage.setItem('james-last-visit', now);
+}, 2000);
+
 
