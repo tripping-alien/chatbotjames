@@ -109,7 +109,7 @@ self.addEventListener('fetch', (event) => {
     }
 
     // CDN assets: cache-first
-    if (url.hostname.includes('jsdelivr.net') || url.hostname.includes('cdn.')) {
+    if (url.hostname.includes('jsdelivr.net') || url.hostname.includes('cdn.') || url.hostname.includes('esm.sh')) {
         event.respondWith(
             caches.match(event.request, { ignoreSearch: true }).then(cached =>
                 cached ?? fetch(event.request).then(res => {
