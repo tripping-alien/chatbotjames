@@ -435,7 +435,10 @@ export function renderChatLog(options = {}) {
 
     // Find the index of the last assistant message so we can add the append button
     const sliced = displayHistory.slice(_renderOffset);
-    const lastAssistantRelIdx = sliced.map((m, i) => ({ m, i })).filter(({ m }) => m.role === 'assistant' && !m.hidden && !m.isBackground).map(({ i }) => i).at(-1);
+    // Single-pass search for the last visible assistant message index.
+    const lastAssistantRelIdx = sliced.findLastIndex(
+        m => m.role === 'assistant' && !m.hidden && !m.isBackground
+    );
     sliced.forEach((msg, i) => chatLog.appendChild(createMessageElement(msg, _renderOffset + i, i === lastAssistantRelIdx)));
 
     // Render active game board at the bottom of the chat log ONLY IF a game is currently active in this memory context

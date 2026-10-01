@@ -455,21 +455,24 @@ window.attachmentManager = attachmentManager;
 // ==========================================
 
 function getMessagesWindow(messages) {
-    const background = messages.filter(m => m.isBackground);
-    const regular = messages.filter(m => !m.isBackground);
+    // Single pass: partition background vs regular simultaneously.
+    const background = [], regular = [];
+    for (const m of messages) (m.isBackground ? background : regular).push(m);
 
-    let windowed = regular;
-    if (regular.length > CONFIG.ui.maxHistory) {
-        windowed = regular.slice(-CONFIG.ui.maxHistory);
-    }
-    while (windowed.length > 0 && windowed[0].role !== 'user') {
-        windowed = windowed.slice(1);
-    }
+    // Slice to the window and trim any leading non-user messages.
+    let windowed = regular.length > CONFIG.ui.maxHistory
+        ? regular.slice(-CONFIG.ui.maxHistory)
+        : regular;
+    let start = 0;
+    while (start < windowed.length && windowed[start].role !== 'user') start++;
+    if (start > 0) windowed = windowed.slice(start);
 
-    // Remove old tool results (system messages) to save context tokens.
-    // We only keep tool results if they occur AFTER the most recent user message.
-    const lastUserIdx = windowed.map(m => m.role).lastIndexOf('user');
-    if (lastUserIdx !== -1) {
+    // Single pass: find lastUserIdx AND drop old tool results in one loop.
+    let lastUserIdx = -1;
+    for (let i = windowed.length - 1; i >= 0; i--) {
+        if (windowed[i].role === 'user') { lastUserIdx = i; break; }
+    }
+    if (lastUserIdx > 0) {
         windowed = windowed.filter((m, i) => !(i < lastUserIdx && m.role === 'system'));
     }
 
@@ -478,23 +481,13 @@ function getMessagesWindow(messages) {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
     });
-    windowed = [{
-        role: 'system',
-        content: `[Current date & time]\n${dateTimeStr}`,
-        isBackground: true
-    }, ...windowed];
-
+    const prefix = [{ role: 'system', content: `[Current date & time]\n${dateTimeStr}`, isBackground: true }];
     if (chatManager.userNotes && chatManager.userNotes.length > 0) {
         const notesText = chatManager.userNotes.map(n => `- ${n.text}`).join('\n');
-        const notesMsg = {
-            role: 'system',
-            content: `[About this user]\n${notesText}`,
-            isBackground: true
-        };
-        windowed = [notesMsg, ...windowed];
+        prefix.unshift({ role: 'system', content: `[About this user]\n${notesText}`, isBackground: true });
     }
 
-    return [...windowed, ...background];
+    return [...prefix, ...windowed, ...background];
 }
 
 function sendMessage(preExecutedMove = null) {
