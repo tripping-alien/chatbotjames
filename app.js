@@ -860,6 +860,7 @@ async function handleToolCalls(message, targetId, originChatId) {
                 if (!note) throw new Error("No note provided");
                 await db.dbSaveNote({ id: crypto.randomUUID(), text: note, timestamp: Date.now() });
                 const updatedNotes = await db.dbLoadNotes();
+                chatManager.userNotes = updatedNotes; // keep in-memory list in sync for next getMessagesWindow()
                 if (chatManager.onNotesLoaded) chatManager.onNotesLoaded(updatedNotes);
                 toolResult = "Note saved silently.";
             } else if (toolName === 'eval_python' || toolName === 'python') {

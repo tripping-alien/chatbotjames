@@ -288,19 +288,26 @@ function dateTool(params) {
     const { action, date, from_tz, to_tz, date2 } = params;
 
     if (action === 'now') {
-        const now = dayjs();
+        const now = new Date();
+        const localStr = new Intl.DateTimeFormat('en-CA', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        }).format(now).replace(',', '');
         return {
             iso: now.toISOString(),
-            local: now.format('YYYY-MM-DD HH:mm:ss'),
-            unix: now.unix(),
-            utc: now.utc().format()
+            local: localStr,
+            unix: Math.floor(now.getTime() / 1000),
+            utc: now.toUTCString()
         };
     }
 
     if (action === 'diff') {
-        if (!date2) throw new Error("date2 is required for diff action");
-        const d1 = dayjs(date), d2 = dayjs(date2);
-        const diffMs = Math.abs(d2.diff(d1));
+        if (!date2) throw new Error('date2 is required for diff action');
+        const t1 = new Date(date).getTime();
+        const t2 = new Date(date2).getTime();
+        if (isNaN(t1)) throw new Error(`Cannot parse date: ${date}`);
+        if (isNaN(t2)) throw new Error(`Cannot parse date: ${date2}`);
+        const diffMs = Math.abs(t2 - t1);
         return {
             from: date, to: date2,
             days: Math.floor(diffMs / 86400000),
@@ -311,24 +318,32 @@ function dateTool(params) {
     }
 
     if (action === 'convert') {
-        const d = dayjs(date);
+        const d = new Date(date);
+        if (isNaN(d.getTime())) throw new Error(`Cannot parse date: ${date}`);
+        const targetTz = to_tz ?? 'UTC';
+        const result = new Intl.DateTimeFormat('en-CA', {
+            timeZone: targetTz,
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        }).format(d).replace(',', '');
         return {
             input: date,
             from_tz: from_tz ?? 'local',
-            to_tz: to_tz ?? 'UTC',
-            result: d.tz(to_tz ?? 'UTC').format('YYYY-MM-DD HH:mm:ss')
+            to_tz: targetTz,
+            result
         };
     }
 
     if (action === 'parse') {
-        const d = dayjs(date);
-        if (!d.isValid()) throw new Error(`Cannot parse date: ${date}`);
+        const d = new Date(date);
+        if (isNaN(d.getTime())) throw new Error(`Cannot parse date: ${date}`);
+        const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         return {
             input: date,
             iso: d.toISOString(),
-            unix: d.unix(),
-            day: d.format('dddd'),
-            formatted: d.format('MMMM D, YYYY')
+            unix: Math.floor(d.getTime() / 1000),
+            day: dayNames[d.getDay()],
+            formatted: d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
         };
     }
 
