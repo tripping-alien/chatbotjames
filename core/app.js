@@ -177,8 +177,10 @@ async function simulateCannedResponse(text) {
     playReceiveSound();
 
     // Typewriter effect
+    let accumulated = '';
     for (let i = 0; i < text.length; i++) {
-        sm.queueStreamText(targetId, text[i], { updateDom: true });
+        accumulated += text[i];
+        sm.queueStreamText(targetId, accumulated, { updateDom: true });
         await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
     }
     
