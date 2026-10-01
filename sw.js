@@ -1,4 +1,4 @@
-const CACHE_NAME = 'JAMES-v5.15';
+const CACHE_NAME = 'JAMES-v5.16';
 
 // Only cache truly static assets - NOT app logic files
 const STATIC_ASSETS = [
@@ -35,6 +35,7 @@ const NETWORK_FIRST = [
     'smalltalk.js',
     'smalltalk-extra.js',
     'tools-physics.js',
+    'tools-art.js',
     'ui-manager.js',
     'input-processor.js',
     'attachment-manager.js',

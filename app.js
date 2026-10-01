@@ -151,6 +151,31 @@ window.closeActiveGame = function() {
 // stopping the animation mid-stream.
 let _cannedGenActive = false;
 
+async function simulateCannedResponse(text) {
+    _cannedGenActive = true;
+    uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
+    updateStatusLight('streaming');
+    uiManager.updateStatusText('RESPONDING...');
+
+    chatManager.addMessage(chatManager.currentChatId, 'assistant', '');
+    const id = chatManager.currentChatId;
+
+    playReceiveSound();
+
+    // Typewriter effect
+    for (let i = 0; i < text.length; i++) {
+        chatManager.appendToLastMessage(id, text[i]);
+        await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
+    }
+
+    import('./chat-db.js').then(db => db.dbSaveChat(chatManager.allChats.find(c => c.id === id)));
+    
+    _cannedGenActive = false;
+    uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
+    updateStatusLight('idle');
+    uiManager.updateStatusText('READY');
+}
+
 // ── Bug #3 guard: tracks consecutive invalid-move retries per background chat.
 // Without this a bad AI move causes an unbounded postQuery loop on the worker.
 const _bgChatMoveRetries = new Map(); // chatId → retry count
@@ -1334,14 +1359,18 @@ shareClose?.addEventListener('click', closeShareModal);
 shareOverlay?.addEventListener('click', closeShareModal);
 
 nativeShareBtn?.addEventListener('click', async () => {
-    try {
-        await navigator.share({
-            title: 'JAMES AI Chatbot',
-            text: 'Check out JAMES, a free local AI chatbot that runs entirely in your browser!',
-            url: 'https://chatbotjames.onrender.com/'
-        });
-    } catch (err) {
-        console.log('Share failed or was cancelled.', err);
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'JAMES AI Chatbot',
+                text: 'Check out JAMES, a free local AI chatbot that runs entirely in your browser!',
+                url: 'https://chatbotjames.onrender.com/'
+            });
+        } catch (err) {
+            console.log('Share failed or was cancelled.', err);
+        }
+    } else {
+        alert('Sharing is not supported on this device/browser.');
     }
 });
 
