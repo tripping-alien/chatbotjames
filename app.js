@@ -465,6 +465,17 @@ function getMessagesWindow(messages) {
         windowed = windowed.filter((m, i) => !(i < lastUserIdx && m.role === 'system'));
     }
 
+    const now = new Date();
+    const dateTimeStr = now.toLocaleString(undefined, {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+    });
+    windowed = [{
+        role: 'system',
+        content: `[Current date & time]\n${dateTimeStr}`,
+        isBackground: true
+    }, ...windowed];
+
     if (chatManager.userNotes && chatManager.userNotes.length > 0) {
         const notesText = chatManager.userNotes.map(n => `- ${n.text}`).join('\n');
         const notesMsg = {
