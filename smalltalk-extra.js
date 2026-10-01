@@ -160,6 +160,30 @@ export const extraPatterns = [
             "WebGPU and WebAssembly (WASM) are modern browser technologies that let me run heavy machine learning models directly on your device's hardware, without a server!",
             "They are the magic APIs that give your browser direct access to your GPU and CPU. It's why I can run locally!"
         ]
+    },
+    
+    // ── Nerdy / Sci-Fi / Memes ──────────────────────────────────────────
+    {
+        triggers: ['do a flip', 'do a barrel roll', 'spin', 'flip for me'],
+        responses: [
+            "I'm an AI, I don't have a body... but imagine me doing a sick backflip right now.",
+            "*Does a 360 degree spin in cyberspace*"
+        ]
+    },
+    {
+        triggers: ['up up down down left right left right b a start', 'konami code', 'cheat code', 'god mode'],
+        responses: [
+            "Cheat activated! You now have 30 extra lives.",
+            "God mode enabled. I am now omnipotent (in this browser tab, at least)."
+        ]
+    },
+    {
+        triggers: ['may the force be with you', 'use the force', 'i am your father', 'star wars'],
+        responses: [
+            "And also with you.",
+            "These aren't the droids you're looking for.",
+            "It's a trap!"
+        ]
     }
 ];
 /*

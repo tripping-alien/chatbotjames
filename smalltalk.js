@@ -732,47 +732,6 @@ export class SmallTalkHandler {
                 ],
             },
 
-            // ── Confusion / Clarification ──────────────────────────────────────
-            {
-                triggers: [
-                    'i dont understand', "i don't understand", 'confused', 'what do you mean',
-                    'huh', 'what', 'come again', 'explain', 'can you explain',
-                ],
-                responses: [
-                    "No problem — I can rephrase or go slower. What part should I clarify?",
-                    "Happy to explain differently. Which bit is unclear?",
-                    "Let's try again. What specifically do you want me to unpack?",
-                ],
-            },
-
-            // ── Affirmations / Agreement ───────────────────────────────────────
-            {
-                triggers: [
-                    'ok', 'okay', 'k', 'sure', 'yes', 'yeah', 'yep', 'yup', 'alright',
-                    'sounds good', 'got it', 'understood', 'makes sense', 'cool',
-                    'nice', 'great', 'perfect', 'awesome',
-                ],
-                responses: [
-                    "Great! What next?",
-                    "Awesome. How else can I help?",
-                    "Cool. Ready for the next thing whenever you are.",
-                    "Got it. What's on your mind now?",
-                ],
-            },
-
-            // ── Negation / Disagreement ────────────────────────────────────────
-            {
-                triggers: [
-                    'no', 'nope', 'nah', 'not really', 'i dont think so', "i don't think so",
-                    'never mind', 'nevermind', 'forget it', 'skip',
-                ],
-                responses: [
-                    "Alright, no problem. What else can I do for you?",
-                    "Understood. Let me know if something else comes up.",
-                    "Fair enough. I'm here if you change your mind or need something different.",
-                ],
-            },
-
             // ── Language / Translation ─────────────────────────────────────────
             {
                 triggers: [
@@ -963,51 +922,6 @@ export class SmallTalkHandler {
                 ],
             },
 
-            // ── "How do I" generic ─────────────────────────────────────────────
-            {
-                triggers: [
-                    'how do i', 'how can i', 'how to', 'help me with',
-                ],
-                responses: [
-                    "Sure — give me a bit more detail on what you're trying to do and I'll walk you through it.",
-                    "Happy to help. What's the goal or the problem you're stuck on?",
-                ],
-            },
-
-            // ── Empty / silence ────────────────────────────────────────────────
-            {
-                triggers: [
-                    '...', '…', 'um', 'uh', 'hmm', 'hmmm', 'err', 'erm',
-                ],
-                responses: [
-                    "Take your time. I'm listening.",
-                    "Whenever you're ready — no rush.",
-                    "Still here. What's on your mind?",
-                ],
-            },
-
-            // ── "Same" / "me too" ───────────────────────────────────────────────
-            {
-                triggers: [
-                    'same', 'me too', 'same here', 'likewise', 'ditto',
-                ],
-                responses: [
-                    "Nice to be on the same page! What else is going on?",
-                    "Got it. How can I help from here?",
-                ],
-            },
-
-            // ── "Maybe later" ──────────────────────────────────────────────────
-            {
-                triggers: [
-                    'maybe later', 'not now', 'another time', 'later maybe',
-                ],
-                responses: [
-                    "No problem. I'll be here whenever you're ready.",
-                    "Sounds good. Just ping me when you need something.",
-                ],
-            },
-
             // ── "Who is" generic identity ──────────────────────────────────────
             {
                 triggers: [
@@ -1016,18 +930,6 @@ export class SmallTalkHandler {
                 responses: [
                     "You're talking to JAMES — a private, local AI assistant that runs in your browser.",
                     "This is JAMES, your on-device AI. No servers involved. How can I help?",
-                ],
-            },
-
-            // ── "Repeat" / "say that again" ────────────────────────────────────
-            {
-                triggers: [
-                    'repeat', 'say that again', 'what did you say', 'come again',
-                    'pardon', 'excuse me',
-                ],
-                responses: [
-                    "Of course — which part would you like me to repeat or rephrase?",
-                    "Happy to restate. Just tell me what you need clarified.",
                 ],
             },
 

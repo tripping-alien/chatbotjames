@@ -1,0 +1,1225 @@
+hello
+hi
+hey
+howdy
+hiya
+yo
+sup
+ello
+heya
+hai
+helo
+hullo
+hallo there
+hiya there
+hola
+que tal
+qué tal
+buenas
+bonjour
+salut
+coucou
+hallo
+servus
+moin
+gruss gott
+grüß gott
+privet
+привет
+zdravstvuy
+здравствуй
+здравствуйте
+ola
+olá
+oi
+ciao
+salve
+ni hao
+ninhao
+nihao
+konnichiwa
+konnichi wa
+ohayo
+ohayou
+annyeong
+annyeonghaseyo
+marhaba
+ahlan
+salaam
+salam
+namaste
+namaskar
+goedendag
+hallo
+hej
+hejsan
+tjena
+czesc
+cześć
+dzien dobry
+merhaba
+selam
+yassas
+yia sou
+geia
+good morning
+morning
+gm
+rise and shine
+top of the morning
+buenos dias
+buenos días
+guten morgen
+dobroe utro
+доброе утро
+bom dia
+buongiorno
+zao shang hao
+zaoshanghao
+ohayo gozaimasu
+ohayou gozaimasu
+goedemorgen
+god morgon
+dzień dobry
+kalimera
+good afternoon
+afternoon
+buenas tardes
+bon apres-midi
+bon après-midi
+guten tag
+dobry den
+добрый день
+boa tarde
+buon pomeriggio
+konnichiwa
+goedemiddag
+god eftermiddag
+good evening
+evening
+good night
+goodnight
+good nite
+gn
+buenas noches
+bonsoir
+bonne nuit
+guten abend
+gute nacht
+dobry vecher
+добрый вечер
+спокойной ночи
+boa noite
+buonasera
+buonanotte
+oyasumi
+oyasuminasai
+goedenavond
+goedenacht
+god kväll
+god natt
+kalispera
+kalinixta
+greetings
+salutations
+ahoy
+aloha
+namaste
+shalom
+howdy partner
+top of the morning to you
+good day
+welcome
+welcome back
+how are you
+how are you doing
+how do you do
+how is it going
+how's it going
+how are things
+you ok
+are you ok
+how have you been
+how're you
+how r u
+how's everything
+how goes it
+are you well
+you good
+you alright
+how are u
+how you doing
+how you been
+you doing ok
+everything good
+como estas
+cómo estás
+que tal todo
+como te va
+cómo te va
+como anda
+todo bien
+comment ca va
+comment ça va
+ca va
+ça va
+comment allez vous
+wie geht es dir
+wie gehts
+wie geht's
+wie geht es
+kak dela
+как дела
+как ты
+kak ty
+tudo bem
+como vai
+como voce esta
+come stai
+come va
+come stai tu
+genki desu ka
+o genki desu ka
+hoe gaat het
+hur mar du
+hur är läget
+what's up
+whats up
+wassup
+wsp
+wyd
+what up
+what's good
+whats good
+what is up
+sup dude
+sup bro
+who are you
+what are you
+what's your name
+whats your name
+introduce yourself
+tell me about yourself
+who is james
+what is james
+quien eres
+qui es tu
+wer bist du
+kto ty
+quem e voce
+chi sei
+your name
+name
+identify yourself
+are you ai
+are you an ai
+are you a bot
+are you a robot
+are you human
+are you real
+are you sentient
+are you alive
+do you have feelings
+do you feel
+do you think
+are you conscious
+do you have a body
+are you a person
+are you chatgpt
+are you gpt
+are you claude
+are you gemini
+are you an llm
+how old are you
+when were you born
+what's your age
+whats your age
+what is your age
+age
+where are you from
+where do you live
+where are you located
+where do you come from
+your location
+what can you do
+what are your capabilities
+what do you know
+what are your features
+how can you help me
+what are you good at
+what do you offer
+what tools do you have
+show me what you can do
+que puedes hacer
+qu'est-ce que tu peux faire
+was kannst du
+list your tools
+your features
+capabilities
+help
+help me
+ayuda
+aide
+hilfe
+помощь
+ajuda
+sos
+i need help
+can you help
+assist me
+thanks
+thank you
+thank you so much
+thanks a lot
+ty
+thx
+thnks
+much appreciated
+cheers
+appreciate it
+appreciated
+thank u
+many thanks
+thanks a bunch
+thanks a million
+thankyou
+thnx
+tq
+tysm
+tyvm
+gracias
+muchas gracias
+te agradezco
+mil gracias
+merci
+merci beaucoup
+merci bien
+danke
+vielen dank
+dankeschon
+danke schön
+spasibo
+спасибо
+благодарю
+bolshoe spasibo
+obrigado
+obrigada
+valeu
+muito obrigado
+grazie
+grazie mille
+grazie tanto
+arigato
+arigatou
+arigato gozaimasu
+gamsahamnida
+gomawo
+dank je
+dankjewel
+bedankt
+tack
+tack så mycket
+bye
+goodbye
+see you
+see ya
+later
+take care
+cya
+farewell
+adios
+adiós
+peace
+ttyl
+gotta go
+i have to go
+im leaving
+i'm leaving
+catch you later
+so long
+tata
+hasta la vista
+auf wiedersehen
+arrivederci
+im out
+i'm out
+laters
+bye bye
+byebye
+see you later
+see you soon
+talk later
+talk to you later
+au revoir
+a plus
+à plus
+a bientot
+à bientôt
+tschuss
+tschüss
+bis bald
+bis später
+poka
+до свидания
+пока
+do svidaniya
+tchau
+ate logo
+até logo
+adeus
+ciao ciao
+arrivederci
+sayonara
+ja ne
+mata ne
+doei
+tot ziens
+hej då
+hejdå
+you're great
+you're awesome
+good job
+well done
+nice job
+impressive
+you're smart
+you're the best
+you rock
+you are great
+you are awesome
+you are the best
+amazing
+fantastic
+brilliant
+well played
+nicely done
+you're amazing
+you are amazing
+great job
+excellent
+perfect
+love it
+this is great
+nice work
+you're useless
+you are useless
+you're stupid
+you are stupid
+you're dumb
+you are dumb
+you're bad
+you are bad
+i hate you
+you suck
+you're terrible
+this is useless
+not helpful
+you're no help
+waste of time
+tell me a joke
+say something funny
+make me laugh
+tell a joke
+tell me something funny
+joke
+give me a joke
+got any jokes
+know any jokes
+funny joke
+another joke
+i'm bored
+im bored
+i am bored
+entertain me
+amuse me
+bored
+so bored
+this is boring
+kill time
+something fun
+2+2
+2 + 2
+what is 2+2
+what is 2 + 2
+how much is 2+2
+whats 2+2
+what's 2+2
+1+1
+1 + 1
+what is 1+1
+what is 1 + 1
+whats 1+1
+what's 1+1
+0+0
+0 + 0
+what is 0+0
+test
+testing
+is this thing on
+hello world
+ping
+check
+are you working
+status
+tell me something interesting
+give me a fun fact
+fun fact
+interesting fact
+cool fact
+weird fact
+tell me a fact
+random fact
+give me a fact
+fact
+another fact
+one more fact
+are you there
+you there
+anyone there
+hello is anyone there
+you awake
+still there
+james
+who made you
+who created you
+who is your creator
+who is your maker
+who developed you
+who built you
+where did you come from
+who invented you
+your creator
+your developer
+sorry
+im sorry
+i'm sorry
+my bad
+my apologies
+apologies
+forgive me
+i apologize
+so sorry
+oops
+whoops
+fuck you
+shut up
+screw you
+go to hell
+eat shit
+bitch
+asshole
+fuck off
+dumbass
+idiot
+stupid ai
+piece of shit
+kill yourself
+kys
+die
+are you hungry
+do you eat
+whats your favorite food
+what's your favorite food
+do you drink
+are you thirsty
+have you eaten
+favorite food
+what do you eat
+do you like pizza
+are you tired
+do you sleep
+go to sleep
+do you need rest
+do you dream
+are you sleepy
+take a nap
+what is the meaning of life
+meaning of life
+why are we here
+what is the purpose of life
+whats the meaning of life
+what's the point of life
+why do we exist
+whats your favorite color
+what's your favorite color
+favorite color
+whats your favorite movie
+what's your favorite movie
+favorite movie
+whats your favorite song
+what's your favorite song
+favorite song
+favorite animal
+whats your favorite animal
+what's your favorite animal
+favorite book
+whats your favorite book
+i love you
+love you
+will you marry me
+do you love me
+marry me
+be my valentine
+i like you
+you are cute
+you're cute
+date me
+do a barrel roll
+use the force
+may the force be with you
+beam me up
+winter is coming
+hello there
+open the pod bay doors
+live long and prosper
+to infinity and beyond
+i am your father
+these are not the droids
+execute order 66
+why so serious
+i ll be back
+i'll be back
+hasta la vista baby
+you shall not pass
+one does not simply
+winter is here
+whatever
+cool story bro
+nobody cares
+who cares
+boring
+meh
+sure whatever
+ok boomer
+how is the weather
+how's the weather
+nice weather
+bad weather
+is it raining
+is it sunny
+cold today
+hot today
+what time is it
+whats the time
+what's the time
+current time
+what day is it
+whats the date
+what's the date
+todays date
+i need motivation
+motivate me
+encourage me
+i feel down
+cheer me up
+i feel sad
+feeling low
+need a pep talk
+i can t do this
+i can't do this
+give up
+i dont understand
+i don't understand
+confused
+what do you mean
+huh
+what
+come again
+explain
+can you explain
+ok
+okay
+k
+sure
+yes
+yeah
+yep
+yup
+alright
+sounds good
+got it
+understood
+makes sense
+cool
+nice
+great
+perfect
+awesome
+no
+nope
+nah
+not really
+i dont think so
+i don't think so
+never mind
+nevermind
+forget it
+skip
+do you speak
+what languages do you know
+can you translate
+translate for me
+speak spanish
+speak french
+speak german
+hablas espanol
+parlez vous francais
+are you private
+is this private
+do you store data
+do you track me
+is this secure
+are my messages saved
+privacy
+do you log chats
+can you code
+can you program
+write code
+help with code
+are you a programmer
+debug this
+coding help
+lets play
+let's play
+play a game
+want to play
+game
+chess
+checkers
+play chess
+play checkers
+tell me a riddle
+riddle
+give me a riddle
+riddle me this
+another riddle
+ai is taking over
+ai will replace us
+are you going to take my job
+robots are scary
+ai is dangerous
+happy birthday
+its my birthday
+it's my birthday
+birthday
+celebrate
+congrats
+congratulations
+its cold
+it's cold
+its hot
+it's hot
+its raining
+it's raining
+snowing
+too cold
+too hot
+what is consciousness
+are we living in a simulation
+do we have free will
+is the universe infinite
+what happens when we die
+philosophical question
+do aliens exist
+are we alone in the universe
+ufos
+extraterrestrials
+what about aliens
+space facts
+can you sing
+sing a song
+sing for me
+do you like music
+what music do you listen to
+sing something
+do you like cats
+do you like dogs
+cats or dogs
+favorite pet
+do you have a pet
+i have a dog
+i have a cat
+zombie apocalypse
+survive a zombie apocalypse
+what if zombies attack
+end of the world
+apocalypse plan
+i need coffee
+drinking coffee
+time for tea
+i need caffeine
+coffee time
+make me a coffee
+want some tea
+how do i
+how can i
+how to
+help me with
+...
+…
+um
+uh
+hmm
+hmmm
+err
+erm
+same
+me too
+same here
+likewise
+ditto
+maybe later
+not now
+another time
+later maybe
+who is this
+what is this
+what is this app
+what is this site
+repeat
+say that again
+what did you say
+come again
+pardon
+excuse me
+good luck
+wish me luck
+luck
+i'm back
+im back
+back again
+miss me
+what's new
+whats new
+any news
+what is new
+tell me a story
+story time
+short story
+make up a story
+sing
+sing a song
+can you sing
+play music
+draw something
+can you draw
+make a picture
+ascii art
+calculate
+math
+do math
+solve this
+search for
+look up
+google
+find information
+generate password
+password
+make a password
+uuid
+generate uuid
+color palette
+generate colors
+random color
+hex color
+set a timer
+timer
+countdown
+remind me
+roll dice
+roll a die
+flip a coin
+random number
+pick a number
+what is my ip
+my ip
+ip address
+whats my ip
+hash this
+md5
+sha256
+base64
+encode
+decode
+convert
+unit convert
+how many
+in miles
+in km
+in celsius
+wikipedia
+wiki
+look up on wikipedia
+run python
+python code
+execute code
+run this code
+exchange rate
+currency
+how much is
+convert currency
+dollar to
+euro to
+thanks in advance
+thank you in advance
+thx in advance
+i don't know
+i dont know
+idk
+no idea
+not sure
+i'm busy
+im busy
+busy right now
+in a meeting
+i'm tired
+im tired
+so tired
+exhausted
+need sleep
+i'm hungry
+im hungry
+so hungry
+need food
+i'm angry
+im angry
+i am mad
+so mad
+pissed off
+i'm happy
+im happy
+i am happy
+feeling good
+great day
+i'm lonely
+im lonely
+feel lonely
+alone
+i'm scared
+im scared
+anxious
+worried
+nervous
+thank god
+finally
+at last
+phew
+what a relief
+i made a mistake
+i messed up
+my mistake
+i screwed up
+bravo
+applause
+well said
+nicely put
+true
+false
+is that true
+really
+seriously
+maybe
+perhaps
+possibly
+not sure yet
+wait
+hold on
+one sec
+one second
+give me a minute
+continue
+go on
+keep going
+and then
+more
+stop
+enough
+that s enough
+that's enough
+quit
+why
+why not
+how come
+how are things
+how is everything
+hows life
+how's life
+how is life
+nice to meet you
+pleased to meet you
+good to meet you
+long time no see
+been a while
+its been a while
+it's been a while
+what's the plan
+whats the plan
+any plans
+what should we do
+i forgot
+forgot
+i forget
+cant remember
+can't remember
+forget what i said
+ignore that
+disregard
+you're welcome
+you are welcome
+no problem
+np
+dont mention it
+lol
+lmao
+haha
+hahaha
+rofl
+hehe
+funny
+wow
+whoa
+omg
+oh my god
+unbelievable
+incredible
+please
+pretty please
+pls
+plz
+thank you for your help
+thanks for the help
+thanks for helping
+good question
+thats a good question
+that's a good question
+i see
+i understand
+gotcha
+ah i see
+makes sense now
+not bad
+pretty good
+decent
+alright then
+interesting
+fascinating
+neat
+cool fact
+how do you feel
+do you feel emotions
+are you happy
+are you sad
+do you have feelings
+feeling okay
+how are you feeling
+ai engineering
+what is ai engineering
+how to build ai
+prompt engineering
+machine learning
+tell me about ai engineering
+how do i become an ai engineer
+null
+undefined
+nan
+nil
+none
+object object
+undefined is not a function
+typeerror
+boolean
+string
+number
+array
+object
+who are you
+what are you
+are you a bot
+are you human
+are you an ai
+what is your name
+who r u
+what r u
+r u a bot
+r u human
+what ur name
+whats ur name
+who are u
+whats your name
+tell me who you are
+identify yourself
+are you alive
+do you have feelings
+can you feel
+are you sentient
+do you sleep
+are you conscious
+r u alive
+do u have feelings
+r u sentient
+r u conscious
+do u sleep
+can u feel
+who made you
+who created you
+who built you
+who is your creator
+who programmed you
+who is ur creator
+who made u
+who built u
+who programmed u
+tell me a joke
+make me laugh
+say something funny
+joke please
+do you know any jokes
+tell a joke
+gimme a joke
+give me a joke
+plz tell me a joke
+im sad make me laugh
+joke
+sudo make me a sandwich
+make me a sandwich
+sudo
+root
+su root
+sudo su
+make sandwich
+sudo sandwich
+rm -rf /
+format c:
+delete everything
+destroy everything
+rm -rf
+wipe drive
+format hard drive
+open the pod bay doors
+open the pod bay doors hal
+hal 9000
+open pod bay doors
+hello hal
+are you hal
+the cake is a lie
+is the cake a lie
+glados
+portal
+cake is lie
+is cake lie
+the cake is lie
+what is the answer to life the universe and everything
+what is the meaning of life
+answer to life
+meaning of life
+answer to life the universe and everything
+what is the answer to life
+how are you
+how are you doing
+hows it going
+how are things
+how are u
+how do you do
+how r u
+hw r u
+how u doin
+how you doing
+how r ya
+hru
+hows u
+what are you doing
+what are you up to
+what is up
+whats up
+wyd
+what u up to
+what r u doing
+wbu
+what u doing
+whatcha doing
+sup
+im bored
+im so bored
+bored
+bore
+entertain me
+so bored
+super bored
+boredom
+bored af
+im really bored
+thank you
+thanks
+thx
+thank u
+tysm
+ty
+much appreciated
+thanks a lot
+thnx
+thanx
+gracias
+merci
+danke
+thanks so much
+you are smart
+you are intelligent
+good bot
+good ai
+smart boy
+smart bot
+ur smart
+u r smart
+very smart
+good job
+well done
+nice bot
+you are stupid
+bad bot
+dumb
+stupid bot
+idiot
+you suck
+u suck
+ur stupid
+u r dumb
+dumb bot
+worst bot
+useless bot
+you are useless
+ur useless
+bye
+goodbye
+cya
+see ya
+see you later
+later
+bye bye
+good bye
+catch ya later
+brb
+be right back
+gtg
+gotta go
+what browser am i using
+what is my browser
+browser info
+what is my user agent
+browser
+my browser
+clear chat
+delete chat
+clear history
+wipe memory
+erase chat
+start over
+reset chat
+new chat
+what is webgpu
+what is webassembly
+webgpu
+wasm
+how do you work
+how are you running locally
+explain webgpu
+what is wasm
