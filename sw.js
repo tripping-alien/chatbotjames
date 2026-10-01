@@ -1,4 +1,4 @@
-const CACHE_NAME = 'JAMES-v5.14';
+const CACHE_NAME = 'JAMES-v5.15';
 
 // Only cache truly static assets - NOT app logic files
 const STATIC_ASSETS = [
@@ -33,6 +33,8 @@ const NETWORK_FIRST = [
     'python-worker.js',
     'orama.js',
     'smalltalk.js',
+    'smalltalk-extra.js',
+    'tools-physics.js',
     'ui-manager.js',
     'input-processor.js',
     'attachment-manager.js',
@@ -122,8 +124,4 @@ self.addEventListener('fetch', (event) => {
         })
     );
 });
-
-
-
-
 

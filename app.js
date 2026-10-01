@@ -1,6 +1,14 @@
-import dayjs from 'https://esm.sh/dayjs@1.11.10';
-import relativeTime from 'https://esm.sh/dayjs@1.11.10/plugin/relativeTime.js';
-dayjs.extend(relativeTime);
+// Native relative-time formatter — replaces the esm.sh dayjs import (saves ~14 KB + 1 network request)
+function _fromNow(timestamp) {
+    const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+    const diff = timestamp - Date.now();
+    const abs = Math.abs(diff);
+    if (abs < 60_000)     return rtf.format(Math.round(diff / 1000), 'second');
+    if (abs < 3_600_000)  return rtf.format(Math.round(diff / 60_000), 'minute');
+    if (abs < 86_400_000) return rtf.format(Math.round(diff / 3_600_000), 'hour');
+    if (abs < 2_592_000_000) return rtf.format(Math.round(diff / 86_400_000), 'day');
+    return rtf.format(Math.round(diff / 2_592_000_000), 'month');
+}
 
 import { globalState } from './global-state.js';
 import { chatManager } from './chat-manager.js';
@@ -293,7 +301,7 @@ workerController.onComplete = (chatId, targetId, message) => {
             }
             chatManager.persistCurrentChat(() => gameController.getGameState());
         }
-    } else if (chatId !== chatManager.currentChatId && message) {
+    } else if (message) {
         const bgChat = chatManager.allChats.find(c => c.id === chatId);
         if (bgChat) {
             bgChat.messages.push({ role: 'assistant', content: message });
@@ -1080,7 +1088,6 @@ function setupEventListeners() {
     }
 
     document.getElementById('stopButton')?.addEventListener('click', handleStopGeneration);
-    document.getElementById('stop-button')?.addEventListener('click', handleStopGeneration);
 }
 
 // Bootstrap
@@ -1217,7 +1224,7 @@ function _updateNotesUI(notes) {
         <div class="note-item" style="padding:0.75rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
             <div style="flex:1;">
                 <div style="font-size:0.9rem;line-height:1.4;">${escapeHTML(note.text)}</div>
-                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;">Saved ${dayjs(note.timestamp).fromNow()}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;">Saved ${_fromNow(note.timestamp)}</div>
             </div>
             <button class="icon-btn" onclick="window._deleteNote('${note.id}')" title="Delete Note" style="padding:4px;color:var(--error-color);">🗑️</button>
         </div>
@@ -1350,14 +1357,22 @@ setTimeout(() => {
         const diff = now - parseInt(lastVisit, 10);
         if (diff > 7 * 24 * 60 * 60 * 1000) { // 7 days in ms
             const toast = document.createElement('div');
-            toast.className = 'model-panel notes-panel';
-            toast.style.width = 'min(400px, 90vw)';
-            toast.style.padding = '30px 20px';
-            toast.style.textAlign = 'center';
-            toast.style.zIndex = '9999';
-            toast.style.bottom = '20px';
-            toast.style.borderRadius = '16px';
-            toast.style.borderBottom = '1px solid var(--border-light)';
+            toast.style.cssText = [
+                'position:fixed',
+                'bottom:20px',
+                'left:50%',
+                'transform:translateX(-50%) translateY(60px)',
+                'width:min(400px,90vw)',
+                'background:var(--panel-bg,#1e2030)',
+                'border:1px solid var(--border-color,#3a3f5c)',
+                'border-radius:16px',
+                'padding:30px 20px',
+                'text-align:center',
+                'z-index:9999',
+                'box-shadow:0 8px 32px rgba(0,0,0,.4)',
+                'opacity:0',
+                'transition:opacity .35s ease, transform .35s ease',
+            ].join(';');
             toast.innerHTML = `
                 <div style="font-size: 3.5rem; margin-bottom: 15px;">👋</div>
                 <h3 style="margin: 0 0 10px 0; color: var(--accent-color); font-size: 1.5rem;">Long time no see!</h3>
@@ -1366,11 +1381,13 @@ setTimeout(() => {
             document.body.appendChild(toast);
             
             requestAnimationFrame(() => {
-                toast.classList.add('open');
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
             });
 
             setTimeout(() => {
-                toast.classList.remove('open');
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(60px)';
                 setTimeout(() => toast.remove(), 400);
             }, 6000);
         }
