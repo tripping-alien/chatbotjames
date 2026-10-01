@@ -25,6 +25,10 @@ export const MODEL_PRESETS = [
 ];
 
 export function rankAutoPresets(gpuInfo, ramGB, isConstrained, wasmCaps = null) {
+    if (isConstrained) {
+        return [MODEL_PRESETS.find(p => p.id === 'lite-smollm-135m-q4')];
+    }
+
     const { hasGpu } = gpuInfo;
     const gpuBudgetMB = hasGpu ? (ramGB * 1024 * 0.70) : 0;
     const cpuBudgetFactor = (wasmCaps && wasmCaps.memory64) ? 0.60 : 0.40;
