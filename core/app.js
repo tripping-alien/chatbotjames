@@ -165,8 +165,15 @@ async function simulateCannedResponse(text) {
 
     const chatId = chatManager.currentChatId;
     const targetId = getNextTargetId(chatId);
+    
+    // Register generation so updateLiveBubble doesn't think this is an orphaned ghost stream
+    if (window.workerController) {
+        window.workerController.activeGenerations.set(chatId, targetId);
+    }
+    
     const sm = await import('./stream-manager.js');
 
+    updateLiveBubble('...', targetId);
     playReceiveSound();
 
     // Typewriter effect
