@@ -359,6 +359,7 @@
                 <a class="sidebar-link" href="#tools">Tool Reference</a>
                 <a class="sidebar-link sub" href="#tools-info">Info Tools</a>
                 <a class="sidebar-link sub" href="#tools-util">Utility Tools</a>
+                <a class="sidebar-link sub" href="#tools-science">Scientific Tools</a>
                 <a class="sidebar-link sub" href="#tools-device">Device Tools</a>
                 <a class="sidebar-link sub" href="#tools-games">Games</a>
             </div>
@@ -643,6 +644,37 @@ query: browser inference</pre>
                             <p>Saves a personal fact about the user for future personalization. Runs silently and stores data in encrypted IndexedDB.</p>
                             <pre>write_note
 note: User's name is Alex and they are 28 years old.</pre>
+                        </div>
+                    </div>
+                </div>
+                <h3 id="tools-science">Scientific Tools</h3>
+                <div class="tool-grid">
+                    <div class="tool-card"><span class="tool-name">physics</span>
+                        <div class="tool-body">
+                            <p>Calculates particle physics formulas (e.g. Compton scattering, de Broglie wavelength).</p>
+                            <pre>physics
+mode: compton, angle_deg: 90</pre>
+                        </div>
+                    </div>
+                    <div class="tool-card"><span class="tool-name">relativity</span>
+                        <div class="tool-body">
+                            <p>Calculates special and general relativity parameters (time dilation, length contraction).</p>
+                            <pre>relativity
+mode: time_dilation, v: 200000000</pre>
+                        </div>
+                    </div>
+                    <div class="tool-card"><span class="tool-name">linalg</span>
+                        <div class="tool-body">
+                            <p>Matrix solver for linear algebra (determinant, eigenvalues, inverse, systems of equations).</p>
+                            <pre>linalg
+mode: eigenvalues, A: [[1,2],[3,4]]</pre>
+                        </div>
+                    </div>
+                    <div class="tool-card"><span class="tool-name">diffeq</span>
+                        <div class="tool-body">
+                            <p>Solves differential equations numerically or algebraically.</p>
+                            <pre>diffeq
+mode: euler, expr: x*y, x0: 0, y0: 1, xf: 1</pre>
                         </div>
                     </div>
                 </div>
