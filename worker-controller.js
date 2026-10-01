@@ -35,6 +35,9 @@ class WorkerController {
             console.error('WORKER ERROR:', e);
             if (this.onWorkerStatus) this.onWorkerStatus('error', 'Worker failed to load: ' + e.message, e);
         };
+        this.toolsWorker.onerror = (e) => {
+            console.error('TOOLS-WORKER ERROR (this will cause all tool RPCs to time out):', e);
+        };
 
         const _lastPreset = safeLocalStorage ? safeLocalStorage.getItem('james-last-preset-id') : null;
         this.worker.postMessage({ type: 'init', lastPresetId: _lastPreset || null, screenWidth: window.screen?.width, maxTouchPoints: navigator.maxTouchPoints });
