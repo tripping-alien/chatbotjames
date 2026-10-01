@@ -528,7 +528,7 @@ function getMessagesWindow(messages) {
     const prefix = [{ role: 'system', content: `[Current date & time]\n${dateTimeStr}`, isBackground: true }];
     if (chatManager.userNotes && chatManager.userNotes.length > 0) {
         const notesText = chatManager.userNotes.map(n => `- ${n.text}`).join('\n');
-        prefix.unshift({ role: 'system', content: `[About this user]\n${notesText}`, isBackground: true });
+        prefix.unshift({ role: 'system', content: `[System Memory: These are notes about the user that you have previously saved. Use them to answer questions.]\n${notesText}`, isBackground: true });
     }
 
     return [...prefix, ...windowed, ...background];
