@@ -32,6 +32,7 @@ AVAILABLE TOOLS:
 - python_reset(): Wipe all user-defined variables and imports from the Python environment.
 - random(mode: string, count?: number, sides?: number, min?: number, max?: number): "coin", "dice", or "range".
 - ascii_art(text: string, font: string): Generate ASCII text banners.
+- sprite(seed?: string, grid_size?: number, symmetry?: string, color?: string, bg_color?: string): Generate procedural retro pixel art avatars (returns a markdown image).
 - start_game(game: string, ai_color: string): "chess" or "checkers". MANDATORY when user asks to play.
 - make_move(move: string): SAN ("e4") for chess, numeric ("11-15") for checkers.
 - write_note(note: string): Silently save user facts.

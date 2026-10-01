@@ -2,6 +2,7 @@ import { create as oramaCreate, insert as oramaInsert, search as oramaSearch } f
 import { performWebSearch } from './tools-search.js';
 import { evalMath } from './tool-router.js';
 import { particlePhysics, relativityCalc, linAlg, diffEq } from './tools-physics.js';
+import { generateSprite } from './tools-art.js';
 // dayjs removed — using native Intl.DateTimeFormat (zero-dependency, works in all Workers)
 
 
@@ -818,6 +819,7 @@ const TOOL_HANDLERS = {
     ip: ipTool,
     ascii_art: asciiArtTool,
     fetch_page: fetchPageTool,
+    sprite: generateSprite,
 
     // ── Scientific calculators ───────────────────────────────────────────────
     physics:    (p) => particlePhysics(p),
