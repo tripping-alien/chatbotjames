@@ -864,12 +864,45 @@ async function handleToolCalls(message, targetId, originChatId) {
                 if (chatManager.onNotesLoaded) chatManager.onNotesLoaded(updatedNotes);
                 toolResult = "Note saved silently.";
             } else if (toolName === 'eval_python' || toolName === 'python') {
-                const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'run', code: params.code }, 30000);
-                // python-worker returns { status, execId, stdout, result, figures }
-                toolResult = pyResp.stdout || pyResp.result || '(no output)';
+                const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'run', code: params.code }, 60000);
+                // Combine stdout + expression result so the AI sees everything
+                const parts = [];
+                if (pyResp.stdout && pyResp.stdout.trim()) parts.push(pyResp.stdout.trim());
+                if (pyResp.result && pyResp.result.trim() && pyResp.result.trim() !== 'None') parts.push(`=> ${pyResp.result.trim()}`);
+                toolResult = parts.length > 0 ? parts.join('\n') : '(no output)';
                 if (pyResp.figures && pyResp.figures.length > 0) {
-                    toolResult += '\n[Matplotlib figures generated: ' + pyResp.figures.length + ']';
+                    // Embed figures as data URIs so the AI knows they were generated
+                    toolResult += `\n[${pyResp.figures.length} Matplotlib figure(s) generated and displayed]`;
+                    // Render figures inline in the chat log
+                    const chatLog = document.getElementById('chatLog');
+                    if (chatLog && isActiveChat) {
+                        const figWrap = document.createElement('div');
+                        figWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;padding:8px;background:rgba(0,0,0,0.2);border-radius:6px;margin:4px 0;';
+                        pyResp.figures.forEach((b64, i) => {
+                            const img = document.createElement('img');
+                            img.src = `data:image/png;base64,${b64}`;
+                            img.alt = `Figure ${i + 1}`;
+                            img.style.cssText = 'max-width:100%;border-radius:4px;border:1px solid rgba(255,255,255,0.08);';
+                            figWrap.appendChild(img);
+                        });
+                        const gameBoardWrap = chatLog.querySelector('.game-board-wrap');
+                        if (gameBoardWrap) chatLog.insertBefore(figWrap, gameBoardWrap);
+                        else chatLog.appendChild(figWrap);
+                        chatLog.scrollTop = chatLog.scrollHeight;
+                    }
                 }
+            } else if (toolName === 'pip_install') {
+                // Install one or more packages into the live Pyodide session via micropip
+                const pkgs = params.packages
+                    ? (Array.isArray(params.packages) ? params.packages : String(params.packages).split(',').map(s => s.trim()).filter(Boolean))
+                    : (params.package ? [params.package] : []);
+                if (pkgs.length === 0) throw new Error('pip_install requires a packages parameter');
+                const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'install', packages: pkgs }, 120000);
+                toolResult = `Installed: ${pkgs.join(', ')}. You can now import them.`;
+            } else if (toolName === 'python_reset') {
+                // Wipe all user-defined variables / imports from the Pyodide namespace
+                await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'reset' }, 15000);
+                toolResult = 'Python environment reset. All variables and imports cleared.';
             } else if (toolName === 'location') {
                 const toolsBridge = await import('./tools-bridge.js');
                 const loc = await toolsBridge.getLocation();
