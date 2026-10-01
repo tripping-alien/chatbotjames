@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { updateLiveBubble } from './message-renderer.js';
+import { updateLiveBubble, updateLiveBubbleAppend } from './message-renderer.js';
 
 // ─── Character-by-character Streaming Animation ──────────────────────────────
 export const streamQueues = new Map();
@@ -83,8 +83,9 @@ export function drainStreamQueue(targetId) {
     if (backlog > 300) charsToType = 15;
 
     // Advance characters
-    state.displayed = state.pending.slice(0, state.displayed.length + charsToType);
-    updateLiveBubble(state.displayed, targetId);
+    const newChars = state.pending.slice(state.displayed.length, state.displayed.length + charsToType);
+    state.displayed += newChars;
+    updateLiveBubbleAppend(newChars, targetId);
 
     // Speed is controlled by CONFIG.ui.streamRenderIntervalMs (default 15 ms)
     state.timeoutId = setTimeout(() => drainStreamQueue(targetId), CONFIG.ui.streamRenderIntervalMs);

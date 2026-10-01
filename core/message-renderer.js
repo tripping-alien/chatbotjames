@@ -272,6 +272,28 @@ export function updateLiveBubble(text, targetId, force = false) {
     chatLog.scrollTop = chatLog.scrollHeight;
 }
 
+export function updateLiveBubbleAppend(newChars, targetId) {
+    const chatLog = document.getElementById('chatLog');
+    const bubble = document.getElementById(`bubble-${targetId}`);
+    if (!bubble || !chatLog) return;
+    
+    // If the typing indicator is still there, clear it out first
+    const indicator = bubble.querySelector('.typing-indicator');
+    if (indicator) {
+        bubble.innerHTML = '';
+    }
+    
+    // Create an animated span for the new characters
+    const span = document.createElement('span');
+    span.textContent = newChars;
+    span.className = 'fade-in-char';
+    // Ensure whitespace formatting is preserved during raw streaming
+    span.style.whiteSpace = 'pre-wrap';
+    bubble.appendChild(span);
+    
+    chatLog.scrollTop = chatLog.scrollHeight;
+}
+
 export function appendErrorToChat(errorMessage) {
     const chatLog = document.getElementById('chatLog');
     if (!chatLog) return;
