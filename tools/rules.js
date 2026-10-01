@@ -1,4 +1,4 @@
-import { safeInt, cleanTail } from './router.js';
+import { safeInt, cleanTail } from './utils.js';
 import { RULES as firstRules } from './rules-part1.js';
 
 export const RULES = [

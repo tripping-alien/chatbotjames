@@ -7,4 +7,4 @@ export {
     resolveTimezone,
     resolveUnit
 } from './tools/maps.js';
-export { cleanTail, safeInt, evalMath } from './router.js';
+export { cleanTail, safeInt, evalMath } from './utils.js';

@@ -1,5 +1,5 @@
 import { resolveCurrency, resolveTimezone } from './maps.js';
-import { cleanTail, evalMath } from './router.js';
+import { cleanTail, evalMath } from './utils.js';
 
 export const RULES = [
     // HELP

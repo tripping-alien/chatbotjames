@@ -1,5 +1,5 @@
 import { resolveUnit } from './maps.js';
-import { safeInt, cleanTail } from './router.js';
+import { safeInt, cleanTail } from './utils.js';
 
 export const RULES = [
     // CONVERT
