@@ -1,12 +1,7 @@
 import { create as oramaCreate, insert as oramaInsert, search as oramaSearch } from './orama.js';
 import { performWebSearch } from './tools-search.js';
 import { evalMath } from './tool-router.js';
-import dayjs from 'https://esm.sh/dayjs@1.11.10';
-import utc from 'https://esm.sh/dayjs@1.11.10/plugin/utc.js';
-import timezone from 'https://esm.sh/dayjs@1.11.10/plugin/timezone.js';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+// dayjs removed — using native Intl.DateTimeFormat (zero-dependency, works in all Workers)
 
 
 // tools-worker.js — handles all non-Python tool execution for JAMES
@@ -176,12 +171,20 @@ async function getCurrency(params) {
     };
 }
 
-// ── World time (Native Browser API -> dayjs) ───────────────────────────────────────
-async function getTime(params) {
+// ── World time (Native Intl.DateTimeFormat — zero external dependency) ───────────
+function getTime(params) {
     const { timezone } = params;
     try {
-        const d = dayjs().tz(timezone);
-        return { timezone, time: d.format('hh:mm A'), date: d.format('dddd, MMMM D, YYYY') };
+        const now = new Date();
+        const timeFmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone,
+            hour: '2-digit', minute: '2-digit', hour12: true
+        });
+        const dateFmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone,
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        return { timezone, time: timeFmt.format(now), date: dateFmt.format(now) };
     } catch {
         throw new Error(`Unknown timezone: ${timezone}`);
     }
