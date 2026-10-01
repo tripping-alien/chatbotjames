@@ -6,5 +6,5 @@ export {
     resolveCurrency,
     resolveTimezone,
     resolveUnit
-} from './tools/maps.js';
+} from './maps.js';
 export { cleanTail, safeInt, evalMath } from './utils.js';

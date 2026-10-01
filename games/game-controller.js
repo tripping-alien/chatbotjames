@@ -5,7 +5,7 @@ import {
     playGameWinSound,
     playGameLoseSound,
     playGameBuffSound
-} from './audio-wakelock.js';
+} from '../core/audio-wakelock.js';
 
 class GameController {
     constructor() {
