@@ -5,6 +5,7 @@ class ChatManager {
     constructor() {
         this.chatHistory = [];
         this.allChats = [];
+        this.chatMap = new Map();
         this.currentChatId = null;
         this.userNotes = [];
 
@@ -19,6 +20,7 @@ class ChatManager {
         if (migrateFromLocalStorage) await migrateFromLocalStorage();
         
         this.allChats = await dbLoadAllChats();
+        this.chatMap = new Map(this.allChats.map(c => [c.id, c]));
         if (this.allChats.length > 0 && this.onChatListUpdated) {
             this.onChatListUpdated();
         }
@@ -31,7 +33,7 @@ class ChatManager {
 
     persistCurrentChat(getGameStateCallback) {
         if (!this.currentChatId) return;
-        const chat = this.allChats.find(c => c.id === this.currentChatId);
+        const chat = this.chatMap.get(this.currentChatId);
         if (chat) {
             chat.messages = [...this.chatHistory];
             if (getGameStateCallback) {
@@ -44,7 +46,7 @@ class ChatManager {
     }
 
     loadChatHistory(chatId, getGameStateCallback, restoreGameStateCallback, safeLocalStorage) {
-        const chat = this.allChats.find(c => c.id === chatId);
+        const chat = this.chatMap.get(chatId);
         if (!chat) return;
 
         this.persistCurrentChat(getGameStateCallback);
@@ -78,6 +80,7 @@ class ChatManager {
         this.currentChatId = newChat.id;
         if (safeLocalStorage) safeLocalStorage.setItem('james-last-chat-id', this.currentChatId);
         this.allChats.unshift(newChat);
+        this.chatMap.set(newChat.id, newChat);
         dbSaveChat(newChat);
 
         if (restoreGameStateCallback) {
@@ -90,6 +93,7 @@ class ChatManager {
 
     deleteChat(chatId, safeLocalStorage, getGameStateCallback, restoreGameStateCallback, getWelcomeMessageCallback) {
         this.allChats = this.allChats.filter(c => c.id !== chatId);
+        this.chatMap.delete(chatId);
         dbDeleteChat(chatId);
 
         if (chatId === this.currentChatId) {
@@ -104,7 +108,7 @@ class ChatManager {
     }
 
     updateChatName(chatId, titleSource) {
-        const chat = this.allChats.find(c => c.id === chatId);
+        const chat = this.chatMap.get(chatId);
         if (chat && chat.name === 'New Chat') {
             chat.name = titleSource.substring(0, 30) + (titleSource.length > 30 ? '...' : '');
             dbSaveChat(chat);

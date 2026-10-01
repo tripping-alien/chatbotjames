@@ -172,7 +172,7 @@ async function simulateCannedResponse(text) {
     sm.flushStreamQueue(targetId);
     chatManager.chatHistory.push({ role: 'assistant', content: text });
 
-    import('./chat-db.js').then(db => db.dbSaveChat(chatManager.allChats.find(c => c.id === chatId)));
+    import('./chat-db.js').then(db => db.dbSaveChat(chatManager.chatMap.get(chatId)));
     
     _cannedGenActive = false;
     uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
@@ -202,7 +202,7 @@ workerController.onWorkerStatus = (status, message, e) => {
             if (errChatId) workerController.activeGenerations.delete(errChatId);
             const errText = message || 'An unknown worker error occurred.';
             if (errChatId && errChatId !== chatManager.currentChatId) {
-                const bgChat = chatManager.allChats.find(c => c.id === errChatId);
+                const bgChat = chatManager.chatMap.get(errChatId);
                 if (bgChat) {
                     bgChat.messages.push({ role: 'system', content: `⚠️ Error: ${errText}` });
                     import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
@@ -331,7 +331,7 @@ workerController.onComplete = (chatId, targetId, message) => {
             chatManager.persistCurrentChat(() => gameController.getGameState());
         }
     } else if (message) {
-        const bgChat = chatManager.allChats.find(c => c.id === chatId);
+        const bgChat = chatManager.chatMap.get(chatId);
         if (bgChat) {
             bgChat.messages.push({ role: 'assistant', content: message });
             
@@ -401,7 +401,7 @@ workerController.onAborted = (chatId, targetId, message) => {
         
         chatManager.persistCurrentChat(() => gameController.getGameState());
     } else if (chatId !== chatManager.currentChatId && message) {
-        const bgChat = chatManager.allChats.find(c => c.id === chatId);
+        const bgChat = chatManager.chatMap.get(chatId);
         if (bgChat) {
             bgChat.messages.push({ role: 'assistant', content: message });
             
@@ -707,7 +707,7 @@ async function handleToolCalls(message, targetId, originChatId) {
         let bgChat = null;
 
         if (!isActiveChat) {
-            bgChat = chatManager.allChats.find(c => c.id === originChatId);
+            bgChat = chatManager.chatMap.get(originChatId);
             if (!bgChat) return;
             targetHistory = bgChat.messages;
         }
@@ -1122,7 +1122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await initConfigCache();
     await chatManager.loadSavedChats((await import('./chat-db.js')).migrateFromLocalStorage, (await import('./crypto-utils.js')).initEncryption);
     const lastChatId = Number(safeLocalStorage.getItem('james-last-chat-id'));
-    const lastChat = chatManager.allChats.find(c => c.id === lastChatId);
+    const lastChat = chatManager.chatMap.get(lastChatId);
     
     if (lastChat) {
         chatManager.loadChatHistory(

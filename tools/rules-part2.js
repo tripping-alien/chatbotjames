@@ -18,9 +18,9 @@ export const RULES = [
             } else {
                 toStr = m[1]; val = m[2]; fromStr = m[3];
             }
-            const TEMP_UNITS = ['celsius','fahrenheit','kelvin','c','f','k'];
-            const fromOk = resolveUnit(fromStr) || TEMP_UNITS.includes(fromStr.toLowerCase());
-            const toOk = resolveUnit(toStr) || TEMP_UNITS.includes(toStr.toLowerCase());
+            const TEMP_UNITS = new Set(['celsius','fahrenheit','kelvin','c','f','k']);
+            const fromOk = resolveUnit(fromStr) || TEMP_UNITS.has(fromStr.toLowerCase());
+            const toOk = resolveUnit(toStr) || TEMP_UNITS.has(toStr.toLowerCase());
             if (!fromOk) throw new Error(`Unknown unit: ${fromStr}`);
             if (!toOk) throw new Error(`Unknown unit: ${toStr}`);
             return {

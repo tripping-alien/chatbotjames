@@ -439,12 +439,17 @@ const UNIT_TYPES = {
     storage: ['b', 'byte', 'bytes', 'kb', 'kilobyte', 'kilobytes', 'mb', 'megabyte', 'megabytes', 'gb', 'gigabyte', 'gigabytes', 'tb', 'terabyte', 'terabytes'],
 };
 
-function getUnitType(unit) {
-    const u = unit.toLowerCase();
-    for (const [type, units] of Object.entries(UNIT_TYPES)) {
-        if (units.includes(u)) return type;
+const UNIT_TYPE_LOOKUP = new Map();
+for (let i = 0; i < Object.keys(UNIT_TYPES).length; i++) {
+    const type = Object.keys(UNIT_TYPES)[i];
+    const units = UNIT_TYPES[type];
+    for (let j = 0; j < units.length; j++) {
+        UNIT_TYPE_LOOKUP.set(units[j], type);
     }
-    return null;
+}
+
+function getUnitType(unit) {
+    return UNIT_TYPE_LOOKUP.get(unit.toLowerCase()) || null;
 }
 
 function convertUnits(params) {
