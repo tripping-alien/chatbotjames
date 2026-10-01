@@ -105,17 +105,17 @@ class UIManager {
         }
     }
 
-    getWelcomeMessage(isMobileDevice, isTVDevice, showTools = true) {
-        if (isMobileDevice) return this.getLightweightWelcomeMessage(showTools);
-        if (isTVDevice) return this.getTVWelcomeMessage(showTools);
-        return this.getFullWelcomeMessage(showTools);
+    getWelcomeMessage(isMobileDevice, isTVDevice) {
+        if (isMobileDevice) return this.getLightweightWelcomeMessage();
+        if (isTVDevice) return this.getTVWelcomeMessage();
+        return this.getFullWelcomeMessage();
     }
 
-    getLightweightWelcomeMessage(showTools) {
-        return this.getFullWelcomeMessage(showTools);
+    getLightweightWelcomeMessage() {
+        return this.getFullWelcomeMessage();
     }
 
-    getFullWelcomeMessage(showTools) {
+    getFullWelcomeMessage() {
         const asciiArt = ` ███████╗██╗
  ██╔══██╗██║
  ███████║██║
@@ -131,8 +131,8 @@ class UIManager {
         };
     }
 
-    getTVWelcomeMessage(showTools) {
-        return this.getFullWelcomeMessage(showTools);
+    getTVWelcomeMessage() {
+        return this.getFullWelcomeMessage();
     }
 }
 

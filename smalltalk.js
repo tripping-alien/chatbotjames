@@ -1709,12 +1709,13 @@ export class SmallTalkHandler {
             let bestDist = Infinity;
             let bestPatternIdx = -1;
 
-            for (const { trigger, patternIndex } of this._fuzzyTriggers) {
-                if (Math.abs(normalized.length - trigger.length) > 1) continue;
-                const dist = this._editDistance(normalized, trigger, 1);
+            for (let i = 0; i < this._fuzzyTriggers.length; i++) {
+                const ft = this._fuzzyTriggers[i];
+                if (Math.abs(normalized.length - ft.trigger.length) > 1) continue;
+                const dist = this._editDistance(normalized, ft.trigger, 1);
                 if (dist < bestDist) {
                     bestDist = dist;
-                    bestPatternIdx = patternIndex;
+                    bestPatternIdx = ft.patternIndex;
                     if (bestDist === 0) break;         // can't do better
                 }
             }

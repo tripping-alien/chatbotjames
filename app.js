@@ -109,7 +109,7 @@ window._alpineDeleteChat = (id) => {
         safeLocalStorage,
         () => gameController.getGameState(),
         (state) => gameController.restoreGameState(state),
-        () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice(), true)
+        () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice())
     );
 };
 
@@ -1140,7 +1140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     } else {
         chatManager.startNewChat(
-            () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice(), true), 
+            () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice()), 
             safeLocalStorage,
             () => gameController.getGameState(),
             (state) => gameController.restoreGameState(state)
@@ -1162,7 +1162,7 @@ uiManager.updateStatusText(_savedLastPresetId ? 'RESUMING LAST MODEL…' : 'INIT
 const newChatBtn = document.getElementById('newChatBtn');
 if (newChatBtn) {
     newChatBtn.addEventListener('click', () => chatManager.startNewChat(
-        () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice(), true), 
+        () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice()), 
         safeLocalStorage,
         () => gameController.getGameState(),
         (state) => gameController.restoreGameState(state)

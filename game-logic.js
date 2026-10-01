@@ -179,8 +179,9 @@ export class CheckersGame {
         const rowDirs = isKing ? [-1, 1] : [fwd];
         const jumps   = [];
 
-        for (const dr of rowDirs) {
-            for (const dc of [-1, 1]) {
+        for (let i = 0; i < rowDirs.length; i++) {
+            const dr = rowDirs[i];
+            for (let dc = -1; dc <= 1; dc += 2) {
                 const mr = sr + dr,     mc = sc + dc;
                 const tr = sr + dr * 2, tc = sc + dc * 2;
                 if (tr < 0 || tr > 7 || tc < 0 || tc > 7) continue;
@@ -222,8 +223,10 @@ export class CheckersGame {
                 if (this.turn === 'b' && p > 0) continue;
                 const isKing = Math.abs(p) === 2;
                 const fwd    = p > 0 ? -1 : 1;
-                for (const dr of (isKing ? [-1, 1] : [fwd])) {
-                    for (const dc of [-1, 1]) {
+                const rowDirs = isKing ? [-1, 1] : [fwd];
+                for (let i = 0; i < rowDirs.length; i++) {
+                    const dr = rowDirs[i];
+                    for (let dc = -1; dc <= 1; dc += 2) {
                         const tr = r + dr, tc = c + dc;
                         if (tr < 0 || tr > 7 || tc < 0 || tc > 7) continue;
                         if (this.board[tr][tc] !== 0) continue;
@@ -360,8 +363,10 @@ export class CheckersGame {
         const isKing = Math.abs(piece) === 2;
         const fwd    = isWhite ? -1 : 1;
         const dests  = [];
-        for (const dr of (isKing ? [-1, 1] : [fwd])) {
-            for (const dc of [-1, 1]) {
+        const rowDirs = isKing ? [-1, 1] : [fwd];
+        for (let i = 0; i < rowDirs.length; i++) {
+            const dr = rowDirs[i];
+            for (let dc = -1; dc <= 1; dc += 2) {
                 const tr = sr + dr, tc = sc + dc;
                 if (tr < 0 || tr > 7 || tc < 0 || tc > 7) continue;
                 if (this.board[tr][tc] !== 0) continue;

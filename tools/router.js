@@ -38,8 +38,10 @@ class ToolTriggerHandler {
         const text = input.trim();
         if (text.length < 2) return null;
 
-        for (const rule of ALL_RULES) {
-            for (const pattern of rule.patterns) {
+        for (let i = 0; i < ALL_RULES.length; i++) {
+            const rule = ALL_RULES[i];
+            for (let j = 0; j < rule.patterns.length; j++) {
+                const pattern = rule.patterns[j];
                 const m = text.match(pattern);
                 if (m) {
                     try {
@@ -57,8 +59,10 @@ class ToolTriggerHandler {
         const text = (input ?? '').trim();
         const results = [];
 
-        for (const rule of ALL_RULES) {
-            for (const pattern of rule.patterns) {
+        for (let i = 0; i < ALL_RULES.length; i++) {
+            const rule = ALL_RULES[i];
+            for (let j = 0; j < rule.patterns.length; j++) {
+                const pattern = rule.patterns[j];
                 const m = text.match(pattern);
                 if (m) {
                     try {
