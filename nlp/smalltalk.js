@@ -20,6 +20,7 @@
  * more response variety, easter eggs, and conversational breadth.
  */
 import { extraPatterns } from './smalltalk-extra.js';
+import { levenshteinDistance } from '../core/wasm-levenshtein.js';
 
 export class SmallTalkHandler {
     constructor() {
@@ -1572,24 +1573,9 @@ export class SmallTalkHandler {
     _editDistance(a, b, limit = 1) {
         const la = a.length, lb = b.length;
         if (Math.abs(la - lb) > limit) return Infinity;
-        if (la === 0) return lb;
-        if (lb === 0) return la;
-
-        let prev = Array.from({ length: lb + 1 }, (_, i) => i);
-        let curr = new Array(lb + 1);
-
-        for (let i = 1; i <= la; i++) {
-            curr[0] = i;
-            let rowMin = i;
-            for (let j = 1; j <= lb; j++) {
-                const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-                curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
-                if (curr[j] < rowMin) rowMin = curr[j];
-            }
-            if (rowMin > limit) return Infinity;       // early bail-out
-            [prev, curr] = [curr, prev];
-        }
-        return prev[lb];
+        
+        const dist = levenshteinDistance(a, b);
+        return dist > limit ? Infinity : dist;
     }
 
     // ── Word-boundary helper (used by trie walk) ───────────────────────────────
