@@ -1,6 +1,6 @@
 module.exports = [
     {
-        ignores: ["*.html", "*.css", "*.md"]
+        ignores: ["*.html", "*.css", "*.md", "eslint.config.js"]
     },
     {
         files: ["*.js"],
