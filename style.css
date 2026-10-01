@@ -2100,3 +2100,20 @@ body.tv-mode .game-board-message {
         opacity: 1;
     }
 }
+
+/* ─── Fade-in Animation for Typing Effect ─── */
+.fade-in-char {
+    display: inline-block; /* Required for transforms */
+    animation: fadeInChar 0.15s ease-out forwards;
+}
+
+@keyframes fadeInChar {
+    0% {
+        opacity: 0;
+        transform: translateY(2px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
