@@ -387,7 +387,16 @@ workerController.onComplete = (chatId, targetId, message) => {
 };
 
 workerController.onToolCalls = (message, targetId, chatId) => {
-    handleToolCalls(message, targetId, chatId);
+    import('./stream-manager.js').then(sm => {
+        sm.flushStreamQueue(targetId);
+        if (chatId === chatManager.currentChatId) {
+            const bubble = document.getElementById(`bubble-${targetId}`);
+            if (bubble && bubble.parentElement) {
+                bubble.parentElement.remove();
+            }
+        }
+        handleToolCalls(message, targetId, chatId);
+    });
 };
 
 workerController.onAborted = (chatId, targetId, message) => {
@@ -740,8 +749,8 @@ async function handleToolCalls(message, targetId, originChatId) {
 
     const calls = [];
     
-    // 1. ```tool:run ... ```
-    const runRegex = /```\s*tool:run\n?([\s\S]*?)```/g;
+    // 1. ```tool:run ... ``` (or missing backticks)
+    const runRegex = /(?:```\s*)?tool:run\n?([\s\S]*?)(?:```|$)/g;
     let match;
     while ((match = runRegex.exec(message)) !== null) {
         calls.push(match[1].trim());
