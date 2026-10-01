@@ -1,8 +1,8 @@
-import { create as oramaCreate, insert as oramaInsert, search as oramaSearch } from './orama.js';
-import { performWebSearch } from './tools-search.js';
-import { evalMath } from './tool-router.js';
-import { particlePhysics, relativityCalc, linAlg, diffEq } from './tools-physics.js';
-import { generateSprite } from './tools-art.js';
+import { create as oramaCreate, insert as oramaInsert, search as oramaSearch } from '../core/orama.js';
+import { performWebSearch } from '../tools/tools-search.js';
+import { evalMath } from '../tools/tool-router.js';
+import { particlePhysics, relativityCalc, linAlg, diffEq } from '../tools/tools-physics.js';
+import { generateSprite } from '../tools/tools-art.js';
 // dayjs removed — using native Intl.DateTimeFormat (zero-dependency, works in all Workers)
 
 

@@ -1,4 +1,4 @@
-export { toolRouter } from './tools/router.js';
+export { toolRouter } from './router.js';
 export {
     CURRENCY_MAP,
     TIMEZONE_MAP,
@@ -7,4 +7,4 @@ export {
     resolveTimezone,
     resolveUnit
 } from './tools/maps.js';
-export { cleanTail, safeInt, evalMath } from './tools/router.js';
+export { cleanTail, safeInt, evalMath } from './router.js';

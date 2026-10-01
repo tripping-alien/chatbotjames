@@ -174,7 +174,7 @@ export function showTimer(seconds, label, neuralLink) {
             done.textContent = '✅ Done!';
             div.append('⏱️ ', document.createElement('strong'), ' — ', done);
             div.querySelector('strong').textContent = timerLabel;
-            import('./audio-wakelock.js').then(m => m.playDoneSound());
+            import('../core/audio-wakelock.js').then(m => m.playDoneSound());
             if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                 new Notification('JAMES Timer', { body: `${timerLabel} finished!` });
             }

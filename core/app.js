@@ -12,12 +12,12 @@ function _fromNow(timestamp) {
 
 import { globalState } from './global-state.js';
 import { chatManager } from './chat-manager.js';
-import { gameController } from './game-controller.js?v=5';
+import { gameController } from '../games/game-controller.js?v=5';
 import { attachmentManager } from './attachment-manager.js';
 import { uiManager } from './ui-manager.js';
 import { workerController, hasToolCalls } from './worker-controller.js';
 
-import { smallTalk } from './smalltalk.js?v=3';
+import { smallTalk } from '../nlp/smalltalk.js?v=3';
 
 import { CONFIG } from './config.js';
 import { safeLocalStorage, dbSaveNote, dbDeleteNote, dbClearNotes, initConfigCache } from './chat-db.js';
@@ -312,7 +312,7 @@ workerController.onComplete = (chatId, targetId, message) => {
             chatManager.chatHistory.push({ role: 'assistant', content: message });
             
             if (gameController.activeGame) {
-                import('./game-logic.js').then(({ extractAIMove }) => {
+                import('../games/game-logic.js').then(({ extractAIMove }) => {
                     const aiMove = extractAIMove(message, gameController.activeGame);
                     if (aiMove) {
                         gameController.handleMakeMove(
@@ -336,7 +336,7 @@ workerController.onComplete = (chatId, targetId, message) => {
             bgChat.messages.push({ role: 'assistant', content: message });
             
             if (bgChat.gameState) {
-                import('./game-logic.js').then(({ extractAIMove, ChessGame, CheckersGame }) => {
+                import('../games/game-logic.js').then(({ extractAIMove, ChessGame, CheckersGame }) => {
                     const tempGame = bgChat.gameState.type === 'checkers' ? new CheckersGame() : new ChessGame();
                     if (bgChat.gameState.fen) tempGame.loadFen(bgChat.gameState.fen);
                     tempGame.aiColor = bgChat.gameState.aiColor || 'b';
@@ -382,7 +382,7 @@ workerController.onAborted = (chatId, targetId, message) => {
         chatManager.chatHistory.push({ role: 'assistant', content: message });
         
         if (window.gameController && window.gameController.activeGame) {
-            import('./game-logic.js').then(({ extractAIMove }) => {
+            import('../games/game-logic.js').then(({ extractAIMove }) => {
                 const aiMove = extractAIMove(message, window.gameController.activeGame);
                 if (aiMove) {
                     window.gameController.handleMakeMove(
@@ -406,7 +406,7 @@ workerController.onAborted = (chatId, targetId, message) => {
             bgChat.messages.push({ role: 'assistant', content: message });
             
             if (bgChat.gameState) {
-                import('./game-logic.js').then(({ extractAIMove, ChessGame, CheckersGame }) => {
+                import('../games/game-logic.js').then(({ extractAIMove, ChessGame, CheckersGame }) => {
                     const tempGame = bgChat.gameState.type === 'checkers' ? new CheckersGame() : new ChessGame();
                     if (bgChat.gameState.fen) tempGame.loadFen(bgChat.gameState.fen);
                     tempGame.aiColor = bgChat.gameState.aiColor || 'b';
@@ -858,7 +858,7 @@ async function handleToolCalls(message, targetId, originChatId) {
                     }
                 } else {
                     if (bgChat.gameState) {
-                        const { ChessGame, CheckersGame } = await import('./game-logic.js');
+                        const { ChessGame, CheckersGame } = await import('../games/game-logic.js');
                         let tempGame = bgChat.gameState.type === 'checkers' ? new CheckersGame() : new ChessGame();
                         if (bgChat.gameState.fen) tempGame.loadFen(bgChat.gameState.fen);
                         if (bgChat.gameState.history && tempGame.setHistory) tempGame.setHistory(bgChat.gameState.history);
@@ -940,15 +940,15 @@ async function handleToolCalls(message, targetId, originChatId) {
                 await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'reset' }, 15000);
                 toolResult = 'Python environment reset. All variables and imports cleared.';
             } else if (toolName === 'location') {
-                const toolsBridge = await import('./tools-bridge.js');
+                const toolsBridge = await import('../tools/tools-bridge.js');
                 const loc = await toolsBridge.getLocation();
                 toolResult = { latitude: loc.latitude, longitude: loc.longitude, accuracy: `${Math.round(loc.accuracy)}m` };
             } else if (toolName === 'clipboard') {
-                const toolsBridge = await import('./tools-bridge.js');
+                const toolsBridge = await import('../tools/tools-bridge.js');
                 const content = await toolsBridge.readClipboard();
                 toolResult = { content, length: content.length };
             } else if (toolName === 'timer') {
-                const toolsBridge = await import('./tools-bridge.js');
+                const toolsBridge = await import('../tools/tools-bridge.js');
                 const s = Math.max(1, parseInt(params.seconds ?? 0));
                 toolsBridge.showTimer(s, params.label, { DOM: { log: document.getElementById('chatLog') } });
                 toolResult = { seconds: s, label: params.label ?? 'Timer', note: 'Timer started.' };
@@ -1302,7 +1302,7 @@ _setupNotesPanel();
 
 // The FAQ panel toggle is now declaratively handled via Alpine.js in index.html (faqOpen state)
 
-import('./tools-bridge.js').then(module => {
+import('../tools/tools-bridge.js').then(module => {
     module.setupToolsBridge({
         worker: workerController.toolsWorker,
         DOM: { log: document.getElementById('chatLog'), cmd: uiManager.cmdInput },

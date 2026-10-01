@@ -1,4 +1,4 @@
-import { RULES } from './tools/rules-part2.js';
+import { RULES } from '../tools/rules-part2.js';
 
 const tests = [
     { tool: 'uuid', text: 'generate a uuid' },

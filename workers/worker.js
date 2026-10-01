@@ -1,5 +1,5 @@
 import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
-import { CONFIG } from './config.js';
+import { CONFIG } from '../core/config.js';
 import { setupDownloadManager } from './worker-downloader.js';
 import { systemPrompt } from './worker-system-prompt.js';
 import { isMobileDevice, isTVDevice, detectWasmCapabilities, detectGpu, getDeviceRamGB } from './worker-device-detect.js';

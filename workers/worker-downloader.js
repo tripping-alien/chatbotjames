@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js';
+import { CONFIG } from '../core/config.js';
 
 export function setupDownloadManager(env, selfRef) {
     const DOWNLOAD_CACHE = 'JAMES-model-cache-v3';
