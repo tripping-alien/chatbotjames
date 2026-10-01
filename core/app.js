@@ -34,6 +34,12 @@ import {
 } from './message-renderer.js';
 import { setupModelPanel, updateModelInfo, refreshPresetCards } from './model-panel.js';
 import { UserInputProcessor } from './input-processor.js';
+import { systemDiagnostics } from './diagnostics.js';
+import { errorBoundary } from './error-boundary.js';
+import { systemProfiler } from './profiler.js';
+
+// Initialize global profiling immediately
+systemProfiler.start();
 
 // ── Notification Engine ──
 function sendNotification(title, body) {
@@ -1114,6 +1120,8 @@ function setupEventListeners() {
 
 // Bootstrap
 document.addEventListener('DOMContentLoaded', () => {
+    systemProfiler.markStart('dom-content-loaded');
+    
     setupEventListeners();
     attachmentManager.setupFileAttachment('attachButton', 'fileInput', 'chatWindow', appendErrorToChat);
 
@@ -1133,13 +1141,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if ((isMobileDevice() || isTVDevice()) && !safeLocalStorage.getItem('james-gpu-warning-shown')) {
             safeLocalStorage.setItem('james-gpu-warning-shown', 'true');
-            // Slight delay so the user isn't immediately overwhelmed before rendering
             setTimeout(() => {
                 gpuWarningModal.classList.add('show');
                 gpuWarningOverlay.classList.add('show');
             }, 500);
         }
     }
+    
+    systemProfiler.markEnd('dom-content-loaded');
 });
 
 (async () => {

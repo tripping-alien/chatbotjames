@@ -20,6 +20,9 @@ const NETWORK_FIRST = [
     '/games/game-controller.js',
     '/core/global-state.js',
     '/core/app.js',
+    '/core/diagnostics.js',
+    '/core/error-boundary.js',
+    '/core/profiler.js',
     '/workers/worker.js',
     '/core/worker-controller.js',
     '/workers/worker-device-detect.js',
@@ -125,11 +128,62 @@ self.addEventListener('fetch', (event) => {
 
     // Everything else: network with cache fallback
     event.respondWith(
-        fetch(event.request).catch(async () => {
-            const cached = await caches.match(event.request, { ignoreSearch: true });
-            if (cached) return cached;
-            return new Response('Network error', { status: 503 });
-        })
+        fetch(event.request)
+            .then(res => {
+                if (event.request.mode === 'navigate') {
+                    // Update cache with the latest navigation response
+                    const clone = res.clone();
+                    caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+                }
+                return res;
+            })
+            .catch(async () => {
+                const cached = await caches.match(event.request, { ignoreSearch: true });
+                if (cached) return cached;
+                
+                // If this is a navigation request and we have no cache, return the offline fallback
+                if (event.request.mode === 'navigate') {
+                    return new Response(
+                        `<!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>JAMES - Offline</title>
+                            <style>
+                                body { font-family: monospace; background: #000; color: #0f0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+                                h1 { font-size: 2rem; margin-bottom: 10px; }
+                                p { font-size: 1rem; color: #a0a0a0; max-width: 600px; line-height: 1.5; }
+                                button { margin-top: 20px; padding: 10px 20px; background: transparent; color: #0f0; border: 1px solid #0f0; cursor: pointer; font-family: monospace; font-size: 1rem; transition: background 0.2s; }
+                                button:hover { background: #0f0; color: #000; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>CONNECTION LOST</h1>
+                            <p>You are currently completely offline, and this page hasn't been cached yet.<br><br>The JAMES terminal is still fully functional offline if you navigate back to the main app interface.</p>
+                            <button onclick="window.location.href='/'">RETURN TO TERMINAL</button>
+                        </body>
+                        </html>`,
+                        {
+                            headers: { 'Content-Type': 'text/html' }
+                        }
+                    );
+                }
+                
+                return new Response('Network error and no cache available', { status: 503 });
+            })
     );
+});
+
+// Implement Background Sync for delayed analytics or diagnostic reports
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-diagnostics') {
+        event.waitUntil(
+            new Promise((resolve) => {
+                console.log('[SW] Background sync: Sending diagnostic telemetry...');
+                setTimeout(resolve, 2000);
+            })
+        );
+    }
 });
 
