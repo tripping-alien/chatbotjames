@@ -1169,6 +1169,13 @@ function bootstrapApp() {
     systemProfiler.markEnd('dom-content-loaded');
 };
 
+// ── Call bootstrapApp: the function was defined above but must be invoked ──
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrapApp);
+} else {
+    bootstrapApp();
+}
+
 (async () => {
     await initConfigCache();
     await chatManager.loadSavedChats((await import('./chat-db.js')).migrateFromLocalStorage, (await import('./crypto-utils.js')).initEncryption);
