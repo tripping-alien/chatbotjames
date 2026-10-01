@@ -89,13 +89,7 @@ export function generateSprite(params) {
     svg += `</svg>`;
 
     // Base64 encode for markdown
-    // Need to use btoa, but we must ensure we handle unicode characters properly if any (none in our pure SVG though)
-    let b64;
-    if (typeof btoa !== 'undefined') {
-        b64 = btoa(svg);
-    } else {
-        b64 = Buffer.from(svg).toString('base64');
-    }
+    const b64 = btoa(svg);
     
     const dataUri = `data:image/svg+xml;base64,${b64}`;
     

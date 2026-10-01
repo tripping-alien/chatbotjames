@@ -1333,8 +1333,16 @@ shareBtn?.addEventListener('click', (e) => {
 shareClose?.addEventListener('click', closeShareModal);
 shareOverlay?.addEventListener('click', closeShareModal);
 
-nativeShareBtn?.addEventListener('click', () => {
-    triggerNativeShare();
+nativeShareBtn?.addEventListener('click', async () => {
+    try {
+        await navigator.share({
+            title: 'JAMES AI Chatbot',
+            text: 'Check out JAMES, a free local AI chatbot that runs entirely in your browser!',
+            url: 'https://chatbotjames.onrender.com/'
+        });
+    } catch (err) {
+        console.log('Share failed or was cancelled.', err);
+    }
 });
 
 neverShareBtn?.addEventListener('click', () => {
