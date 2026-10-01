@@ -207,10 +207,21 @@ self.onmessage = async (e) => {
             self.postMessage({ status: 'thinking', targetId, chatId });
 
             const activeMessages = messages.filter(m => !(m.content || '').includes('Tools available'));
-            const chatContext = [
-                { role: 'system', content: systemPrompt },
-                ...activeMessages
-            ];
+
+            // \u2500\u2500 Merge all leading system messages into one \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+            // Small models (1B-1.5B) strictly reject consecutive system roles.
+            // The worker prepends its own system prompt, and getMessagesWindow
+            // also sends a system prefix, so we defensively collapse them here.
+            const allMessages = [{ role: 'system', content: systemPrompt }, ...activeMessages];
+            const chatContext = [];
+            for (const msg of allMessages) {
+                const last = chatContext[chatContext.length - 1];
+                if (last && last.role === msg.role && msg.role === 'system') {
+                    last.content += '\n\n' + msg.content;
+                } else {
+                    chatContext.push({ role: msg.role, content: msg.content });
+                }
+            }
 
             const prompt = chatbot.tokenizer.apply_chat_template(chatContext, {
                 tokenize: false,

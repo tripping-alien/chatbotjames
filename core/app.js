@@ -216,10 +216,32 @@ workerController.onWorkerStatus = (status, message, e) => {
             const errChatId = e.data?.chatId;
             if (errChatId) workerController.activeGenerations.delete(errChatId);
             const errText = message || 'An unknown worker error occurred.';
+
+            // Trim any dangling partial assistant/system messages from history
+            // so a retry doesn't produce a "roles must alternate" error.
+            // We keep trimming from the tail until we hit a 'user' message.
+            if (errChatId === chatManager.currentChatId) {
+                while (
+                    chatManager.chatHistory.length > 0 &&
+                    chatManager.chatHistory[chatManager.chatHistory.length - 1].role !== 'user'
+                ) {
+                    chatManager.chatHistory.pop();
+                }
+            } else if (errChatId) {
+                const bgChat = chatManager.chatMap.get(errChatId);
+                if (bgChat) {
+                    while (
+                        bgChat.messages.length > 0 &&
+                        bgChat.messages[bgChat.messages.length - 1].role !== 'user'
+                    ) {
+                        bgChat.messages.pop();
+                    }
+                }
+            }
+
             if (errChatId && errChatId !== chatManager.currentChatId) {
                 const bgChat = chatManager.chatMap.get(errChatId);
                 if (bgChat) {
-                    bgChat.messages.push({ role: 'system', content: `⚠️ Error: ${errText}` });
                     import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
                 }
             } else {
@@ -529,18 +551,36 @@ function getMessagesWindow(messages) {
         windowed = windowed.filter((m, i) => !(i < lastUserIdx && m.role === 'system'));
     }
 
+    // ── Role-alternation sanitiser ───────────────────────────────────────────
+    // Some small models (1B/1.5B) strictly require user/assistant alternation.
+    // Merge consecutive same-role messages so the runtime never rejects them.
+    const sanitized = [];
+    for (const msg of windowed) {
+        const last = sanitized[sanitized.length - 1];
+        if (last && last.role === msg.role) {
+            // Merge into the previous message with a separator
+            last.content += '\n\n' + msg.content;
+        } else {
+            sanitized.push({ ...msg });
+        }
+    }
+
     const now = new Date();
     const dateTimeStr = now.toLocaleString(undefined, {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
     });
-    const prefix = [{ role: 'system', content: `[Current date & time]\n${dateTimeStr}`, isBackground: true }];
+
+    // Combine all prefix context (notes + datetime) into ONE system block
+    // so the worker's own system prompt + these become exactly 2 system msgs max.
+    let prefixParts = [`[Current date & time]\n${dateTimeStr}`];
     if (chatManager.userNotes && chatManager.userNotes.length > 0) {
         const notesText = chatManager.userNotes.map(n => `- ${n.text}`).join('\n');
-        prefix.unshift({ role: 'system', content: `[System Memory: These are notes about the user that you have previously saved. Use them to answer questions.]\n${notesText}`, isBackground: true });
+        prefixParts.unshift(`[System Memory: These are notes about the user that you have previously saved. Use them to answer questions.]\n${notesText}`);
     }
+    const prefix = [{ role: 'system', content: prefixParts.join('\n\n'), isBackground: true }];
 
-    return [...prefix, ...windowed, ...background];
+    return [...prefix, ...sanitized, ...background];
 }
 
 function sendMessage(preExecutedMove = null) {
