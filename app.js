@@ -157,18 +157,22 @@ async function simulateCannedResponse(text) {
     updateStatusLight('streaming');
     uiManager.updateStatusText('RESPONDING...');
 
-    chatManager.addMessage(chatManager.currentChatId, 'assistant', '');
-    const id = chatManager.currentChatId;
+    const chatId = chatManager.currentChatId;
+    const targetId = getNextTargetId(chatId);
+    const sm = await import('./stream-manager.js');
 
     playReceiveSound();
 
     // Typewriter effect
     for (let i = 0; i < text.length; i++) {
-        chatManager.appendToLastMessage(id, text[i]);
+        sm.queueStreamText(targetId, text[i], { updateDom: true });
         await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
     }
+    
+    sm.flushStreamQueue(targetId);
+    chatManager.chatHistory.push({ role: 'assistant', content: text });
 
-    import('./chat-db.js').then(db => db.dbSaveChat(chatManager.allChats.find(c => c.id === id)));
+    import('./chat-db.js').then(db => db.dbSaveChat(chatManager.allChats.find(c => c.id === chatId)));
     
     _cannedGenActive = false;
     uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
