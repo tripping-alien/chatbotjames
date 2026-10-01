@@ -45,6 +45,7 @@ const NETWORK_FIRST = [
     '/tools/rules-part1.js',
     '/tools/rules-part2.js',
     '/tools/maps.js',
+    '/tools/utils.js',
     '/core/webgl-bg.js',
     'index.html',
     'style.css',
