@@ -88,9 +88,9 @@ export function particlePhysics(params) {
 
         case 'debroglie': {
             let p;
-            if (params.p_kg_ms !== undefined)           p = Number(params.p_kg_ms);
-            else if (params.v && params.mass_kg)        p = Number(params.mass_kg) * Number(params.v);
-            else if (params.KE_eV && params.mass_kg)    p = Math.sqrt(2 * Number(params.mass_kg) * Number(params.KE_eV) * EV);
+            if (params.p_kg_ms !== undefined)                                           p = Number(params.p_kg_ms);
+            else if (params.mass_kg !== undefined && params.v !== undefined)            p = Number(params.mass_kg) * Number(params.v);
+            else if (params.KE_eV !== undefined && params.mass_kg !== undefined)        p = Math.sqrt(2 * Number(params.mass_kg) * Number(params.KE_eV) * EV);
             else throw new Error('Provide p_kg_ms, or (mass_kg + v), or (mass_kg + KE_eV)');
             const lam = H / p;
             return { momentum_kg_ms: _round(p), wavelength_m: _round(lam), wavelength_nm: _round(lam*1e9), wavelength_pm: _round(lam*1e12), wavelength_angstrom: _round(lam*1e10), note: 'lambda = h/p' };
@@ -112,17 +112,20 @@ export function particlePhysics(params) {
 
         case 'photoelectric': {
             let Eph;
-            if      (params.f_Hz)       Eph = H * Number(params.f_Hz);
-            else if (params.lambda_m)   Eph = H*C / Number(params.lambda_m);
-            else if (params.lambda_nm)  Eph = H*C / (Number(params.lambda_nm)*1e-9);
-            else if (params.E_eV)       Eph = Number(params.E_eV)*EV;
+            if      (params.f_Hz !== undefined)       Eph = H * Number(params.f_Hz);
+            else if (params.lambda_m !== undefined)   Eph = H*C / Number(params.lambda_m);
+            else if (params.lambda_nm !== undefined)  Eph = H*C / (Number(params.lambda_nm)*1e-9);
+            else if (params.E_eV !== undefined)       Eph = Number(params.E_eV)*EV;
             else throw new Error('Provide f_Hz, lambda_m, lambda_nm, or E_eV');
             const phi = Number(params.work_function_eV ?? params.phi_eV ?? 0) * EV;
             const KE  = Eph - phi;
+            const thresholdFields = phi > 0
+                ? { threshold_freq_Hz: _round(phi/H), threshold_lambda_nm: _round(H*C/phi*1e9) }
+                : { threshold_freq_Hz: null, threshold_lambda_nm: null, note_threshold: 'Work function is 0; threshold is undefined' };
             return {
                 photon_energy_eV: _round(Eph/EV), work_function_eV: _round(phi/EV),
                 KE_max_eV: _round(KE/EV), electron_ejected: KE > 0,
-                threshold_freq_Hz: _round(phi/H), threshold_lambda_nm: _round(H*C/phi*1e9),
+                ...thresholdFields,
                 note: 'KE_max = hf - phi'
             };
         }
@@ -395,7 +398,9 @@ export function linAlg(params) {
         }
         case 'solve': {
             if (!A||!b) throw new Error('Provide A matrix and b vector');
-            return { x: _solve(A, b).map(v => _round(v)), note: 'Gaussian elimination with partial pivoting' };
+            // Flatten b if the model passes it as a column vector [[x],[y],[z]]
+            const bFlat = Array.isArray(b[0]) ? b.map(row => row[0]) : b;
+            return { x: _solve(A, bFlat).map(v => _round(v)), note: 'Gaussian elimination with partial pivoting' };
         }
         case 'transpose': { if (!A) throw new Error('Provide A'); return { transpose: _roundMatrix(_transpose(A)) }; }
         case 'rank':      { if (!A) throw new Error('Provide A'); return { rank: _rank(A), shape: _shape(A) }; }

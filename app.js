@@ -893,14 +893,20 @@ async function handleToolCalls(message, targetId, originChatId) {
                 }
             } else if (toolName === 'pip_install') {
                 // Install one or more packages into the live Pyodide session via micropip
+                if (workerController._pyodideState !== 'ready') {
+                    throw new Error('Python environment is still loading — please wait a moment and try again.');
+                }
                 const pkgs = params.packages
                     ? (Array.isArray(params.packages) ? params.packages : String(params.packages).split(',').map(s => s.trim()).filter(Boolean))
                     : (params.package ? [params.package] : []);
                 if (pkgs.length === 0) throw new Error('pip_install requires a packages parameter');
-                const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'install', packages: pkgs }, 120000);
+                await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'install', packages: pkgs }, 120000);
                 toolResult = `Installed: ${pkgs.join(', ')}. You can now import them.`;
             } else if (toolName === 'python_reset') {
                 // Wipe all user-defined variables / imports from the Pyodide namespace
+                if (workerController._pyodideState !== 'ready') {
+                    throw new Error('Python environment is still loading — please wait a moment and try again.');
+                }
                 await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'reset' }, 15000);
                 toolResult = 'Python environment reset. All variables and imports cleared.';
             } else if (toolName === 'location') {
@@ -950,6 +956,12 @@ async function handleToolCalls(message, targetId, originChatId) {
     });
 
     _toolExecutionQueue.set(originChatId, current);
+    // Clean up once this chat's chain settles so the Map doesn't leak
+    current.finally(() => {
+        if (_toolExecutionQueue.get(originChatId) === current) {
+            _toolExecutionQueue.delete(originChatId);
+        }
+    });
     return current;
 }
 

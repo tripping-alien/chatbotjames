@@ -11,6 +11,7 @@ class WorkerController {
         this.toolsWorker = null;
         this.pythonWorker = null;
         this.activeGenerations = new Map(); // chatId -> targetId
+        this._pyodideState = 'idle'; // 'idle' | 'loading' | 'ready' | 'error'
 
         // Callbacks
         this.onWorkerStatus = null; // (status, statusText, e)
@@ -38,6 +39,12 @@ class WorkerController {
         this.toolsWorker.onerror = (e) => {
             console.error('TOOLS-WORKER ERROR (this will cause all tool RPCs to time out):', e);
         };
+        // Track Pyodide readiness so the main thread can guard pip_install / python_reset
+        this.pythonWorker.addEventListener('message', (e) => {
+            if (e.data?.status === 'loading') this._pyodideState = 'loading';
+            else if (e.data?.status === 'ready') this._pyodideState = 'ready';
+            else if (e.data?.status === 'error' && !e.data?.execId) this._pyodideState = 'error';
+        });
 
         const _lastPreset = safeLocalStorage ? safeLocalStorage.getItem('james-last-preset-id') : null;
         this.worker.postMessage({ type: 'init', lastPresetId: _lastPreset || null, screenWidth: window.screen?.width, maxTouchPoints: navigator.maxTouchPoints });
