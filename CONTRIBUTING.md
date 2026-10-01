@@ -21,8 +21,8 @@ At this point, you're ready to make your changes! Feel free to ask for help; eve
 If you are adding a new Tool:
 1. Make sure it is completely client-side (no new backend server dependencies).
 2. Add the function implementation in `tools-worker.js`.
-3. Add the mapping to `TOOL_HANDLERS`.
-4. Document it in the system prompt inside `worker.js`.
+3. Add the natural language routing regex and parameter parsing in `tools/rules.js` and/or `tools/rules-part1.js`.
+4. Document the tool's existence in the system prompt inside `worker.js`.
 5. Update the UI welcome messages in `app.js` and the `docs.html` file.
 
 ## Make a Pull Request
