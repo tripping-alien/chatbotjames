@@ -352,6 +352,24 @@
         </div>
     </div>
 
+    <!-- GPU Warning Modal -->
+    <div id="gpuWarningOverlay" class="model-panel-overlay"></div>
+    <div id="gpuWarningModal" class="model-panel" role="dialog" aria-modal="true" aria-label="Hardware Recommendation">
+        <div class="model-panel-header">
+            <h2>🖥️ Hardware Recommendation</h2>
+            <button id="gpuWarningClose" class="icon-btn" aria-label="Close">✕</button>
+        </div>
+        <div class="recovery-body"
+            style="padding: 1rem; color: var(--text-color); font-size: 0.95rem; line-height: 1.5;">
+            This project works best on a PC with a dedicated GPU.
+            <br><br>
+            Since you are on a mobile device or TV, JAMES has automatically loaded the simplest model to save RAM and ensure stability. You can always change the model manually in the settings! ⚙️
+        </div>
+        <div class="model-panel-footer" style="justify-content: flex-end;">
+            <button id="gpuWarningOkBtn" class="apply-model-btn">Understood</button>
+        </div>
+    </div>
+
     <!-- Notes Panel -->
     <div id="notesPanelOverlay" class="model-panel-overlay"></div>
     <div id="notesPanel" class="model-panel notes-panel" role="dialog" aria-modal="true" aria-label="Memory Notes">

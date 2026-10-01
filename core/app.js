@@ -1116,6 +1116,30 @@ function setupEventListeners() {
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     attachmentManager.setupFileAttachment('attachButton', 'fileInput', 'chatWindow', appendErrorToChat);
+
+    const gpuWarningOverlay = document.getElementById('gpuWarningOverlay');
+    const gpuWarningModal = document.getElementById('gpuWarningModal');
+    const gpuWarningClose = document.getElementById('gpuWarningClose');
+    const gpuWarningOkBtn = document.getElementById('gpuWarningOkBtn');
+
+    if (gpuWarningOverlay && gpuWarningModal) {
+        const closeGpuWarning = () => {
+            gpuWarningModal.classList.remove('show');
+            gpuWarningOverlay.classList.remove('show');
+        };
+        gpuWarningClose?.addEventListener('click', closeGpuWarning);
+        gpuWarningOkBtn?.addEventListener('click', closeGpuWarning);
+        gpuWarningOverlay?.addEventListener('click', closeGpuWarning);
+
+        if ((isMobileDevice() || isTVDevice()) && !safeLocalStorage.getItem('james-gpu-warning-shown')) {
+            safeLocalStorage.setItem('james-gpu-warning-shown', 'true');
+            // Slight delay so the user isn't immediately overwhelmed before rendering
+            setTimeout(() => {
+                gpuWarningModal.classList.add('show');
+                gpuWarningOverlay.classList.add('show');
+            }, 500);
+        }
+    }
 });
 
 (async () => {
