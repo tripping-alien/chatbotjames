@@ -766,11 +766,16 @@ async function handleToolCalls(message, targetId, originChatId) {
             }
         }
 
-        // 3. Bare JSON (if the whole message is a JSON object)
+        // 3. Bare / embedded JSON object containing "tool" anywhere in the message
         if (calls.length === 0) {
-            const trimmed = message.trim();
-            if (trimmed.startsWith('{') && trimmed.endsWith('}') && trimmed.includes('"tool"')) {
-                calls.push(trimmed);
+            // Scan for any { ... "tool" ... } block, even if embedded in prose
+            const jsonScanRegex = /\{[^{}]*"tool"[^{}]*\}/g;
+            let jm;
+            while ((jm = jsonScanRegex.exec(message)) !== null) {
+                try {
+                    JSON.parse(jm[0]); // validate it's real JSON before accepting
+                    calls.push(jm[0]);
+                } catch (_) { /* not valid JSON, skip */ }
             }
         }
 

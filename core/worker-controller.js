@@ -1,8 +1,9 @@
 // Single source of truth for "does this message carry tool calls?".
-// Note the \b rather than \n — handleToolCalls parses with `\n?`, so requiring
-// a newline here silently routed single-line tool blocks to onComplete and
-// they were never executed.
-export const TOOL_CALL_PATTERN = /(?:```\s*tool:run\b)|(?:^tool:run\b)|(?:\{\s*"tool"\s*:)/;
+// Covers three formats the model may produce:
+//  1. ```tool:run  (standard fenced block, with or without leading backticks)
+//  2. ^tool:run    (bare, no backticks, at start of message)
+//  3. {"tool":     (bare or embedded JSON object with a "tool" key)
+export const TOOL_CALL_PATTERN = /(?:```\s*tool:run\b)|(?:^tool:run\b)|\{\s*"tool"\s*:/m;
 export const hasToolCalls = (msg) => typeof msg === 'string' && TOOL_CALL_PATTERN.test(msg);
 
 class WorkerController {
