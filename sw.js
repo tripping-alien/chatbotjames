@@ -100,7 +100,7 @@ self.addEventListener('fetch', (event) => {
                     return res;
                 })
                 .catch(async () => {
-                    const cached = await caches.match(event.request);
+                    const cached = await caches.match(event.request, { ignoreSearch: true });
                     if (cached) return cached;
                     return new Response('Network error in app file', { status: 503 });
                 })
@@ -111,7 +111,7 @@ self.addEventListener('fetch', (event) => {
     // CDN assets: cache-first
     if (url.hostname.includes('jsdelivr.net') || url.hostname.includes('cdn.')) {
         event.respondWith(
-            caches.match(event.request).then(cached =>
+            caches.match(event.request, { ignoreSearch: true }).then(cached =>
                 cached ?? fetch(event.request).then(res => {
                     const clone = res.clone();
                     caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
@@ -125,7 +125,7 @@ self.addEventListener('fetch', (event) => {
     // Everything else: network with cache fallback
     event.respondWith(
         fetch(event.request).catch(async () => {
-            const cached = await caches.match(event.request);
+            const cached = await caches.match(event.request, { ignoreSearch: true });
             if (cached) return cached;
             return new Response('Network error', { status: 503 });
         })
