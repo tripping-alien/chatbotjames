@@ -55,7 +55,16 @@ export function drainStreamQueue(targetId) {
     if (_finished.has(targetId)) return;
     const state = streamQueues.get(targetId);
     if (!state || state.displayed.length >= state.pending.length) {
-        if (state) state.running = false;
+        if (state) {
+            state.running = false;
+            // If the stream was marked for completion and has finished typing, clean it up
+            if (state.isComplete) {
+                _finished.add(targetId);
+                if (_finished.size > 1024) _finished.delete(_finished.values().next().value);
+                if (state.updateDom !== false) updateLiveBubble(state.pending, targetId, true);
+                streamQueues.delete(targetId);
+            }
+        }
         return;
     }
     // Paused (user switched away) — do not touch the DOM or schedule further ticks
@@ -65,8 +74,16 @@ export function drainStreamQueue(targetId) {
     }
     state.running = true;
 
-    // Advance exactly one character
-    state.displayed = state.pending.slice(0, state.displayed.length + 1);
+    // Dynamically adjust typing speed based on how far behind the renderer is
+    const backlog = state.pending.length - state.displayed.length;
+    let charsToType = 1;
+    if (backlog > 20) charsToType = 2;
+    if (backlog > 50) charsToType = 4;
+    if (backlog > 150) charsToType = 8;
+    if (backlog > 300) charsToType = 15;
+
+    // Advance characters
+    state.displayed = state.pending.slice(0, state.displayed.length + charsToType);
     updateLiveBubble(state.displayed, targetId);
 
     // Speed is controlled by CONFIG.ui.streamRenderIntervalMs (default 15 ms)
@@ -74,17 +91,18 @@ export function drainStreamQueue(targetId) {
 }
 
 export function flushStreamQueue(targetId) {
-    _finished.add(targetId);
-    if (_finished.size > 1024) _finished.delete(_finished.values().next().value);
     const state = streamQueues.get(targetId);
     if (state) {
-        if (state.timeoutId) clearTimeout(state.timeoutId);
-        // Only force-render into the DOM if this bubble is allowed to update the current view
-        if (state.updateDom !== false) {
-            updateLiveBubble(state.pending, targetId, true);
+        // Instead of forcing an instant render, we mark it complete and let the drain loop finish typing it out
+        state.isComplete = true;
+        if (!state.running && state.updateDom !== false) {
+            drainStreamQueue(targetId);
         }
+    } else {
+        // If the state doesn't exist, it was never queued (e.g. instantly finished)
+        _finished.add(targetId);
+        if (_finished.size > 1024) _finished.delete(_finished.values().next().value);
     }
-    streamQueues.delete(targetId);
 }
 
 /**
