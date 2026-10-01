@@ -2,7 +2,8 @@ class UIManager {
     constructor() {
         this.cmdInput = document.getElementById('cmdInput')
             || document.getElementById('userInput')
-            || document.getElementById('user-input');
+            || document.getElementById('user-input')
+            || document.getElementById('sendBtn');
 
         this.sendBtn = document.getElementById('sendBtn')
             || document.getElementById('sendButton')
