@@ -1137,7 +1137,7 @@ function setupEventListeners() {
 }
 
 // Bootstrap
-document.addEventListener('DOMContentLoaded', () => {
+function bootstrapApp() {
     systemProfiler.markStart('dom-content-loaded');
     
     setupEventListeners();
