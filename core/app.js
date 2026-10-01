@@ -3,8 +3,8 @@ function _fromNow(timestamp) {
     const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
     const diff = timestamp - Date.now();
     const abs = Math.abs(diff);
-    if (abs < 60_000)     return rtf.format(Math.round(diff / 1000), 'second');
-    if (abs < 3_600_000)  return rtf.format(Math.round(diff / 60_000), 'minute');
+    if (abs < 60_000) return rtf.format(Math.round(diff / 1000), 'second');
+    if (abs < 3_600_000) return rtf.format(Math.round(diff / 60_000), 'minute');
     if (abs < 86_400_000) return rtf.format(Math.round(diff / 3_600_000), 'hour');
     if (abs < 2_592_000_000) return rtf.format(Math.round(diff / 86_400_000), 'day');
     return rtf.format(Math.round(diff / 2_592_000_000), 'month');
@@ -43,7 +43,7 @@ systemProfiler.start();
 
 // ── Notification Engine ──
 function sendNotification(title, body) {
-    if (document.visibilityState === 'visible') return; 
+    if (document.visibilityState === 'visible') return;
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
         try {
             const notif = new Notification(title, { body, icon: 'preview.png' });
@@ -51,7 +51,7 @@ function sendNotification(title, body) {
                 window.focus();
                 notif.close();
             };
-        } catch(e) {}
+        } catch (e) { }
     }
 }
 
@@ -143,7 +143,7 @@ gameController.onGameStateChange = () => {
     chatManager.persistCurrentChat(() => gameController.getGameState());
 };
 
-window.closeActiveGame = function() {
+window.closeActiveGame = function () {
     gameController.closeActiveGame((sysMsg) => {
         chatManager.chatHistory.push({ role: 'system', content: sysMsg });
     });
@@ -165,12 +165,12 @@ async function simulateCannedResponse(text) {
 
     const chatId = chatManager.currentChatId;
     const targetId = getNextTargetId(chatId);
-    
+
     // Register generation so updateLiveBubble doesn't think this is an orphaned ghost stream
     if (window.workerController) {
         window.workerController.activeGenerations.set(chatId, targetId);
     }
-    
+
     const sm = await import('./stream-manager.js');
 
     updateLiveBubble('...', targetId);
@@ -183,12 +183,12 @@ async function simulateCannedResponse(text) {
         sm.queueStreamText(targetId, accumulated, { updateDom: true });
         await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
     }
-    
+
     sm.flushStreamQueue(targetId);
     chatManager.chatHistory.push({ role: 'assistant', content: text });
 
     import('./chat-db.js').then(db => db.dbSaveChat(chatManager.chatMap.get(chatId)));
-    
+
     _cannedGenActive = false;
     uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
     updateStatusLight('idle');
@@ -279,7 +279,7 @@ workerController.onWorkerDone = (data) => {
             uiManager.updateActiveModelLabel(runningPreset.label);
         }
     }
-    
+
     if (window._chatsLoadedForRecovery) {
         initRecovery();
     }
@@ -293,7 +293,7 @@ workerController.onWorkerDone = (data) => {
             const panel = document.getElementById('sharePanel');
             if (overlay) overlay.classList.add('visible');
             if (panel) panel.classList.add('open');
-        }, 5000); 
+        }, 5000);
     }
 };
 
@@ -325,7 +325,7 @@ workerController.onComplete = (chatId, targetId, message) => {
         } else {
             updateLiveBubble(message, targetId, true);
             chatManager.chatHistory.push({ role: 'assistant', content: message });
-            
+
             if (gameController.activeGame) {
                 import('../games/game-logic.js').then(({ extractAIMove }) => {
                     const aiMove = extractAIMove(message, gameController.activeGame);
@@ -349,13 +349,13 @@ workerController.onComplete = (chatId, targetId, message) => {
         const bgChat = chatManager.chatMap.get(chatId);
         if (bgChat) {
             bgChat.messages.push({ role: 'assistant', content: message });
-            
+
             if (bgChat.gameState) {
                 import('../games/game-logic.js').then(({ extractAIMove, ChessGame, CheckersGame }) => {
                     const tempGame = bgChat.gameState.type === 'checkers' ? new CheckersGame() : new ChessGame();
                     if (bgChat.gameState.fen) tempGame.loadFen(bgChat.gameState.fen);
                     tempGame.aiColor = bgChat.gameState.aiColor || 'b';
-                    
+
                     const aiMove = extractAIMove(message, tempGame);
                     if (aiMove) {
                         const moveInfo = tempGame.move(aiMove);
@@ -404,7 +404,7 @@ workerController.onAborted = (chatId, targetId, message) => {
     if (chatId === chatManager.currentChatId && message !== undefined && message !== null) {
         updateLiveBubble(message, targetId, true); // force=true: bypass throttle so the final aborted content always renders
         chatManager.chatHistory.push({ role: 'assistant', content: message });
-        
+
         if (window.gameController && window.gameController.activeGame) {
             import('../games/game-logic.js').then(({ extractAIMove }) => {
                 const aiMove = extractAIMove(message, window.gameController.activeGame);
@@ -422,19 +422,19 @@ workerController.onAborted = (chatId, targetId, message) => {
                 }
             });
         }
-        
+
         chatManager.persistCurrentChat(() => gameController.getGameState());
     } else if (chatId !== chatManager.currentChatId && message) {
         const bgChat = chatManager.chatMap.get(chatId);
         if (bgChat) {
             bgChat.messages.push({ role: 'assistant', content: message });
-            
+
             if (bgChat.gameState) {
                 import('../games/game-logic.js').then(({ extractAIMove, ChessGame, CheckersGame }) => {
                     const tempGame = bgChat.gameState.type === 'checkers' ? new CheckersGame() : new ChessGame();
                     if (bgChat.gameState.fen) tempGame.loadFen(bgChat.gameState.fen);
                     tempGame.aiColor = bgChat.gameState.aiColor || 'b';
-                    
+
                     const aiMove = extractAIMove(message, tempGame);
                     if (aiMove) {
                         const moveInfo = tempGame.move(aiMove);
@@ -487,15 +487,15 @@ attachmentManager.onPreviewsUpdated = () => {
     attachmentManager.attachedFiles.forEach((file, index) => {
         const chip = document.createElement('div');
         chip.className = 'attachment-chip';
-        
+
         const span = document.createElement('span');
         span.textContent = `📄 ${file.name}`;
-        
+
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.innerHTML = '&times;';
         btn.onclick = () => attachmentManager.removeAttachment(index);
-        
+
         chip.appendChild(span);
         chip.appendChild(btn);
         previewContainer.appendChild(chip);
@@ -565,12 +565,12 @@ function sendMessage(preExecutedMove = null) {
         } else {
             userMovePlayed = gameController.parseUserMove(text);
         }
-        
+
         if (userMovePlayed) {
             gameController.handleGameMove(
-                userMovePlayed, 
-                null, 
-                (v) => uiManager.setIdleState(v, (x) => globalState.isGeneratingUI = x), 
+                userMovePlayed,
+                null,
+                (v) => uiManager.setIdleState(v, (x) => globalState.isGeneratingUI = x),
                 null,
                 !!preExecutedMove // indicates UI already handled notation update
             );
@@ -579,10 +579,10 @@ function sendMessage(preExecutedMove = null) {
         const turnColor = gameController.activeGame.getTurn() === 'w' ? 'White' : 'Black';
         const aiColor = gameController.activeGame.aiColor === 'w' ? 'White' : 'Black';
         const gameTypeLabel = gameController.activeGame.type === 'chess' ? 'FEN' : 'Checkers Board';
-        const formatReminder = gameController.activeGame.type === 'chess' 
-            ? 'IMPORTANT: You must format your move using Standard Algebraic Notation (SAN) for chess (e.g. "e5", "Nf3", "O-O", "Bxc6"). Do NOT use "from to" coordinate format like "c6 to c5".' 
+        const formatReminder = gameController.activeGame.type === 'chess'
+            ? 'IMPORTANT: You must format your move using Standard Algebraic Notation (SAN) for chess (e.g. "e5", "Nf3", "O-O", "Bxc6"). Do NOT use "from to" coordinate format like "c6 to c5".'
             : 'IMPORTANT: You must format your move using Standard Checkers Notation (1-32) (e.g. "11-15", or "11x18x25" for multi-jumps). Do NOT use coordinates.';
-        
+
         let moveHistoryStr = '';
         if (gameController.activeGame.getHistory) {
             const history = gameController.activeGame.getHistory();
@@ -590,7 +590,7 @@ function sendMessage(preExecutedMove = null) {
                 moveHistoryStr = ` Move history: ${history.join(' ')}.`;
             }
         }
-        
+
         if (userMovePlayed) {
             fullPrompt += `\n\n[Game State] Current ${gameTypeLabel}: ${gameController.activeGame.getFen()}.${moveHistoryStr} You are playing ${aiColor}. The user just played ${userMovePlayed.notation}. It is NOW YOUR TURN. You MUST use the make_move tool immediately to play your move. ${formatReminder} Do NOT ask the user for their move—they just played it!`;
         } else {
@@ -648,7 +648,7 @@ function handleStopGeneration() {
     }
 }
 
-window.simulateCannedResponse = function(text) {
+window.simulateCannedResponse = function (text) {
     globalState.cannedGenId++;
     const currentGenId = globalState.cannedGenId;
 
@@ -725,7 +725,7 @@ async function handleToolCalls(message, targetId, originChatId) {
     _chatToolDepths.set(originChatId, _depth + 1);
 
     const previous = _toolExecutionQueue.get(originChatId) || Promise.resolve();
-    const current = previous.catch(() => {}).then(async () => {
+    const current = previous.catch(() => { }).then(async () => {
         const isActiveChat = originChatId === chatManager.currentChatId;
         let targetHistory = chatManager.chatHistory;
         let bgChat = null;
@@ -747,256 +747,256 @@ async function handleToolCalls(message, targetId, originChatId) {
             return;
         }
 
-    const calls = [];
-    
-    // 1. ```tool:run ... ``` (or missing backticks)
-    const runRegex = /(?:```\s*)?tool:run\n?([\s\S]*?)(?:```|$)/g;
-    let match;
-    while ((match = runRegex.exec(message)) !== null) {
-        calls.push(match[1].trim());
-    }
+        const calls = [];
 
-    // 2. Code blocks containing "tool":
-    if (calls.length === 0) {
-        const codeRegex = /```(?:json)?\n?([\s\S]*?)```/g;
-        while ((match = codeRegex.exec(message)) !== null) {
-            if (match[1].includes('"tool"')) {
-                calls.push(match[1].trim());
-            }
+        // 1. ```tool:run ... ``` (or missing backticks)
+        const runRegex = /(?:```\s*)?tool:run\n?([\s\S]*?)(?:```|$)/g;
+        let match;
+        while ((match = runRegex.exec(message)) !== null) {
+            calls.push(match[1].trim());
         }
-    }
 
-    // 3. Bare JSON (if the whole message is a JSON object)
-    if (calls.length === 0) {
-        const trimmed = message.trim();
-        if (trimmed.startsWith('{') && trimmed.endsWith('}') && trimmed.includes('"tool"')) {
-            calls.push(trimmed);
-        }
-    }
-
-    if (calls.length === 0) {
-        targetHistory.push({ role: 'assistant', content: message });
-        if (isActiveChat) {
-            chatManager.persistCurrentChat(() => gameController.getGameState());
-            renderChatLog();
-            uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
-        } else {
-            import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
-        }
-        workerController.activeGenerations.delete(originChatId);
-        return;
-    }
-
-    // Push the assistant's message with tool calls to history
-    targetHistory.push({ role: 'assistant', content: message });
-    if (isActiveChat) {
-        chatManager.persistCurrentChat(() => gameController.getGameState());
-    } else {
-        await import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
-    }
-
-    for (const callBlock of calls) {
-        // ── Multi-format tool call parser ─────────────────────────────────────
-        // Supports JSON, XML, and plain "key: value" formats (auto-detected).
-        let toolName, params;
-
-        const trimmed = callBlock.trim();
-
-        // ── JSON format: {"tool":"name","params":{...}} or {"name":"...","params":{...}} ──
-        if (trimmed.startsWith('{')) {
-            try {
-                const parsed = JSON.parse(trimmed);
-                toolName = parsed.tool ?? parsed.name ?? parsed.tool_name ?? '';
-                params = parsed.params ?? parsed.parameters ?? parsed.args ?? {};
-            } catch {
-                toolName = '';
-                params = {};
-            }
-        }
-        // ── XML format: <tool>name</tool><params><key>val</key>...</params> ──
-        else if (trimmed.startsWith('<')) {
-            try {
-                const parser = new DOMParser();
-                // Wrap in a root element so DOMParser handles it cleanly
-                const doc = parser.parseFromString(`<root>${trimmed}</root>`, 'text/xml');
-                const toolEl = doc.querySelector('tool') ?? doc.querySelector('name') ?? doc.querySelector('tool_name');
-                toolName = toolEl?.textContent?.trim() ?? '';
-                params = {};
-                const paramsEl = doc.querySelector('params') ?? doc.querySelector('parameters') ?? doc.querySelector('args');
-                if (paramsEl) {
-                    for (const child of paramsEl.children) {
-                        params[child.tagName] = child.textContent.trim();
-                    }
-                }
-            } catch {
-                toolName = '';
-                params = {};
-            }
-        }
-        // ── Plain "key: value" format (original / fallback) ──────────────────
-        else {
-            const lines = trimmed.split('\n').map(l => l.trim()).filter(l => l);
-            toolName = lines[0];
-            params = {};
-            for (let i = 1; i < lines.length; i++) {
-                const parts = lines[i].split(':');
-                if (parts.length >= 2) {
-                    const k = parts[0].trim();
-                    const v = parts.slice(1).join(':').trim();
-                    params[k] = v;
+        // 2. Code blocks containing "tool":
+        if (calls.length === 0) {
+            const codeRegex = /```(?:json)?\n?([\s\S]*?)```/g;
+            while ((match = codeRegex.exec(message)) !== null) {
+                if (match[1].includes('"tool"')) {
+                    calls.push(match[1].trim());
                 }
             }
         }
 
-        if (isActiveChat) uiManager.updateStatusText(`RUNNING ${toolName.toUpperCase()}...`);
-        let toolResult = null;
-
-        try {
-            if (toolName === 'start_game') {
-                if (isActiveChat) {
-                    gameController.handleStartGame(
-                        params, 
-                        (msg) => targetHistory.push({ role: 'system', content: msg }), 
-                        () => {}
-                    );
-                    toolResult = `Game started: ${params.game || 'chess'}. Wait for user's move.`;
-                } else {
-                    toolResult = `Error: Cannot start game in background chat.`;
-                }
-            } else if (toolName === 'make_move') {
-                if (isActiveChat) {
-                    const moveResult = gameController.handleMakeMove(
-                        params, 
-                        (msg) => {
-                            if (!msg.includes('Failed to make move')) {
-                                targetHistory.push({ role: 'system', content: msg });
-                            }
-                        }, 
-                        (v) => uiManager.setIdleState(v, (x) => globalState.isGeneratingUI = x),
-                        () => {} 
-                    );
-                    if (moveResult && moveResult.success === false) {
-                        toolResult = moveResult.error;
-                    } else {
-                        toolResult = `Move ${params.move} played. Wait for user's next move.`;
-                    }
-                } else {
-                    if (bgChat.gameState) {
-                        const { ChessGame, CheckersGame } = await import('../games/game-logic.js');
-                        let tempGame = bgChat.gameState.type === 'checkers' ? new CheckersGame() : new ChessGame();
-                        if (bgChat.gameState.fen) tempGame.loadFen(bgChat.gameState.fen);
-                        if (bgChat.gameState.history && tempGame.setHistory) tempGame.setHistory(bgChat.gameState.history);
-                        tempGame.aiColor = bgChat.gameState.aiColor || 'b';
-
-                        const moveInfo = tempGame.move(params.move);
-                        if (moveInfo) {
-                            let notation = moveInfo.notation || moveInfo.san;
-                            if (!tempGame.moveHistory) tempGame.moveHistory = [];
-                            if (notation) tempGame.moveHistory.push(notation);
-                            
-                            bgChat.gameState = {
-                                type: tempGame.type,
-                                fen: tempGame.getFen(),
-                                history: tempGame.getHistory ? tempGame.getHistory() : null,
-                                aiColor: tempGame.aiColor
-                            };
-                            toolResult = `Move ${params.move} played. Wait for user's next move.`;
-                        } else {
-                            toolResult = `[System]: Failed to make move ${params.move}. Invalid move.`;
-                        }
-                    } else {
-                        toolResult = `[System]: Failed to make move. No active game.`;
-                    }
-                }
-            } else if (toolName === 'write_note') {
-                const db = await import('./chat-db.js');
-                const note = params.note;
-                if (!note) throw new Error("No note provided");
-                await db.dbSaveNote({ id: crypto.randomUUID(), text: note, timestamp: Date.now() });
-                const updatedNotes = await db.dbLoadNotes();
-                chatManager.userNotes = updatedNotes; // keep in-memory list in sync for next getMessagesWindow()
-                if (chatManager.onNotesLoaded) chatManager.onNotesLoaded(updatedNotes);
-                toolResult = "Note saved silently.";
-            } else if (toolName === 'eval_python' || toolName === 'python') {
-                const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'run', code: params.code }, 60000);
-                // Combine stdout + expression result so the AI sees everything
-                const parts = [];
-                if (pyResp.stdout && pyResp.stdout.trim()) parts.push(pyResp.stdout.trim());
-                if (pyResp.result && pyResp.result.trim() && pyResp.result.trim() !== 'None') parts.push(`=> ${pyResp.result.trim()}`);
-                toolResult = parts.length > 0 ? parts.join('\n') : '(no output)';
-                if (pyResp.figures && pyResp.figures.length > 0) {
-                    // Embed figures as data URIs so the AI knows they were generated
-                    toolResult += `\n[${pyResp.figures.length} Matplotlib figure(s) generated and displayed]`;
-                    // Render figures inline in the chat log
-                    const chatLog = document.getElementById('chatLog');
-                    if (chatLog && isActiveChat) {
-                        const figWrap = document.createElement('div');
-                        figWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;padding:8px;background:rgba(0,0,0,0.2);border-radius:6px;margin:4px 0;';
-                        pyResp.figures.forEach((b64, i) => {
-                            const img = document.createElement('img');
-                            img.src = `data:image/png;base64,${b64}`;
-                            img.alt = `Figure ${i + 1}`;
-                            img.style.cssText = 'max-width:100%;border-radius:4px;border:1px solid rgba(255,255,255,0.08);';
-                            figWrap.appendChild(img);
-                        });
-                        const gameBoardWrap = chatLog.querySelector('.game-board-wrap');
-                        if (gameBoardWrap) chatLog.insertBefore(figWrap, gameBoardWrap);
-                        else chatLog.appendChild(figWrap);
-                        chatLog.scrollTop = chatLog.scrollHeight;
-                    }
-                }
-            } else if (toolName === 'pip_install') {
-                // Install one or more packages into the live Pyodide session via micropip
-                if (workerController._pyodideState !== 'ready') {
-                    throw new Error('Python environment is still loading — please wait a moment and try again.');
-                }
-                const pkgs = params.packages
-                    ? (Array.isArray(params.packages) ? params.packages : String(params.packages).split(',').map(s => s.trim()).filter(Boolean))
-                    : (params.package ? [params.package] : []);
-                if (pkgs.length === 0) throw new Error('pip_install requires a packages parameter');
-                await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'install', packages: pkgs }, 120000);
-                toolResult = `Installed: ${pkgs.join(', ')}. You can now import them.`;
-            } else if (toolName === 'python_reset') {
-                // Wipe all user-defined variables / imports from the Pyodide namespace
-                if (workerController._pyodideState !== 'ready') {
-                    throw new Error('Python environment is still loading — please wait a moment and try again.');
-                }
-                await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'reset' }, 15000);
-                toolResult = 'Python environment reset. All variables and imports cleared.';
-            } else if (toolName === 'location') {
-                const toolsBridge = await import('../tools/tools-bridge.js');
-                const loc = await toolsBridge.getLocation();
-                toolResult = { latitude: loc.latitude, longitude: loc.longitude, accuracy: `${Math.round(loc.accuracy)}m` };
-            } else if (toolName === 'clipboard') {
-                const toolsBridge = await import('../tools/tools-bridge.js');
-                const content = await toolsBridge.readClipboard();
-                toolResult = { content, length: content.length };
-            } else if (toolName === 'timer') {
-                const toolsBridge = await import('../tools/tools-bridge.js');
-                const s = Math.max(1, parseInt(params.seconds ?? 0));
-                toolsBridge.showTimer(s, params.label, { DOM: { log: document.getElementById('chatLog') } });
-                toolResult = { seconds: s, label: params.label ?? 'Timer', note: 'Timer started.' };
-            } else {
-                // Route all other tools to toolsWorker
-                const rpcResp = await workerController.callWorkerRPC(workerController.toolsWorker, { tool: toolName, params }, 30000);
-                toolResult = rpcResp.result ?? rpcResp;
+        // 3. Bare JSON (if the whole message is a JSON object)
+        if (calls.length === 0) {
+            const trimmed = message.trim();
+            if (trimmed.startsWith('{') && trimmed.endsWith('}') && trimmed.includes('"tool"')) {
+                calls.push(trimmed);
             }
-        } catch (e) {
-            toolResult = `Error executing tool: ${e.message}`;
-            if (isActiveChat) appendErrorToChat(toolResult);
         }
 
-        if (toolResult !== undefined && toolResult !== null) {
-            const formattedResult = typeof toolResult === 'object' ? JSON.stringify(toolResult, null, 2) : String(toolResult);
-            targetHistory.push({ role: 'system', content: `[Tool Result: ${toolName}]\n${formattedResult}` });
+        if (calls.length === 0) {
+            targetHistory.push({ role: 'assistant', content: message });
             if (isActiveChat) {
                 chatManager.persistCurrentChat(() => gameController.getGameState());
                 renderChatLog();
+                uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
             } else {
-                await import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
+                import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
+            }
+            workerController.activeGenerations.delete(originChatId);
+            return;
+        }
+
+        // Push the assistant's message with tool calls to history
+        targetHistory.push({ role: 'assistant', content: message });
+        if (isActiveChat) {
+            chatManager.persistCurrentChat(() => gameController.getGameState());
+        } else {
+            await import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
+        }
+
+        for (const callBlock of calls) {
+            // ── Multi-format tool call parser ─────────────────────────────────────
+            // Supports JSON, XML, and plain "key: value" formats (auto-detected).
+            let toolName, params;
+
+            const trimmed = callBlock.trim();
+
+            // ── JSON format: {"tool":"name","params":{...}} or {"name":"...","params":{...}} ──
+            if (trimmed.startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    toolName = parsed.tool ?? parsed.name ?? parsed.tool_name ?? '';
+                    params = parsed.params ?? parsed.parameters ?? parsed.args ?? {};
+                } catch {
+                    toolName = '';
+                    params = {};
+                }
+            }
+            // ── XML format: <tool>name</tool><params><key>val</key>...</params> ──
+            else if (trimmed.startsWith('<')) {
+                try {
+                    const parser = new DOMParser();
+                    // Wrap in a root element so DOMParser handles it cleanly
+                    const doc = parser.parseFromString(`<root>${trimmed}</root>`, 'text/xml');
+                    const toolEl = doc.querySelector('tool') ?? doc.querySelector('name') ?? doc.querySelector('tool_name');
+                    toolName = toolEl?.textContent?.trim() ?? '';
+                    params = {};
+                    const paramsEl = doc.querySelector('params') ?? doc.querySelector('parameters') ?? doc.querySelector('args');
+                    if (paramsEl) {
+                        for (const child of paramsEl.children) {
+                            params[child.tagName] = child.textContent.trim();
+                        }
+                    }
+                } catch {
+                    toolName = '';
+                    params = {};
+                }
+            }
+            // ── Plain "key: value" format (original / fallback) ──────────────────
+            else {
+                const lines = trimmed.split('\n').map(l => l.trim()).filter(l => l);
+                toolName = lines[0];
+                params = {};
+                for (let i = 1; i < lines.length; i++) {
+                    const parts = lines[i].split(':');
+                    if (parts.length >= 2) {
+                        const k = parts[0].trim();
+                        const v = parts.slice(1).join(':').trim();
+                        params[k] = v;
+                    }
+                }
+            }
+
+            if (isActiveChat) uiManager.updateStatusText(`RUNNING ${toolName.toUpperCase()}...`);
+            let toolResult = null;
+
+            try {
+                if (toolName === 'start_game') {
+                    if (isActiveChat) {
+                        gameController.handleStartGame(
+                            params,
+                            (msg) => targetHistory.push({ role: 'system', content: msg }),
+                            () => { }
+                        );
+                        toolResult = `Game started: ${params.game || 'chess'}. Wait for user's move.`;
+                    } else {
+                        toolResult = `Error: Cannot start game in background chat.`;
+                    }
+                } else if (toolName === 'make_move') {
+                    if (isActiveChat) {
+                        const moveResult = gameController.handleMakeMove(
+                            params,
+                            (msg) => {
+                                if (!msg.includes('Failed to make move')) {
+                                    targetHistory.push({ role: 'system', content: msg });
+                                }
+                            },
+                            (v) => uiManager.setIdleState(v, (x) => globalState.isGeneratingUI = x),
+                            () => { }
+                        );
+                        if (moveResult && moveResult.success === false) {
+                            toolResult = moveResult.error;
+                        } else {
+                            toolResult = `Move ${params.move} played. Wait for user's next move.`;
+                        }
+                    } else {
+                        if (bgChat.gameState) {
+                            const { ChessGame, CheckersGame } = await import('../games/game-logic.js');
+                            let tempGame = bgChat.gameState.type === 'checkers' ? new CheckersGame() : new ChessGame();
+                            if (bgChat.gameState.fen) tempGame.loadFen(bgChat.gameState.fen);
+                            if (bgChat.gameState.history && tempGame.setHistory) tempGame.setHistory(bgChat.gameState.history);
+                            tempGame.aiColor = bgChat.gameState.aiColor || 'b';
+
+                            const moveInfo = tempGame.move(params.move);
+                            if (moveInfo) {
+                                let notation = moveInfo.notation || moveInfo.san;
+                                if (!tempGame.moveHistory) tempGame.moveHistory = [];
+                                if (notation) tempGame.moveHistory.push(notation);
+
+                                bgChat.gameState = {
+                                    type: tempGame.type,
+                                    fen: tempGame.getFen(),
+                                    history: tempGame.getHistory ? tempGame.getHistory() : null,
+                                    aiColor: tempGame.aiColor
+                                };
+                                toolResult = `Move ${params.move} played. Wait for user's next move.`;
+                            } else {
+                                toolResult = `[System]: Failed to make move ${params.move}. Invalid move.`;
+                            }
+                        } else {
+                            toolResult = `[System]: Failed to make move. No active game.`;
+                        }
+                    }
+                } else if (toolName === 'write_note') {
+                    const db = await import('./chat-db.js');
+                    const note = params.note;
+                    if (!note) throw new Error("No note provided");
+                    await db.dbSaveNote({ id: crypto.randomUUID(), text: note, timestamp: Date.now() });
+                    const updatedNotes = await db.dbLoadNotes();
+                    chatManager.userNotes = updatedNotes; // keep in-memory list in sync for next getMessagesWindow()
+                    if (chatManager.onNotesLoaded) chatManager.onNotesLoaded(updatedNotes);
+                    toolResult = "Note saved silently.";
+                } else if (toolName === 'eval_python' || toolName === 'python') {
+                    const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'run', code: params.code }, 60000);
+                    // Combine stdout + expression result so the AI sees everything
+                    const parts = [];
+                    if (pyResp.stdout && pyResp.stdout.trim()) parts.push(pyResp.stdout.trim());
+                    if (pyResp.result && pyResp.result.trim() && pyResp.result.trim() !== 'None') parts.push(`=> ${pyResp.result.trim()}`);
+                    toolResult = parts.length > 0 ? parts.join('\n') : '(no output)';
+                    if (pyResp.figures && pyResp.figures.length > 0) {
+                        // Embed figures as data URIs so the AI knows they were generated
+                        toolResult += `\n[${pyResp.figures.length} Matplotlib figure(s) generated and displayed]`;
+                        // Render figures inline in the chat log
+                        const chatLog = document.getElementById('chatLog');
+                        if (chatLog && isActiveChat) {
+                            const figWrap = document.createElement('div');
+                            figWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;padding:8px;background:rgba(0,0,0,0.2);border-radius:6px;margin:4px 0;';
+                            pyResp.figures.forEach((b64, i) => {
+                                const img = document.createElement('img');
+                                img.src = `data:image/png;base64,${b64}`;
+                                img.alt = `Figure ${i + 1}`;
+                                img.style.cssText = 'max-width:100%;border-radius:4px;border:1px solid rgba(255,255,255,0.08);';
+                                figWrap.appendChild(img);
+                            });
+                            const gameBoardWrap = chatLog.querySelector('.game-board-wrap');
+                            if (gameBoardWrap) chatLog.insertBefore(figWrap, gameBoardWrap);
+                            else chatLog.appendChild(figWrap);
+                            chatLog.scrollTop = chatLog.scrollHeight;
+                        }
+                    }
+                } else if (toolName === 'pip_install') {
+                    // Install one or more packages into the live Pyodide session via micropip
+                    if (workerController._pyodideState !== 'ready') {
+                        throw new Error('Python environment is still loading — please wait a moment and try again.');
+                    }
+                    const pkgs = params.packages
+                        ? (Array.isArray(params.packages) ? params.packages : String(params.packages).split(',').map(s => s.trim()).filter(Boolean))
+                        : (params.package ? [params.package] : []);
+                    if (pkgs.length === 0) throw new Error('pip_install requires a packages parameter');
+                    await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'install', packages: pkgs }, 120000);
+                    toolResult = `Installed: ${pkgs.join(', ')}. You can now import them.`;
+                } else if (toolName === 'python_reset') {
+                    // Wipe all user-defined variables / imports from the Pyodide namespace
+                    if (workerController._pyodideState !== 'ready') {
+                        throw new Error('Python environment is still loading — please wait a moment and try again.');
+                    }
+                    await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'reset' }, 15000);
+                    toolResult = 'Python environment reset. All variables and imports cleared.';
+                } else if (toolName === 'location') {
+                    const toolsBridge = await import('../tools/tools-bridge.js');
+                    const loc = await toolsBridge.getLocation();
+                    toolResult = { latitude: loc.latitude, longitude: loc.longitude, accuracy: `${Math.round(loc.accuracy)}m` };
+                } else if (toolName === 'clipboard') {
+                    const toolsBridge = await import('../tools/tools-bridge.js');
+                    const content = await toolsBridge.readClipboard();
+                    toolResult = { content, length: content.length };
+                } else if (toolName === 'timer') {
+                    const toolsBridge = await import('../tools/tools-bridge.js');
+                    const s = Math.max(1, parseInt(params.seconds ?? 0));
+                    toolsBridge.showTimer(s, params.label, { DOM: { log: document.getElementById('chatLog') } });
+                    toolResult = { seconds: s, label: params.label ?? 'Timer', note: 'Timer started.' };
+                } else {
+                    // Route all other tools to toolsWorker
+                    const rpcResp = await workerController.callWorkerRPC(workerController.toolsWorker, { tool: toolName, params }, 30000);
+                    toolResult = rpcResp.result ?? rpcResp;
+                }
+            } catch (e) {
+                toolResult = `Error executing tool: ${e.message}`;
+                if (isActiveChat) appendErrorToChat(toolResult);
+            }
+
+            if (toolResult !== undefined && toolResult !== null) {
+                const formattedResult = typeof toolResult === 'object' ? JSON.stringify(toolResult, null, 2) : String(toolResult);
+                targetHistory.push({ role: 'system', content: `[Tool Result: ${toolName}]\n${formattedResult}` });
+                if (isActiveChat) {
+                    chatManager.persistCurrentChat(() => gameController.getGameState());
+                    renderChatLog();
+                } else {
+                    await import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
+                }
             }
         }
-    }
 
         if (isActiveChat) {
             uiManager.updateStatusText('THINKING...');
@@ -1114,7 +1114,7 @@ function isTVDevice() {
         const coarse = window.matchMedia('(pointer: coarse)').matches;
         const noHover = window.matchMedia('(hover: none)').matches;
         if (large && coarse && noHover) return true;
-    } catch (_) {}
+    } catch (_) { }
     return false;
 }
 
@@ -1139,7 +1139,7 @@ function setupEventListeners() {
 // Bootstrap
 function bootstrapApp() {
     systemProfiler.markStart('dom-content-loaded');
-    
+
     setupEventListeners();
     attachmentManager.setupFileAttachment('attachButton', 'fileInput', 'chatWindow', appendErrorToChat);
 
@@ -1165,39 +1165,39 @@ function bootstrapApp() {
             }, 500);
         }
     }
-    
+
     systemProfiler.markEnd('dom-content-loaded');
-});
+};
 
 (async () => {
     await initConfigCache();
     await chatManager.loadSavedChats((await import('./chat-db.js')).migrateFromLocalStorage, (await import('./crypto-utils.js')).initEncryption);
     const lastChatId = Number(safeLocalStorage.getItem('james-last-chat-id'));
     const lastChat = chatManager.chatMap.get(lastChatId);
-    
+
     if (lastChat) {
         chatManager.loadChatHistory(
-            lastChatId, 
-            () => gameController.getGameState(), 
+            lastChatId,
+            () => gameController.getGameState(),
             (state) => gameController.restoreGameState(state),
             safeLocalStorage
         );
     } else if (chatManager.allChats.length > 0) {
         chatManager.loadChatHistory(
             chatManager.allChats[0].id,
-            () => gameController.getGameState(), 
+            () => gameController.getGameState(),
             (state) => gameController.restoreGameState(state),
             safeLocalStorage
         );
     } else {
         chatManager.startNewChat(
-            () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice()), 
+            () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice()),
             safeLocalStorage,
             () => gameController.getGameState(),
             (state) => gameController.restoreGameState(state)
         );
     }
-    
+
     window._chatsLoadedForRecovery = true;
     if (workerController._recoveryInitDone) initRecovery();
 })();
@@ -1213,7 +1213,7 @@ uiManager.updateStatusText(_savedLastPresetId ? 'RESUMING LAST MODEL…' : 'INIT
 const newChatBtn = document.getElementById('newChatBtn');
 if (newChatBtn) {
     newChatBtn.addEventListener('click', () => chatManager.startNewChat(
-        () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice()), 
+        () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice()),
         safeLocalStorage,
         () => gameController.getGameState(),
         (state) => gameController.restoreGameState(state)
@@ -1278,14 +1278,14 @@ function _showCopyToast() {
 function _updateNotesUI(notes) {
     const notesList = document.getElementById('notesList');
     const btn = document.getElementById('notesBtn');
-    
+
     if (btn) {
         btn.title = notes && notes.length > 0
             ? `JAMES remembers ${notes.length} thing${notes.length !== 1 ? 's' : ''} about you`
             : 'No memory notes yet';
         btn.classList.toggle('notes-active', notes && notes.length > 0);
     }
-    
+
     if (!notesList) return;
 
     if (!notes || notes.length === 0) {
@@ -1336,13 +1336,13 @@ document.addEventListener('keydown', (e) => {
 });
 
 function _setupNotesPanel() {
-    const btn      = document.getElementById('notesBtn');
-    const panel    = document.getElementById('notesPanel');
-    const overlay  = document.getElementById('notesPanelOverlay');
+    const btn = document.getElementById('notesBtn');
+    const panel = document.getElementById('notesPanel');
+    const overlay = document.getElementById('notesPanelOverlay');
     const closeBtn = document.getElementById('notesPanelClose');
     if (!btn || !panel) return;
 
-    const openPanel  = () => { panel.classList.add('open'); overlay?.classList.add('visible'); };
+    const openPanel = () => { panel.classList.add('open'); overlay?.classList.add('visible'); };
     const closePanel = () => { panel.classList.remove('open'); overlay?.classList.remove('visible'); };
 
     btn.addEventListener('click', openPanel);
@@ -1464,7 +1464,7 @@ setTimeout(() => {
                 <p style="margin: 0; font-size: 1rem; color: var(--text-color);">I've been sitting in your browser for over a week waiting for you. Let's get back to work! 🚀</p>
             `;
             document.body.appendChild(toast);
-            
+
             requestAnimationFrame(() => {
                 toast.style.opacity = '1';
                 toast.style.transform = 'translateX(-50%) translateY(0)';
