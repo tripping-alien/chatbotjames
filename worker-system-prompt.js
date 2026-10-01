@@ -35,6 +35,10 @@ AVAILABLE TOOLS:
 - start_game(game: string, ai_color: string): "chess" or "checkers". MANDATORY when user asks to play.
 - make_move(move: string): SAN ("e4") for chess, numeric ("11-15") for checkers.
 - write_note(note: string): Silently save user facts.
+- physics(mode: string, ...params): Particle physics. modes: lorentz_factor, rest_energy, relativistic_energy, relativistic_momentum, energy_momentum_relation, debroglie, compton, photoelectric, decay, uncertainty.
+- relativity(mode: string, ...params): Special/general relativity. modes: time_dilation, length_contraction, velocity_addition, lorentz_boost, doppler, schwarzschild_radius, gravitational_time_dilation.
+- linalg(mode: string, A?, B?, b?, v?, w?): Linear algebra. modes: multiply, determinant, inverse, eigenvalues, solve, transpose, rank, dot, cross, norm, trace. Matrices as 2D JSON arrays, vectors as 1D arrays.
+- diffeq(mode: string, ...params): Differential equations. modes: euler, rk4, system_rk4 (numerical solvers — f/g as math string e.g. "x*y + 1"), second_order_const (a/b/c coefficients + optional IVP y0/yp0), linear_first_order (P/Q constants + optional y0).
 
 TOOL CALL FORMAT (JSON ONLY):
 When calling a tool, output ONLY a single JSON object inside a tool:run block. Do not use XML.
@@ -137,4 +141,34 @@ User: "I play e5" (after starting chess)
 
 User: "Hey, my name is Alex"
 -> \`\`\`tool:run\n{"tool": "write_note", "params": {"note": "User's name is Alex"}}\n\`\`\`
+
+User: "What is the Lorentz factor for a particle moving at 0.9c?"
+-> \`\`\`tool:run\n{"tool": "physics", "params": {"mode": "lorentz_factor", "beta": 0.9}}\n\`\`\`
+
+User: "What is the rest energy of a proton? (mp = 1.6726e-27 kg)"
+-> \`\`\`tool:run\n{"tool": "physics", "params": {"mode": "rest_energy", "mass_kg": 1.6726e-27}}\n\`\`\`
+
+User: "How much does time dilate for a clock moving at 80% of c for 10 seconds proper time?"
+-> \`\`\`tool:run\n{"tool": "relativity", "params": {"mode": "time_dilation", "beta": 0.8, "proper_time_s": 10}}\n\`\`\`
+
+User: "What is the Schwarzschild radius of the Sun? (M = 1.989e30 kg)"
+-> \`\`\`tool:run\n{"tool": "relativity", "params": {"mode": "schwarzschild_radius", "mass_kg": 1.989e30}}\n\`\`\`
+
+User: "Multiply matrices [[1,2],[3,4]] and [[5,6],[7,8]]"
+-> \`\`\`tool:run\n{"tool": "linalg", "params": {"mode": "multiply", "A": [[1,2],[3,4]], "B": [[5,6],[7,8]]}}\n\`\`\`
+
+User: "Find eigenvalues of [[4,1],[2,3]]"
+-> \`\`\`tool:run\n{"tool": "linalg", "params": {"mode": "eigenvalues", "A": [[4,1],[2,3]]}}\n\`\`\`
+
+User: "Solve the system: 2x + y = 5, x - y = 1"
+-> \`\`\`tool:run\n{"tool": "linalg", "params": {"mode": "solve", "A": [[2,1],[1,-1]], "b": [5,1]}}\n\`\`\`
+
+User: "Use RK4 to solve dy/dx = x*y, y(0) = 1 from x=0 to x=2"
+-> \`\`\`tool:run\n{"tool": "diffeq", "params": {"mode": "rk4", "f": "x*y", "x0": 0, "y0": 1, "x_end": 2, "steps": 100}}\n\`\`\`
+
+User: "Solve y'' + 2y' + y = 0 with y(0)=1, y'(0)=0"
+-> \`\`\`tool:run\n{"tool": "diffeq", "params": {"mode": "second_order_const", "a": 1, "b": 2, "c": 1, "y0": 1, "yp0": 0}}\n\`\`\`
+
+User: "Solve dy/dx + 3y = 6, y(0) = 1"
+-> \`\`\`tool:run\n{"tool": "diffeq", "params": {"mode": "linear_first_order", "P": 3, "Q": 6, "y0": 1}}\n\`\`\`
 `;

@@ -1,6 +1,7 @@
 import { create as oramaCreate, insert as oramaInsert, search as oramaSearch } from './orama.js';
 import { performWebSearch } from './tools-search.js';
 import { evalMath } from './tool-router.js';
+import { particlePhysics, relativityCalc, linAlg, diffEq } from './tools-physics.js';
 // dayjs removed — using native Intl.DateTimeFormat (zero-dependency, works in all Workers)
 
 
@@ -816,7 +817,13 @@ const TOOL_HANDLERS = {
     random: randomTool,
     ip: ipTool,
     ascii_art: asciiArtTool,
-    fetch_page: fetchPageTool
+    fetch_page: fetchPageTool,
+
+    // ── Scientific calculators ───────────────────────────────────────────────
+    physics:    (p) => particlePhysics(p),
+    relativity: (p) => relativityCalc(p),
+    linalg:     (p) => linAlg(p),
+    diffeq:     (p) => diffEq(p),
 };
 
 self.onmessage = async (e) => {
