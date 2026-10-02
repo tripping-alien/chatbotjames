@@ -1,4 +1,4 @@
-module.exports = [
+export default [
     {
         ignores: ["*.html", "*.css", "*.md", "eslint.config.js"]
     },

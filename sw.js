@@ -70,7 +70,7 @@ self.addEventListener('activate', (e) => {
     e.waitUntil(
         caches.keys().then(keys =>
             Promise.all(
-                keys.filter(k => k !== CACHE_NAME && k !== 'JAMES-model-cache' && k !== 'transformers-cache')
+                keys.filter(k => k !== CACHE_NAME && !k.startsWith('JAMES-model-cache') && k !== 'transformers-cache')
                     .map(k => caches.delete(k))
             )
         )
