@@ -1032,7 +1032,13 @@ async function handleToolCalls(message, targetId, originChatId) {
             }
 
             if (toolResult !== undefined && toolResult !== null) {
-                const formattedResult = typeof toolResult === 'object' ? JSON.stringify(toolResult, null, 2) : String(toolResult);
+                let formattedResult = typeof toolResult === 'object' ? JSON.stringify(toolResult, null, 2) : String(toolResult);
+                // Cap tool results to ~1500 chars so large payloads (web search, fetch_page, etc.)
+                // don't blow up the context window and OOM the GPU on follow-up model calls.
+                const MAX_TOOL_RESULT_CHARS = 1500;
+                if (formattedResult.length > MAX_TOOL_RESULT_CHARS) {
+                    formattedResult = formattedResult.slice(0, MAX_TOOL_RESULT_CHARS) + '\n…[result truncated for context length]';
+                }
                 targetHistory.push({ role: 'system', content: `[Tool Result: ${toolName}]\n${formattedResult}` });
                 if (isActiveChat) {
                     chatManager.persistCurrentChat(() => gameController.getGameState());

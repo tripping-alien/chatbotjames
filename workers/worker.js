@@ -234,14 +234,29 @@ self.onmessage = async (e) => {
             let maxTokens = CONFIG.worker.maxTokens;
             let temp = CONFIG.worker.temperature;
 
+            // Token budget per model tier — keep these conservative.
+            // The 3B model now gets a larger system prompt (tool examples etc.) plus
+            // tool-result history on follow-up calls, so capping at 1280 prevents OOM.
             if (activePreset) {
                 if (activePreset.params < 1.0) {
                     maxTokens = 512;
                     temp = 0.8;
                 } else if (activePreset.params >= 3.0) {
-                    maxTokens = 2048;
+                    maxTokens = 1280;  // was 2048 — reduced to avoid GPU OOM after tool calls
                     temp = 0.7;
                 }
+            }
+
+            // Safety guard: if the prompt alone is within 512 tokens of our
+            // generation budget, shrink maxTokens to leave at least 256 free,
+            // or bail out with a friendly error rather than crashing the GPU.
+            const CONTEXT_LIMIT = activePreset?.params >= 3.0 ? 4096 : 2048;
+            if (promptTokenCount + maxTokens > CONTEXT_LIMIT) {
+                const available = Math.max(256, CONTEXT_LIMIT - promptTokenCount);
+                if (available < 256) {
+                    throw new Error('Context window full — please start a new chat or select a smaller model to continue.');
+                }
+                maxTokens = available;
             }
 
             const output = await chatbot(prompt, {
