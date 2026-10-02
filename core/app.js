@@ -1,13 +1,15 @@
 // Native relative-time formatter — replaces the esm.sh dayjs import (saves ~14 KB + 1 network request)
+// Memoized because Intl constructors are very slow in V8 to instantiate on every call.
+let _rtfInstance = null;
 function _fromNow(timestamp) {
-    const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+    if (!_rtfInstance) _rtfInstance = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
     const diff = timestamp - Date.now();
     const abs = Math.abs(diff);
-    if (abs < 60_000) return rtf.format(Math.round(diff / 1000), 'second');
-    if (abs < 3_600_000) return rtf.format(Math.round(diff / 60_000), 'minute');
-    if (abs < 86_400_000) return rtf.format(Math.round(diff / 3_600_000), 'hour');
-    if (abs < 2_592_000_000) return rtf.format(Math.round(diff / 86_400_000), 'day');
-    return rtf.format(Math.round(diff / 2_592_000_000), 'month');
+    if (abs < 60_000) return _rtfInstance.format(Math.round(diff / 1000), 'second');
+    if (abs < 3_600_000) return _rtfInstance.format(Math.round(diff / 60_000), 'minute');
+    if (abs < 86_400_000) return _rtfInstance.format(Math.round(diff / 3_600_000), 'hour');
+    if (abs < 2_592_000_000) return _rtfInstance.format(Math.round(diff / 86_400_000), 'day');
+    return _rtfInstance.format(Math.round(diff / 2_592_000_000), 'month');
 }
 
 import { globalState } from './global-state.js';
