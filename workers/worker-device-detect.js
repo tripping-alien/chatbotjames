@@ -166,6 +166,6 @@ export function getDeviceRamGB() {
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (isMac && navigator.maxTouchPoints > 1);
     
     if (isIOS) return cores >= 6 ? 6 : 4;
-    if (isMac) return cores >= 8 ? 8 : 8; // Macs generally have at least 8GB
+    if (isMac) return cores >= 8 ? 16 : 8; // High-core-count Macs (M2 Pro/Max/Ultra etc.) typically have 16+ GB
     return cores >= 8 ? 8 : 4; // Generic fallback
 }

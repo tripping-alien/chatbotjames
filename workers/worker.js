@@ -252,11 +252,11 @@ self.onmessage = async (e) => {
             // or bail out with a friendly error rather than crashing the GPU.
             const CONTEXT_LIMIT = activePreset?.params >= 3.0 ? 4096 : 2048;
             if (promptTokenCount + maxTokens > CONTEXT_LIMIT) {
-                const available = Math.max(256, CONTEXT_LIMIT - promptTokenCount);
+                const available = CONTEXT_LIMIT - promptTokenCount;
                 if (available < 256) {
                     throw new Error('Context window full — please start a new chat or select a smaller model to continue.');
                 }
-                maxTokens = available;
+                maxTokens = Math.min(maxTokens, available);
             }
 
             const output = await chatbot(prompt, {
@@ -323,9 +323,11 @@ self.onmessage = async (e) => {
                     try { if (chatbot) chatbot.dispose(); } catch (_) {}
                     chatbot = null;
                     activePreset = null;
-                    err = new Error('GPU Memory Exhausted or Device Lost. The model has been unloaded to prevent crashes. Please select a smaller model (e.g., 1.5B or 1B) or refresh the page.');
+                    const safeErr = new Error('GPU Memory Exhausted or Device Lost. The model has been unloaded to prevent crashes. Please select a smaller model (e.g., 1.5B or 1B) or refresh the page.');
+                    reportWorkerError(safeErr, targetId, chatId);
+                } else {
+                    reportWorkerError(err, targetId, chatId);
                 }
-                reportWorkerError(err, targetId, chatId);
             }
         } finally {
             isGenerating = false;
