@@ -98,6 +98,7 @@ export function particlePhysics(params) {
 
         case 'compton': {
             const theta_deg = Number(params.theta_deg ?? params.angle_deg ?? 90);
+            if (theta_deg < 0 || theta_deg > 360) throw new Error('theta_deg must be in [0, 360]');
             const theta_rad = theta_deg * Math.PI / 180;
             const lamC = H / (M_E * C);
             const dLam = lamC * (1 - Math.cos(theta_rad));
@@ -433,16 +434,25 @@ export function linAlg(params) {
             if (!A||!b) throw new Error('Provide A matrix and b vector');
             // Flatten b if the model passes it as a column vector [[x],[y],[z]]
             const bFlat = Array.isArray(b[0]) ? b.map(row => row[0]) : b;
-            return { x: _solve(A, bFlat).map(v => _round(v)), note: 'Gaussian elimination with partial pivoting' };
+            return { x: _solve(A, bFlat).map(xi => _round(xi)), note: 'Gaussian elimination with partial pivoting' };
         }
         case 'transpose': { if (!A) throw new Error('Provide A'); return { transpose: _roundMatrix(_transpose(A)) }; }
         case 'rank':      { if (!A) throw new Error('Provide A'); return { rank: _rank(A), shape: _shape(A) }; }
         case 'dot': {
             if (!v||!w) throw new Error('Provide v and w');
-            if (v.length !== w.length) throw new Error('Vectors must be equal length');
-            const dot = v.reduce((s,x,i) => s+x*w[i], 0);
-            const nv = _norm(v), nw = _norm(w);
-            return { dot_product: _round(dot), v_norm: _round(nv), w_norm: _round(nw), cos_angle: _round(dot/(nv*nw)), angle_deg: _round(Math.acos(Math.max(-1,Math.min(1,dot/(nv*nw))))*180/Math.PI) };
+            // Flatten column vectors ([[a],[b],[c]]) or row vectors ([[a,b,c]])
+            const vFlat = (Array.isArray(v[0]) && v[0].length === 1) ? v.map(r => r[0]) : (Array.isArray(v[0]) ? v[0] : v);
+            const wFlat = (Array.isArray(w[0]) && w[0].length === 1) ? w.map(r => r[0]) : (Array.isArray(w[0]) ? w[0] : w);
+            if (vFlat.length !== wFlat.length) throw new Error('Vectors must be equal length');
+            const dot = vFlat.reduce((s,x,i) => s+x*wFlat[i], 0);
+            const nv = _norm(vFlat), nw = _norm(wFlat);
+            const zeroVec = nv < 1e-15 || nw < 1e-15;
+            return {
+                dot_product: _round(dot), v_norm: _round(nv), w_norm: _round(nw),
+                cos_angle:  zeroVec ? null : _round(dot/(nv*nw)),
+                angle_deg:  zeroVec ? null : _round(Math.acos(Math.max(-1,Math.min(1,dot/(nv*nw))))*180/Math.PI),
+                ...(zeroVec ? { note: 'Angle undefined: one or both vectors are zero' } : {})
+            };
         }
         case 'cross': {
             if (!v||!w) throw new Error('Provide v and w (3D)');
@@ -515,10 +525,11 @@ export function diffEq(params) {
             for (let i=0;i<=steps;i++) {
                 if (i%ev===0||i===steps) pts.push({x:_rnd(x),y:_rnd(y),z:_rnd(z)});
                 if (i<steps) {
-                    const k1y=f(x,y,z),k1z=g(x,y,z);
-                    const k2y=f(x+h/2,y+h*k1y/2,z+h*k1z/2),k2z=g(x+h/2,y+h*k1y/2,z+h*k1z/2);
-                    const k3y=f(x+h/2,y+h*k2y/2,z+h*k2z/2),k3z=g(x+h/2,y+h*k2y/2,z+h*k2z/2);
-                    const k4y=f(x+h,y+h*k3y,z+h*k3z),k4z=g(x+h,y+h*k3y,z+h*k3z);
+                    const k1y=f(x,y,z),        k1z=g(x,y,z);
+                    const k2y=f(x+h/2,y+h*k1y/2,z+h*k1z/2), k2z=g(x+h/2,y+h*k1y/2,z+h*k1z/2);
+                    // Stage 3 must use k2y AND k2z for both components (was incorrectly cross-mixing k1/k2)
+                    const k3y=f(x+h/2,y+h*k2y/2,z+h*k2z/2), k3z=g(x+h/2,y+h*k2y/2,z+h*k2z/2);
+                    const k4y=f(x+h,  y+h*k3y,  z+h*k3z),   k4z=g(x+h,  y+h*k3y,  z+h*k3z);
                     y+=(h/6)*(k1y+2*k2y+2*k3y+k4y); z+=(h/6)*(k1z+2*k2z+2*k3z+k4z); x+=h;
                 }
             }
