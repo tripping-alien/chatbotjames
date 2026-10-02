@@ -117,6 +117,9 @@ window._alpineDeleteChat = (id) => {
         (state) => gameController.restoreGameState(state),
         () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice())
     );
+    // Cleanup local maps to prevent memory leak on deleted chats
+    _bgChatMoveRetries.delete(id);
+    _chatToolDepths.delete(id);
 };
 
 // Chat Manager Callbacks
