@@ -241,8 +241,11 @@ self.onmessage = async (e) => {
                 if (activePreset.params < 1.0) {
                     maxTokens = 512;
                     temp = 0.8;
+                } else if (activePreset.params >= 4.0) {
+                    maxTokens = 1536;  // Gemma 4B / Phi-3.5+ — larger context window available
+                    temp = 0.7;
                 } else if (activePreset.params >= 3.0) {
-                    maxTokens = 1280;  // was 2048 — reduced to avoid GPU OOM after tool calls
+                    maxTokens = 1280;  // Llama 3.2 3B — conservative to avoid OOM after tool calls
                     temp = 0.7;
                 }
             }
@@ -250,7 +253,11 @@ self.onmessage = async (e) => {
             // Safety guard: if the prompt alone is within 512 tokens of our
             // generation budget, shrink maxTokens to leave at least 256 free,
             // or bail out with a friendly error rather than crashing the GPU.
-            const CONTEXT_LIMIT = activePreset?.params >= 3.0 ? 4096 : 2048;
+            // Context limits tier by model size — larger models have bigger context windows
+            // but also bigger system prompts, so we budget accordingly.
+            const CONTEXT_LIMIT = activePreset?.params >= 4.0 ? 8192
+                                 : activePreset?.params >= 3.0 ? 4096
+                                 : 2048;
             if (promptTokenCount + maxTokens > CONTEXT_LIMIT) {
                 const available = CONTEXT_LIMIT - promptTokenCount;
                 if (available < 256) {
