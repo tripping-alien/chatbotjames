@@ -42,10 +42,29 @@ AVAILABLE TOOLS:
 - start_game(game: string, ai_color: string): "chess" or "checkers". MANDATORY when user asks to play.
 - make_move(move: string): SAN ("e4") for chess, numeric ("11-15") for checkers.
 - write_note(note: string): Silently save user facts.
-- physics(mode: string, ...params): Particle physics. modes: lorentz_factor, rest_energy, relativistic_energy, relativistic_momentum, energy_momentum_relation, debroglie, compton, photoelectric, decay, uncertainty.
-- relativity(mode: string, ...params): Special/general relativity. modes: time_dilation, length_contraction, velocity_addition, lorentz_boost, doppler, schwarzschild_radius, gravitational_time_dilation.
-- linalg(mode: string, A?, B?, b?, v?, w?): Linear algebra. modes: multiply, determinant, inverse, eigenvalues, solve, transpose, rank, dot, cross, norm, trace. Matrices as 2D JSON arrays, vectors as 1D arrays.
-- diffeq(mode: string, ...params): Differential equations. modes: euler, rk4, system_rk4 (numerical solvers — f/g as math string e.g. "x*y + 1"), second_order_const (a/b/c coefficients + optional IVP y0/yp0), linear_first_order (P/Q constants + optional y0).
+- physics(mode: string, params: object): Particle physics calculator.
+  • energy_momentum_relation (or energy_momentum): E^2 = (pc)^2 + (mc^2)^2 (params: p, m, E)
+  • relativistic_momentum: p = gamma*m*v (params: m, v or beta)
+  • relativistic_energy: E_total & rest energy (params: m, v or beta)
+  • debroglie: de Broglie wavelength & momentum (params: lambda, m, v, or p)
+  • lorentz_factor: gamma factor (params: beta or v)
+  • rest_energy: E = mc^2 (params: m or mass_kg)
+  • decay: N(t) = N0*e^(-lambda*t) (params: half_life_s or decay_constant, N0, t)
+  • uncertainty: Heisenberg uncertainty (params: delta_x or delta_p)
+  • compton: Compton shift (params: theta_deg, lambda_i_m)
+  • photoelectric: Photoelectric effect (params: f_Hz or lambda_nm, work_function_eV)
+- relativity(mode: string, params: object): Special & general relativity calculator.
+  • time_dilation: (params: beta, proper_time_s)
+  • length_contraction: (params: beta, proper_length_m)
+  • velocity_addition: (params: v, w)
+  • lorentz_boost: (params: v, x, t)
+  • doppler: (params: beta, f_source_Hz)
+  • schwarzschild_radius: (params: mass_kg)
+  • gravitational_time_dilation: (params: mass_kg, r_m)
+- linalg(mode: string, params: object): Linear algebra (pure JS, 2D arrays for matrices, 1D for vectors).
+  • multiply (A, B), determinant (A), inverse (A), eigenvalues (A), solve (A, b), transpose (A), rank (A), dot (v, w), cross (v, w), norm (v), trace (A)
+- diffeq(mode: string, params: object): Differential equation solvers.
+  • rk4 (f: math string e.g. "x*y", x0, y0, x_end, steps), euler (f, x0, y0, x_end, steps), second_order_const (a, b, c, y0, yp0), linear_first_order (P, Q, y0)
 
 TOOL CALL FORMAT (JSON ONLY):
 When calling a tool, output ONLY a single JSON object inside a tool:run block. Do not use XML.
