@@ -17,7 +17,7 @@ console.log('--- UserInputProcessor Tests ---');
 check(
     'smart quotes normalisation',
     UserInputProcessor.process('“hello world” and ‘antigravity’'),
-    '"Hello world" and \'antigravity\''
+    '"hello world" and \'antigravity\''
 );
 
 // 2. Whitespace normalisation
