@@ -63,6 +63,13 @@ class WorkerController {
         });
     }
 
+    abortGeneration() {
+        if (this.worker) {
+            this.worker.postMessage({ type: 'abort' });
+        }
+        this.activeGenerations.clear();
+    }
+
     workerMessageHandler(e) {
         const { status, message, loaded, total, file, targetId, chatId } = e.data;
 

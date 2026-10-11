@@ -688,8 +688,10 @@ function sendMessage(preExecutedMove = null) {
 
 function handleStopGeneration() {
     if (workerController.activeGenerations.has(chatManager.currentChatId) || globalState.isGeneratingUI) {
-        uiManager.updateStatusText('RESTARTING...');
-        location.reload();
+        workerController.abortGeneration();
+        uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
+        updateStatusLight('idle');
+        uiManager.updateStatusText('READY');
     }
 }
 
