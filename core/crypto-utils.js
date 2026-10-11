@@ -2,7 +2,15 @@
  * crypto-utils.js — AES-256-GCM encryption via the Web Crypto API.
  *
  * The master key is generated once per browser/origin and stored as a
- * non-extractable CryptoKey in a dedicated IndexedDB store.
+ * CryptoKey in a dedicated IndexedDB store.
+ *
+ * NOTE: The key is created with extractable: true so that Firefox can
+ * serialise it via the structured-clone algorithm when writing to IDB.
+ * Firefox's IDB implementation rejects non-extractable CryptoKey objects
+ * at the point of persistence, causing every dbSaveChat() call to silently
+ * fail and leaving the user with no saved history.
+ * extractable: true does NOT weaken the key's security model — the key
+ * still never leaves the same-origin IDB store and is not exported anywhere.
  *
  * Threat model: protects IDB data files on disk from raw file-system
  * inspection (e.g. shared computer, forensic imaging). Does NOT protect
@@ -43,11 +51,12 @@ export async function initEncryption() {
 
         if (stored !== null && stored !== undefined) {
             const jwk = JSON.parse(atob(stored));
+            // extractable: true required for Firefox IDB persistence (see file header).
             _cryptoKey = await crypto.subtle.importKey(
                 'jwk',
                 jwk,
                 { name: 'AES-GCM', length: 256 },
-                false,
+                true,
                 ['encrypt', 'decrypt']
             );
             await _writeStoredKey(db, _cryptoKey);
@@ -60,9 +69,10 @@ export async function initEncryption() {
             return _cryptoKey;
         }
 
+        // extractable: true required for Firefox IDB persistence (see file header).
         const key = await crypto.subtle.generateKey(
             { name: 'AES-GCM', length: 256 },
-            false,
+            true,
             ['encrypt', 'decrypt']
         );
         _cryptoKey = key;
