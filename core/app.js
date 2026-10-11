@@ -19,7 +19,7 @@ import { attachmentManager } from './attachment-manager.js';
 import { uiManager } from './ui-manager.js';
 import { workerController, hasToolCalls } from './worker-controller.js';
 
-import { smallTalk } from '../nlp/smalltalk.js?v=3';
+import { smallTalk } from '../nlp/smalltalk.js?v=4';
 
 import { CONFIG } from './config.js';
 import { safeLocalStorage, dbSaveNote, dbDeleteNote, dbClearNotes, initConfigCache } from './chat-db.js';
