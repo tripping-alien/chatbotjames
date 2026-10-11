@@ -82,7 +82,7 @@ export async function initEncryption() {
 
         return key;
     };
-    _cryptoKeyPromise = typeof navigator !== 'undefined' && navigator.locks
+    _cryptoKeyPromise = navigator.locks
         ? navigator.locks.request('james-encryption-key', initialize)
         : initialize();
 

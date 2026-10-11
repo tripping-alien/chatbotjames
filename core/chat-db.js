@@ -32,16 +32,20 @@ export async function initConfigCache() {
     try {
         const db = await openChatDB();
 
-        // Migrate all existing configuration from localStorage to IDB
+        // Migrate all existing configuration from localStorage to IDB.
+        // Guard each iteration: in Firefox Private Mode, localStorage.key(i) can
+        // throw SecurityError even if localStorage.length succeeded.
         for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && (key.startsWith('james-') || key.startsWith('chatbot-'))) {
-                const val = localStorage.getItem(key);
-                const existing = await db.get(IDB_CONFIG_STORE, key);
-                if (existing === undefined && val !== null) {
-                    await db.put(IDB_CONFIG_STORE, val, key);
+            try {
+                const key = localStorage.key(i);
+                if (key && (key.startsWith('james-') || key.startsWith('chatbot-'))) {
+                    const val = localStorage.getItem(key);
+                    const existing = await db.get(IDB_CONFIG_STORE, key);
+                    if (existing === undefined && val !== null) {
+                        await db.put(IDB_CONFIG_STORE, val, key);
+                    }
                 }
-            }
+            } catch (_itemErr) { /* skip inaccessible key (e.g. Firefox Private Mode) */ }
         }
 
         const keys = await db.getAllKeys(IDB_CONFIG_STORE);

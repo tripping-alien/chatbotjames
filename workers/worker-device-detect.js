@@ -6,8 +6,8 @@ export function isMobileDevice(hints = {}) {
     const isNarrowScreen = typeof screenWidth === 'number' && screenWidth < 1024;
     const hasTouchPoints = typeof maxTouchPoints === 'number' && maxTouchPoints > 1;
     
-    // iPadOS 13+ reports as MacIntel but has touch support
-    const isMacTouch = (navigator.platform === 'MacIntel' && hasTouchPoints);
+    // iPadOS 13+ reports a Mac UA but has touch support — detect by touch points alone.
+    const isMacTouch = (/Macintosh|MacIntel|Mac OS X/i.test(ua) && hasTouchPoints);
 
     return isMobileUA || isMacTouch || (hasTouchPoints && isNarrowScreen);
 }
@@ -160,10 +160,12 @@ export function getDeviceRamGB() {
     if (navigator.deviceMemory) {
         return navigator.deviceMemory;
     }
-    // Safari/Firefox don't support deviceMemory, use heuristics
+    // Safari/Firefox don't expose deviceMemory — use UA + touch heuristics.
+    // navigator.platform is deprecated; use userAgent + maxTouchPoints instead.
+    const ua = navigator.userAgent;
     const cores = navigator.hardwareConcurrency || 4;
-    const isMac = /Mac/.test(navigator.platform || navigator.userAgent);
-    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (isMac && navigator.maxTouchPoints > 1);
+    const isMac = /Macintosh|Mac OS X/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod/i.test(ua) || (isMac && navigator.maxTouchPoints > 1);
     
     if (isIOS) return cores >= 6 ? 6 : 4;
     if (isMac) return cores >= 8 ? 16 : 8; // High-core-count Macs (M2 Pro/Max/Ultra etc.) typically have 16+ GB
