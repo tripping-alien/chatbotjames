@@ -54,12 +54,12 @@ check('length contraction at beta=0.6 for 10m gives 8m', approxEq(lc.contracted_
 
 // 8. Schwarzschild radius
 const sr = relativityCalc({ mode: 'schwarzschild_radius', mass_kg: 1.989e30 }); // Sun mass
-check('Schwarzschild radius for Sun is ~2953 m', approxEq(sr.r_s_m, 2953, 50));
+check('Schwarzschild radius for Sun is ~2953 m', approxEq(sr.schwarzschild_radius_m, 2953, 50));
 
-// 9. Velocity addition
-const va = relativityCalc({ mode: 'velocity_addition', u_c: 0.5, v_c: 0.5 });
-// (0.5 + 0.5) / (1 + 0.5*0.5) = 1 / 1.25 = 0.8
-check('relativistic velocity addition (0.5c + 0.5c) = 0.8c', approxEq(va.w_c, 0.8));
+// 9. Velocity addition (0.5c + 0.5c) = 0.8c
+const C = 299_792_458;
+const va = relativityCalc({ mode: 'velocity_addition', v: 0.5 * C, w: 0.5 * C });
+check('relativistic velocity addition (0.5c + 0.5c) = 0.8c', approxEq(va.u_beta, 0.8));
 
 console.log('\n--- Linear Algebra Tests ---');
 
@@ -69,12 +69,11 @@ const matMul = linAlg({
     A: [[1, 2], [3, 4]],
     B: [[2, 0], [1, 2]]
 });
-// [[1*2 + 2*1, 1*0 + 2*2], [3*2 + 4*1, 3*0 + 4*2]] = [[4, 4], [10, 8]]
 check('matrix multiplication 2x2', matMul.result[0][0] === 4 && matMul.result[0][1] === 4 && matMul.result[1][0] === 10 && matMul.result[1][1] === 8);
 
 // 11. Determinant
 const det2 = linAlg({ mode: 'determinant', A: [[1, 2], [3, 4]] });
-check('2x2 determinant 1*4 - 2*3 = -2', det2.result === -2);
+check('2x2 determinant 1*4 - 2*3 = -2', det2.determinant === -2);
 
 const det3 = linAlg({
     mode: 'determinant',
@@ -84,26 +83,23 @@ const det3 = linAlg({
         [1, 0, 6]
     ]
 });
-// 1*(24-0) - 2*(0-5) + 3*(0-4) = 24 + 10 - 12 = 22
-check('3x3 determinant is 22', det3.result === 22);
+check('3x3 determinant is 22', det3.determinant === 22);
 
 // 12. Inverse
 const inv = linAlg({ mode: 'inverse', A: [[4, 7], [2, 6]] });
-// det = 24 - 14 = 10; inv = [[6/10, -7/10], [-2/10, 4/10]] = [[0.6, -0.7], [-0.2, 0.4]]
-check('2x2 inverse', approxEq(inv.result[0][0], 0.6) && approxEq(inv.result[0][1], -0.7) && approxEq(inv.result[1][0], -0.2) && approxEq(inv.result[1][1], 0.4));
+check('2x2 inverse', approxEq(inv.inverse[0][0], 0.6) && approxEq(inv.inverse[0][1], -0.7) && approxEq(inv.inverse[1][0], -0.2) && approxEq(inv.inverse[1][1], 0.4));
 
 // 13. Dot product
 const dot = linAlg({ mode: 'dot', v: [1, 3, -5], w: [4, -2, -1] });
-// 1*4 + 3*(-2) + (-5)*(-1) = 4 - 6 + 5 = 3
-check('dot product of 3D vectors', dot.result === 3);
+check('dot product of 3D vectors', dot.dot_product === 3);
 
 // 14. Cross product
 const cross = linAlg({ mode: 'cross', v: [1, 0, 0], w: [0, 1, 0] });
-check('cross product of unit X and unit Y is unit Z', cross.result[0] === 0 && cross.result[1] === 0 && cross.result[2] === 1);
+check('cross product of unit X and unit Y is unit Z', cross.cross_product[0] === 0 && cross.cross_product[1] === 0 && cross.cross_product[2] === 1);
 
 // 15. Trace
 const tr = linAlg({ mode: 'trace', A: [[5, 1], [2, 9]] });
-check('trace of matrix is sum of diagonal elements (5+9=14)', tr.result === 14);
+check('trace of matrix is sum of diagonal elements (5+9=14)', tr.trace === 14);
 
 console.log('\n--- Differential Equations Tests ---');
 
