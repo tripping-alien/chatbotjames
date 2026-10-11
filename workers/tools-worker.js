@@ -758,8 +758,18 @@ function _cryptoRandom() {
     return arr[0] / (0xFFFFFFFF + 1);
 }
 
-function randomTool(params) {
-    const { mode, count = 1, sides = 6, min = 1, max = 100 } = params;
+function randomTool(params = {}) {
+    params = params || {};
+    let mode = (params.mode ?? params.type ?? '').toString().toLowerCase().trim();
+
+    if (mode === 'die' || mode === 'dice' || mode === 'roll') mode = 'dice';
+    else if (mode === 'coin' || mode === 'flip' || mode === 'toss' || mode === 'coinflip' || mode === 'coin_flip') mode = 'coin';
+    else if (mode === 'range' || mode === 'number' || mode === 'int' || mode === 'integer' || mode === 'between') mode = 'range';
+    else if (!mode) {
+        if (params.sides !== undefined || params.dice !== undefined || params.count !== undefined) mode = 'dice';
+        else if (params.min !== undefined || params.max !== undefined || params.from !== undefined || params.to !== undefined) mode = 'range';
+        else mode = 'dice';
+    }
 
     if (mode === 'coin') {
         const flip = _cryptoRandom() < 0.5 ? 'Heads' : 'Tails';
@@ -767,8 +777,10 @@ function randomTool(params) {
     }
 
     if (mode === 'range') {
-        const parsedMin = Number.parseInt(min, 10);
-        const parsedMax = Number.parseInt(max, 10);
+        const minVal = params.min ?? params.from ?? params.lo ?? 1;
+        const maxVal = params.max ?? params.to ?? params.hi ?? 100;
+        const parsedMin = Number.parseInt(minVal, 10);
+        const parsedMax = Number.parseInt(maxVal, 10);
         if (!Number.isFinite(parsedMin) || !Number.isFinite(parsedMax)) {
             throw new Error('Random range requires integer bounds');
         }
@@ -779,6 +791,15 @@ function randomTool(params) {
     }
 
     if (mode === 'dice') {
+        let count = params.count ?? 1;
+        let sides = params.sides ?? 6;
+        if (typeof params.dice === 'string') {
+            const dm = params.dice.match(/^(\d*)d(\d+)$/i);
+            if (dm) {
+                count = dm[1] ? Number.parseInt(dm[1], 10) : 1;
+                sides = Number.parseInt(dm[2], 10);
+            }
+        }
         const parsedCount = Number.parseInt(count, 10);
         const parsedSides = Number.parseInt(sides, 10);
         if (!Number.isFinite(parsedCount) || !Number.isFinite(parsedSides)) {
@@ -865,12 +886,19 @@ export const TOOL_HANDLERS = {
     search: searchIndex,
     index: indexDocument,
     calculator: calculatorTool,
+    math: calculatorTool,
+    calc: calculatorTool,
     convert: convertUnits,
+    unit_convert: convertUnits,
+    unit_converter: convertUnits,
+    conversion: convertUnits,
     countdown: countdownTool,
     base64: base64Tool,
     color: colorTool,
     hash: hashTool,
     random: randomTool,
+    dice: randomTool,
+    coin: randomTool,
     ip: ipTool,
     ascii_art: asciiArtTool,
     fetch_page: fetchPageTool,
@@ -886,6 +914,8 @@ export const TOOL_HANDLERS = {
     relativity:             (p) => relativityCalc(p),
     linalg:                 (p) => linAlg(p),
     linear_algebra:         (p) => linAlg(p),
+    linearalgebra:          (p) => linAlg(p),
+    matrix:                 (p) => linAlg(p),
     diffeq:                 (p) => diffEq(p),
     differential_equations: (p) => diffEq(p),
 };
@@ -899,7 +929,8 @@ if (typeof self !== 'undefined' && typeof self.postMessage === 'function') {
 
         try {
             if (!tool) throw new Error('No tool name specified');
-            const handler = TOOL_HANDLERS[tool];
+            const toolKey = (tool ?? '').toString().toLowerCase().trim();
+            const handler = TOOL_HANDLERS[toolKey];
             if (!handler) throw new Error(`Unknown tool: ${tool}`);
             const result = await handler(params);
             self.postMessage({ status: 'done', result, execId });
