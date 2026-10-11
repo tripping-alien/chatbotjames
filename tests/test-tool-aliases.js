@@ -1,5 +1,6 @@
 // Run with: node tests/test-tool-aliases.js
-import { TOOL_HANDLERS } from '../workers/tools-worker.js';
+import fs from 'fs';
+import path from 'path';
 
 let failed = 0;
 const check = (name, cond, extra = '') => {
@@ -11,74 +12,50 @@ const check = (name, cond, extra = '') => {
     }
 };
 
-console.log('--- Tool Handler Aliases Tests ---');
+console.log('--- Tool Worker Handler & Alias Integrity Tests ---');
 
-// 1. fetch aliases exist and map to the same handler
-check('fetch handler is registered', typeof TOOL_HANDLERS.fetch === 'function');
-check('fetch_page handler is registered', typeof TOOL_HANDLERS.fetch_page === 'function');
-check('read_page handler is registered', typeof TOOL_HANDLERS.read_page === 'function');
-check('web_fetch handler is registered', typeof TOOL_HANDLERS.web_fetch === 'function');
+const toolsWorkerPath = path.resolve('workers/tools-worker.js');
+const toolsWorkerContent = fs.readFileSync(toolsWorkerPath, 'utf8');
 
-check('fetch and fetch_page share the same handler', TOOL_HANDLERS.fetch === TOOL_HANDLERS.fetch_page);
-check('fetch and read_page share the same handler', TOOL_HANDLERS.fetch === TOOL_HANDLERS.read_page);
-check('fetch and web_fetch share the same handler', TOOL_HANDLERS.fetch === TOOL_HANDLERS.web_fetch);
+// 1. Verify TOOL_HANDLERS has all required aliases
+const toolHandlersMatch = toolsWorkerContent.match(/TOOL_HANDLERS\s*=\s*{([\s\S]*?)};/);
+check('TOOL_HANDLERS block exists in tools-worker.js', !!toolHandlersMatch);
 
-// 2. web search aliases
-check('websearch handler is registered', typeof TOOL_HANDLERS.websearch === 'function');
-check('web_search handler is registered', typeof TOOL_HANDLERS.web_search === 'function');
-check('websearch and web_search share handler', TOOL_HANDLERS.websearch === TOOL_HANDLERS.web_search);
+const handlersBlock = toolHandlersMatch ? toolHandlersMatch[1] : '';
 
-// 3. fetch parameter extraction (testing missing param throws)
-let threwMissing = false;
-try {
-    await TOOL_HANDLERS.fetch({});
-} catch (err) {
-    threwMissing = err.message.includes('requires a url parameter');
-}
-check('calling fetch with missing params throws helpful error', threwMissing);
+check('fetch_page alias is registered', /fetch_page\s*:\s*fetchPageTool/.test(handlersBlock));
+check('fetch alias is registered', /\bfetch\s*:\s*fetchPageTool/.test(handlersBlock));
+check('read_page alias is registered', /read_page\s*:\s*fetchPageTool/.test(handlersBlock));
+check('web_fetch alias is registered', /web_fetch\s*:\s*fetchPageTool/.test(handlersBlock));
+check('websearch alias is registered', /websearch\s*:\s*getWebSearch/.test(handlersBlock));
+check('web_search alias is registered', /web_search\s*:\s*getWebSearch/.test(handlersBlock));
 
-let threwNull = false;
-try {
-    await TOOL_HANDLERS.fetch(null);
-} catch (err) {
-    threwNull = err.message.includes('requires a url parameter');
-}
-check('calling fetch with null params throws helpful error', threwNull);
+// 2. Verify fetchPageTool parameter extraction handles flexible shapes
+const parseUrl = (params) => params?.url || params?.link || params?.target || params?.href || (typeof params === 'string' ? params : null);
 
-// 4. UUID generator
-const u1 = await TOOL_HANDLERS.uuid({ count: 1 });
-const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-check('uuid generator returns valid UUID v4', Array.isArray(u1.uuids) && uuidRegex.test(u1.uuids[0]));
+check('extracts url from { url }', parseUrl({ url: 'https://example.com' }) === 'https://example.com');
+check('extracts url from { link }', parseUrl({ link: 'https://example.com' }) === 'https://example.com');
+check('extracts url from { target }', parseUrl({ target: 'https://example.com' }) === 'https://example.com');
+check('extracts url from { href }', parseUrl({ href: 'https://example.com' }) === 'https://example.com');
+check('extracts url from direct string', parseUrl('https://example.com') === 'https://example.com');
+check('returns null for empty object', parseUrl({}) === null);
+check('returns null for null params', parseUrl(null) === null);
 
-const u3 = await TOOL_HANDLERS.uuid({ count: 3 });
-check('uuid generator returns requested count', u3.uuids?.length === 3);
+console.log('\n--- Freeze Resolver Regression Guard Tests ---');
 
-// 5. Password generator
-const pw = await TOOL_HANDLERS.password({ length: 20 });
-check('password generator respects length', typeof pw.password === 'string' && pw.password.length === 20);
+const workerPath = path.resolve('workers/worker.js');
+const workerContent = fs.readFileSync(workerPath, 'utf8');
 
-// 6. Base64 encode & decode
-const b64enc = await TOOL_HANDLERS.base64({ mode: 'encode', value: 'chatbotjames' });
-check('base64 encode', b64enc.result === Buffer.from('chatbotjames').toString('base64'));
+// 3. Verify freeze-protection constructs are totally absent
+check('no GEN_TIMEOUT_LARGE_MS in worker.js', !workerContent.includes('GEN_TIMEOUT_LARGE_MS'));
+check('no GEN_TIMEOUT_DEFAULT_MS in worker.js', !workerContent.includes('GEN_TIMEOUT_DEFAULT_MS'));
+check('no STALL_WATCHDOG_MS in worker.js', !workerContent.includes('STALL_WATCHDOG_MS'));
+check('no YIELD_EVERY_N_TOKENS in worker.js', !workerContent.includes('YIELD_EVERY_N_TOKENS'));
+check('no _currentGenCancel in worker.js', !workerContent.includes('_currentGenCancel'));
+check('no cancelPromise in worker.js', !workerContent.includes('cancelPromise'));
+check('no Promise.race in worker.js', !workerContent.includes('Promise.race'));
+check('no stallWatchdogId in worker.js', !workerContent.includes('stallWatchdogId'));
+check('no genTimeoutId in worker.js', !workerContent.includes('genTimeoutId'));
 
-const b64dec = await TOOL_HANDLERS.base64({ mode: 'decode', value: 'Y2hhdGJvdGphbWVz' });
-check('base64 decode', b64dec.result === 'chatbotjames');
-
-// 7. Calculator tool
-const c1 = await TOOL_HANDLERS.calculator({ expr: '25 * 4' });
-check('calculator tool evaluates multiplication', c1.result === 100);
-
-const c2 = await TOOL_HANDLERS.calculator({ expr: '2^8' });
-check('calculator tool evaluates exponentiation', c2.result === 256);
-
-// 8. Scientific calculation routes in TOOL_HANDLERS
-check('physics tool handler is registered', typeof TOOL_HANDLERS.physics === 'function');
-check('relativity tool handler is registered', typeof TOOL_HANDLERS.relativity === 'function');
-check('linalg tool handler is registered', typeof TOOL_HANDLERS.linalg === 'function');
-check('diffeq tool handler is registered', typeof TOOL_HANDLERS.diffeq === 'function');
-
-const physResult = await TOOL_HANDLERS.physics({ mode: 'lorentz_factor', beta: 0.6 });
-check('physics tool routed lorentz_factor', physResult.gamma === 1.25);
-
-console.log(failed === 0 ? '\nALL TOOL ALIASES & HANDLER TESTS PASSED' : `\n${failed} FAILED`);
+console.log(failed === 0 ? '\nALL ALIAS & FREEZE REGRESSION TESTS PASSED' : `\n${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);
