@@ -376,16 +376,29 @@ function readFile(params) {
 // The router pre-evaluates simple expressions; this handler receives
 // the already-computed result, or re-evaluates if only `expression` is given.
 function calculatorTool(params) {
-    let { expression, result } = params;
+    if (typeof params === 'string') {
+        params = { expression: params };
+    } else if (typeof params === 'number') {
+        params = { expression: String(params), result: params };
+    }
+    params = params || {};
+    let expression = params.expression ?? params.expr ?? params.math ?? params.calc ?? params.query ?? params.input;
+    let result = params.result;
 
     if (result === undefined) {
-        if (!expression || typeof expression !== 'string') {
-            throw new Error('No expression provided');
-        }
-        try {
-            result = evalMath(expression);
-        } catch (e) {
-            throw new Error(`Malformed expression: ${expression}`);
+        if (typeof expression === 'number') {
+            result = expression;
+            expression = String(expression);
+        } else {
+            if (!expression || typeof expression !== 'string') {
+                throw new Error('No expression provided');
+            }
+            expression = expression.trim();
+            try {
+                result = evalMath(expression);
+            } catch (e) {
+                throw new Error(`Malformed expression: ${expression}`);
+            }
         }
     }
 
@@ -397,7 +410,7 @@ function calculatorTool(params) {
     }
 
     return {
-        expression,
+        expression: String(expression ?? result),
         result,
         formatted: Number.isInteger(result) ? String(result) : result.toPrecision(10).replace(/\.?0+$/, '')
     };
@@ -407,18 +420,24 @@ function calculatorTool(params) {
 // Conversion factors relative to a base unit per type.
 const UNIT_TO_BASE = {
     // Length → metres
-    mm: 0.001, cm: 0.01, m: 1, km: 1000,
+    mm: 0.001, millimeter: 0.001, millimeters: 0.001, millimetre: 0.001, millimetres: 0.001,
+    cm: 0.01, centimeter: 0.01, centimeters: 0.01, centimetre: 0.01, centimetres: 0.01,
+    m: 1, meter: 1, meters: 1, metre: 1, metres: 1,
+    km: 1000, kilometer: 1000, kilometers: 1000, kilometre: 1000, kilometres: 1000,
     inch: 0.0254, in: 0.0254, inches: 0.0254,
     foot: 0.3048, feet: 0.3048, ft: 0.3048,
     yard: 0.9144, yards: 0.9144, yd: 0.9144,
     mile: 1609.344, miles: 1609.344, mi: 1609.344,
     // Weight → kg
-    mg: 0.000001, g: 0.001, kg: 1,
+    mg: 0.000001, milligram: 0.000001, milligrams: 0.000001,
+    g: 0.001, gram: 0.001, grams: 0.001,
+    kg: 1, kilogram: 1, kilograms: 1, kilo: 1, kilos: 1,
     oz: 0.0283495, ounce: 0.0283495, ounces: 0.0283495,
     lb: 0.453592, lbs: 0.453592, pound: 0.453592, pounds: 0.453592,
-    tonne: 1000, ton: 907.185, tons: 907.185,
+    tonne: 1000, tonnes: 1000, ton: 907.185, tons: 907.185,
     // Volume → litres
-    ml: 0.001, l: 1, liter: 1, litre: 1, liters: 1, litres: 1,
+    ml: 0.001, milliliter: 0.001, milliliters: 0.001, millilitre: 0.001, millilitres: 0.001,
+    l: 1, liter: 1, litre: 1, liters: 1, litres: 1,
     gallon: 3.78541, gallons: 3.78541, gal: 3.78541,
     pint: 0.473176, pints: 0.473176, pt: 0.473176,
     cup: 0.236588, cups: 0.236588,
@@ -434,9 +453,24 @@ const UNIT_TO_BASE = {
 
 // Unit type groups — used to detect mismatched conversions
 const UNIT_TYPES = {
-    length: ['mm', 'cm', 'm', 'km', 'inch', 'in', 'inches', 'foot', 'feet', 'ft', 'yard', 'yards', 'yd', 'mile', 'miles', 'mi'],
-    weight: ['mg', 'g', 'kg', 'oz', 'ounce', 'ounces', 'lb', 'lbs', 'pound', 'pounds', 'tonne', 'ton', 'tons'],
-    volume: ['ml', 'l', 'liter', 'litre', 'liters', 'litres', 'gallon', 'gallons', 'gal', 'pint', 'pints', 'pt', 'cup', 'cups'],
+    length: [
+        'mm', 'millimeter', 'millimeters', 'millimetre', 'millimetres',
+        'cm', 'centimeter', 'centimeters', 'centimetre', 'centimetres',
+        'm', 'meter', 'meters', 'metre', 'metres',
+        'km', 'kilometer', 'kilometers', 'kilometre', 'kilometres',
+        'inch', 'in', 'inches', 'foot', 'feet', 'ft', 'yard', 'yards', 'yd', 'mile', 'miles', 'mi'
+    ],
+    weight: [
+        'mg', 'milligram', 'milligrams',
+        'g', 'gram', 'grams',
+        'kg', 'kilogram', 'kilograms', 'kilo', 'kilos',
+        'oz', 'ounce', 'ounces', 'lb', 'lbs', 'pound', 'pounds', 'tonne', 'tonnes', 'ton', 'tons'
+    ],
+    volume: [
+        'ml', 'milliliter', 'milliliters', 'millilitre', 'millilitres',
+        'l', 'liter', 'litre', 'liters', 'litres',
+        'gallon', 'gallons', 'gal', 'pint', 'pints', 'pt', 'cup', 'cups'
+    ],
     speed: ['km/h', 'kph', 'mph', 'mps', 'knot', 'knots'],
     storage: ['b', 'byte', 'bytes', 'kb', 'kilobyte', 'kilobytes', 'mb', 'megabyte', 'megabytes', 'gb', 'gigabyte', 'gigabytes', 'tb', 'terabyte', 'terabytes'],
 };
@@ -454,18 +488,32 @@ function getUnitType(unit) {
     return UNIT_TYPE_LOOKUP.get(unit.toLowerCase()) || null;
 }
 
-function convertUnits(params) {
-    const { amount, from, to, fromType } = params;
+function convertUnits(params = {}) {
+    params = params || {};
+    const amount = params.amount ?? params.value ?? params.val ?? params.n;
+    const from = params.from ?? params.source ?? params.src;
+    const to = params.to ?? params.target ?? params.dest;
+    const fromType = params.fromType ?? params.type;
+
     if (amount === undefined || from === undefined || to === undefined) throw new Error('Missing amount, from, or to');
     const numericAmount = Number(amount);
     if (!Number.isFinite(numericAmount)) throw new Error('Conversion amount must be a finite number');
-    const fromKey = from.toLowerCase();
-    const toKey = to.toLowerCase();
+    const fromKey = String(from).toLowerCase().trim();
+    const toKey = String(to).toLowerCase().trim();
 
     // ── Temperature (special: not ratio-based) ──────────────────────────
-    const tempNames = { celsius: 'C', c: 'C', fahrenheit: 'F', f: 'F', kelvin: 'K', k: 'K' };
-    const fromTemp = tempNames[fromKey];
-    const toTemp = tempNames[toKey];
+    const normalizeTemp = (u) => {
+        if (!u || typeof u !== 'string') return null;
+        const cleaned = u.toLowerCase().replace(/^(?:deg(?:rees?)?|°)\s*/g, '').trim();
+        const map = {
+            c: 'C', celsius: 'C', centigrade: 'C',
+            f: 'F', fahrenheit: 'F',
+            k: 'K', kelvin: 'K'
+        };
+        return map[cleaned] || map[u.toLowerCase().trim()] || null;
+    };
+    const fromTemp = normalizeTemp(fromKey);
+    const toTemp = normalizeTemp(toKey);
 
     if (fromTemp || toTemp) {
         if (!fromTemp || !toTemp) throw new Error(`Mixed temperature/non-temperature units`);
