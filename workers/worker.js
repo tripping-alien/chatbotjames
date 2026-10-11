@@ -1,7 +1,7 @@
 import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
 import { CONFIG } from '../core/config.js';
 import { setupDownloadManager } from './worker-downloader.js';
-import { systemPrompt } from './worker-system-prompt.js';
+import { getPromptTier, buildSystemPrompt } from './worker-prompt-tiers.js';
 import { isMobileDevice, isTVDevice, detectWasmCapabilities, detectGpu, getDeviceRamGB } from './worker-device-detect.js';
 import { MODEL_PRESETS, rankAutoPresets } from './worker-presets.js';
 
@@ -12,6 +12,7 @@ setupDownloadManager(env, self);
 
 let chatbot = null;
 let activePreset = null;
+let deviceFlags = { isMobile: false, isTV: false }; // set on init, used to pick the prompt tier
 let isGenerating = false;
 let isAborted = false;
 let _initLock = false;        // prevents concurrent init messages from racing
@@ -164,6 +165,7 @@ self.onmessage = async (e) => {
                 const [gpuInfo, wasmCaps] = await Promise.all([detectGpu(), detectWasmCapabilities()]);
                 const mobile = isMobileDevice({ screenWidth: e.data.screenWidth, maxTouchPoints: e.data.maxTouchPoints });
                 const tv = isTVDevice();
+                deviceFlags = { isMobile: mobile, isTV: tv };
                 await tryInitializeModels(
                     gpuInfo, mobile, tv,
                     presetId,
@@ -212,7 +214,10 @@ self.onmessage = async (e) => {
             // Small models (1B-1.5B) strictly reject consecutive system roles.
             // The worker prepends its own system prompt, and getMessagesWindow
             // also sends a system prefix, so we defensively collapse them here.
-            const allMessages = [{ role: 'system', content: systemPrompt }, ...activeMessages];
+            // Tiered system prompt: lite (<0.5B) / compact (small models, phone, TV) / full (3B+ desktop).
+            const promptTier = getPromptTier(activePreset, deviceFlags);
+            const basePrompt = buildSystemPrompt(promptTier, activeMessages);
+            const allMessages = [{ role: 'system', content: basePrompt }, ...activeMessages];
             const chatContext = [];
             for (const msg of allMessages) {
                 const last = chatContext[chatContext.length - 1];
@@ -230,6 +235,7 @@ self.onmessage = async (e) => {
 
             const promptTokens = await chatbot.tokenizer(prompt);
             const promptTokenCount = promptTokens.input_ids.data.length;
+            console.log(`[worker] prompt tier=${promptTier} tokens=${promptTokenCount}`);
 
             let maxTokens = CONFIG.worker.maxTokens;
             let temp = CONFIG.worker.temperature;
