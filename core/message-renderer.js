@@ -276,22 +276,24 @@ export function updateLiveBubbleAppend(newChars, targetId) {
     const chatLog = document.getElementById('chatLog');
     const bubble = document.getElementById(`bubble-${targetId}`);
     if (!bubble || !chatLog) return;
-    
-    // If the typing indicator is still there, clear it out first
-    const indicator = bubble.querySelector('.typing-indicator');
-    if (indicator) {
+
+    // If the typing indicator is still there, replace it with a plain text node
+    if (bubble.querySelector('.typing-indicator')) {
         bubble.innerHTML = '';
+        bubble.style.whiteSpace = 'pre-wrap';
     }
-    
-    // Create an animated span for the new characters
-    const span = document.createElement('span');
-    span.textContent = newChars;
-    span.className = 'fade-in-char';
-    // Ensure whitespace formatting is preserved during raw streaming
-    span.style.whiteSpace = 'pre-wrap';
-    bubble.appendChild(span);
-    
-    chatLog.scrollTop = chatLog.scrollHeight;
+
+    // Append directly to the single text node — zero DOM node growth, no layout thrash
+    const lastChild = bubble.lastChild;
+    if (lastChild && lastChild.nodeType === Node.TEXT_NODE) {
+        lastChild.nodeValue += newChars;
+    } else {
+        bubble.appendChild(document.createTextNode(newChars));
+    }
+
+    // Only force a scroll if the user is already near the bottom (avoids forced layout on every tick)
+    const distFromBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight;
+    if (distFromBottom < 120) chatLog.scrollTop = chatLog.scrollHeight;
 }
 
 export function appendErrorToChat(errorMessage) {

@@ -346,10 +346,12 @@ self.onmessage = async (e) => {
                     // IPC overhead and give the GPU scheduler room to breathe.
                     if (_callbackTick % YIELD_EVERY_N_TOKENS !== 0) return;
 
-                    const allTokens = Array.from(tokenIds.data || tokenIds);
-                    if (allTokens.length > promptTokenCount) {
-                        const newTokens = allTokens.slice(promptTokenCount);
-                        const text = chatbot.tokenizer.decode(newTokens, { skip_special_tokens: true });
+                    const tokenData = tokenIds.data || tokenIds;
+                    if (tokenData.length > promptTokenCount) {
+                        const newTokenSlice = tokenData.subarray
+                            ? tokenData.subarray(promptTokenCount)
+                            : Array.prototype.slice.call(tokenData, promptTokenCount);
+                        const text = chatbot.tokenizer.decode(newTokenSlice, { skip_special_tokens: true });
                         if (text.length > accumulatedResponse.length) {
                             accumulatedResponse = text;
                             self.postMessage({

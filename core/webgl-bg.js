@@ -130,17 +130,32 @@ const initWebGLBackground = () => {
         gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
     }
 
-    window.addEventListener('resize', resize);
-    resize();
+    let _paused = false;
+    let _rafId = null;
 
     function render() {
-        const time = (Date.now() - startTime) / 1000.0;
-        gl.uniform1f(timeLoc, time);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-        requestAnimationFrame(render);
+        if (!_paused) {
+            const time = (Date.now() - startTime) / 1000.0;
+            gl.uniform1f(timeLoc, time);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+        _rafId = requestAnimationFrame(render);
     }
-    
-    render();
+
+    // Pause rendering when the tab is hidden to free GPU
+    document.addEventListener('visibilitychange', () => {
+        _paused = document.hidden;
+    });
+
+    // Debounce resize to avoid hammering the GPU during window drags
+    let _resizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(_resizeTimer);
+        _resizeTimer = setTimeout(resize, 150);
+    });
+
+    resize();
+    _rafId = requestAnimationFrame(render);
 };
 
 if (document.readyState === 'loading') {

@@ -4,13 +4,13 @@ export const CONFIG = {
         "maxHistory": 30,
         "maxToolDepth": 5,
         "throttleFpsMs": 33,
-        "streamRenderIntervalMs": 15
+        "streamRenderIntervalMs": 25
     },
     "worker": {
         "chunkSizeMb": 2,
-        "maxDownloadConcurrency": 8,
+        "maxDownloadConcurrency": 4,
         "maxTokens": 1024,
-        "temperature": 1.2,
+        "temperature": 0.9,
         "topK": 20,
         "topP": 0.9
     }
