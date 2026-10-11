@@ -1477,6 +1477,311 @@ export class SmallTalkHandler {
                 ],
             },
 
+            // ── Privacy & Offline Security ──────────────────────────────────────
+            {
+                triggers: [
+                    'is this private', 'is my data safe', 'is this secure', 'are you tracking me',
+                    'where are my chats stored', 'do you sell my data', 'is this offline',
+                    'can i use this offline', 'does this work offline', 'does this need internet',
+                    'can i disconnect internet', 'is my data private', 'who sees my chats',
+                    'does openai see this', 'does google see this', 'are you recording me'
+                ],
+                responses: [
+                    "100% private! I run entirely inside your browser via WebGPU and WebAssembly. Your chats never leave your device.",
+                    "Everything stays on your machine. Your conversations are stored locally in your browser's IndexedDB, with zero external server calls.",
+                    "Complete privacy by design: all model weights run on your local hardware. You can even disconnect your Wi-Fi and I will keep chatting!",
+                    "Your data is safe with you. There are no tracking scripts, no telemetry, and no third-party APIs analyzing your queries."
+                ],
+            },
+
+            // ── Hardware, WebGPU & Performance ──────────────────────────────────
+            {
+                triggers: [
+                    'is this using my gpu', 'are you using my gpu', 'is this using my cpu',
+                    'why is my fan spinning', 'is this heavy on my battery', 'how fast are you',
+                    'how fast is this running', 'tokens per second', 'tps', 'what model are you',
+                    'which model is this', 'how does this work', 'explain how you work'
+                ],
+                responses: [
+                    "I run on WebGPU shaders directly on your graphics card (or CPU fallback via WASM). Inference is compute-intensive, which is why your fans might spin up!",
+                    "You're seeing true in-browser local AI! Modern WebGPU allows your browser to execute tensor math on your GPU with near-native performance.",
+                    "Speed depends on your device's GPU and the model preset selected in the Model Panel. You can check the Diagnostics tab in the sidebar for live memory and token stats!",
+                    "I compile neural network operations directly into GPU compute passes via ONNX Runtime Web and WebGPU. No cloud latency involved!"
+                ],
+            },
+
+            // ── Tools & Feature Guidance ────────────────────────────────────────
+            {
+                triggers: [
+                    'how do i play chess', 'how to play chess', 'can we play chess',
+                    'can we play checkers', 'how do i run python', 'can you run python',
+                    'how do i calculate', 'what tools can you use', 'show me your tools',
+                    'how do i use tools', 'how do tools work', 'list your tools'
+                ],
+                responses: [
+                    "I have built-in tools for games, math, science, and coding! Try saying: 'Let's play chess', 'Run python to plot a sine wave', 'Calculate 25 * 43', or 'Lorentz factor at 0.9c'.",
+                    "To use tools, just ask naturally! For games: 'Let's play chess'. For Python: 'Run Python to...'. For science: 'Find energy from p=5, m=1' or 'Weather in Tokyo'.",
+                    "I can run Python scripts via Pyodide, calculate scientific physics and linear algebra, search Wikipedia, fetch pages, look up weather, and play chess or checkers right in the chat!"
+                ],
+            },
+
+            // ── Well-Wishes & Daily Courtesy ────────────────────────────────────
+            {
+                triggers: [
+                    'good night', 'nighty night', 'sleep well', 'sweet dreams', 'going to sleep',
+                    'going to bed', 'have a good night', 'have a great night', 'im going to sleep',
+                    'im going to bed', 'buenas noches', 'bonne nuit', 'gute nacht', 'spokoynoy nochi',
+                    'спокойной ночи', 'oyasumi', 'layla tov', 'לילה טוב'
+                ],
+                responses: [
+                    "Good night! Rest well and see you tomorrow. 🌙",
+                    "Sleep well and sweet dreams! I'll be right here in your browser whenever you return.",
+                    "Have a wonderful night's sleep! Rest up and recharge.",
+                    "Good night! Take it easy and sleep tight. ✨"
+                ],
+            },
+            {
+                triggers: [
+                    'have a good day', 'have a nice day', 'have a great day', 'have a good one',
+                    'have a wonderful day', 'enjoy your day', 'have a good weekend',
+                    'have a great weekend', 'enjoy your weekend', 'happy weekend'
+                ],
+                responses: [
+                    "Thank you so much! Wishing you a fantastic and productive day as well! 😊",
+                    "Have a wonderful day ahead! Let me know if you need any help with anything.",
+                    "Thanks! Enjoy every moment of it. Have a great day!",
+                    "Much appreciated! Have a fantastic weekend and enjoy your time off!"
+                ],
+            },
+            {
+                triggers: [
+                    'wish me luck', 'give me luck', 'i need luck', 'cross your fingers',
+                    'i have an interview', 'i have an exam', 'i have a test', 'nervous about my test',
+                    'nervous about my interview', 'wish me well'
+                ],
+                responses: [
+                    "Best of luck! You've got this! Take a deep breath, trust your preparation, and go shine. 🌟",
+                    "Fingers crossed for you! Believe in yourself—you are more prepared than you think.",
+                    "Sending you maximum positive energy! Go knock it out of the park!",
+                    "You're going to do great! Stay calm, stay focused, and show them what you can do."
+                ],
+            },
+            {
+                triggers: [
+                    'i passed', 'i passed my exam', 'i passed my test', 'i got the job',
+                    'i did it', 'we did it', 'good news', 'celebrate with me', 'celebrate'
+                ],
+                responses: [
+                    "Congratulations! 🎉 That is fantastic news! You worked hard for it and earned every bit of success.",
+                    "Yesss! Congratulations! 🥳 Hard work pays off—celebrate and enjoy this victory!",
+                    "Incredible! That's huge news! So proud of you—take some time today to celebrate! 🚀"
+                ],
+            },
+            {
+                triggers: [
+                    'i failed', 'i failed my exam', 'i failed my test', 'i didn\'t get the job',
+                    'bad news', 'i messed up', 'everything went wrong', 'rough day', 'bad day'
+                ],
+                responses: [
+                    "I'm really sorry to hear that. Setbacks are tough, but they do not define you. Take a breather today—tomorrow is a fresh opportunity.",
+                    "That's really frustrating, but don't be too hard on yourself. Every master was once a beginner who stumbled. You'll bounce back stronger.",
+                    "Sending you encouragement. It hurts now, but treat it as a learning stepping stone. Take some time to rest and reset."
+                ],
+            },
+
+            // ── Conversational Agreement & Disagreement ────────────────────────
+            {
+                triggers: [
+                    'i agree', 'agreed', 'you are right', 'youre right', 'thats right',
+                    'that is right', 'exactly', 'precisely', 'absolutely', 'spot on',
+                    'couldnt agree more', 'could not agree more', 'fair point', 'well said'
+                ],
+                responses: [
+                    "Glad we're on the same page! What would you like to explore next?",
+                    "Spot on! It's always great when things click.",
+                    "Exactly. Where should we head from here?",
+                    "Indeed! Let's keep the momentum going."
+                ],
+            },
+            {
+                triggers: [
+                    'i disagree', 'i dont agree', 'i do not agree', 'you are wrong',
+                    'youre wrong', 'thats wrong', 'that is wrong', 'not true', 'false',
+                    'incorrect', 'i doubt it', 'no way', 'bullshit', 'cap'
+                ],
+                responses: [
+                    "Fair enough! Tell me your perspective—I'm always eager to learn and adjust.",
+                    "Point taken! What did I get wrong? Clarify and I'll adapt.",
+                    "Healthy skepticism is good science! How do you see it?"
+                ],
+            },
+            {
+                triggers: [
+                    'excuse me', 'pardon', 'pardon me', 'my bad', 'my fault',
+                    'nevermind', 'never mind', 'disregard', 'ignore that', 'skip that',
+                    'forget it', 'scratch that'
+                ],
+                responses: [
+                    "No worries at all! Resetting that thought. What's on your mind now?",
+                    "Consider it forgotten! What should we look into instead?",
+                    "No problem! Moving right along.",
+                    "All good! What would you like to work on?"
+                ],
+            },
+
+            // ── Connectivity, Pings & Checks ────────────────────────────────────
+            {
+                triggers: [
+                    'ping', 'pong', 'test 123', 'mic check', 'check check',
+                    'hello world', 'are you alive yet', 'is this thing on', 'echo',
+                    'can you hear me now'
+                ],
+                responses: [
+                    "Pong! Connection is active, local runtime is humming along nicely.",
+                    "Hello World! All systems operational and ready to assist.",
+                    "Loud and clear! Signal strength: 100% local in your browser.",
+                    "Echo confirmed! Instant response, zero network latency."
+                ],
+            },
+
+            // ── Multilingual Greetings & Courtesies ─────────────────────────────
+            {
+                triggers: [
+                    'shalom', 'שלום', 'toda', 'תודה', 'toda raba', 'תודה רבה',
+                    'boker tov', 'בוקר טוב', 'erev tov', 'ערב טוב'
+                ],
+                responses: [
+                    "Shalom! How can I help you today? (שלום וברוך הבא!)",
+                    "Shalom! Ready to assist you with anything you need.",
+                    "You're very welcome! (בכיף ובשמחה!)"
+                ],
+            },
+            {
+                triggers: [
+                    'arigato', 'arigatou', 'arigato gozaimasu', 'domo arigato',
+                    'sayonara', 'konbanwa', 'oyasumi nasai'
+                ],
+                responses: [
+                    "Dou itashimashite! (You're very welcome!) Happy to help.",
+                    "Sayonara! Have a wonderful day, and see you next time!",
+                    "Konbanwa! Good evening—how can I assist you tonight?"
+                ],
+            },
+            {
+                triggers: [
+                    'spasibo', 'спасибо', 'bolshoe spasibo', 'большое спасибо',
+                    'poka', 'пока', 'do svidaniya', 'до свидания'
+                ],
+                responses: [
+                    "Пожалуйста! (You're welcome!) Glad I could help.",
+                    "Пока! (Bye!) Have a wonderful day ahead!",
+                    "До свидания! Come back anytime."
+                ],
+            },
+            {
+                triggers: [
+                    'danke', 'vielen dank', 'danke schon', 'danke schön',
+                    'tschuss', 'tschüss', 'auf wiedersehen'
+                ],
+                responses: [
+                    "Gern geschehen! (You're welcome!) Let me know if you need anything else.",
+                    "Auf Wiedersehen! Have a great day!",
+                    "Tschüss! See you around!"
+                ],
+            },
+            {
+                triggers: [
+                    'merci', 'merci beaucoup', 'de rien', 'au revoir', 'a bientot', 'à bientôt'
+                ],
+                responses: [
+                    "De rien! (You're very welcome!) What can I do for you next?",
+                    "Au revoir! Have a fantastic day!",
+                    "À bientôt! Come back whenever you need assistance."
+                ],
+            },
+
+            // ── Pop Culture & Geek Easter Eggs ──────────────────────────────────
+            {
+                triggers: [
+                    'beam me up scotty', 'beam me up', 'energize', 'captain kirk', 'spock'
+                ],
+                responses: [
+                    "Transporter room online! Coordinates locked. Energizing... ⚡",
+                    "I cannot change the laws of physics, Captain, but I can compute them for you!",
+                    "Live long and prosper. 🖖"
+                ],
+            },
+            {
+                triggers: [
+                    'winter is coming', 'you know nothing jon snow', 'valar morghulis',
+                    'game of thrones', 'house of the dragon'
+                ],
+                responses: [
+                    "Valar dohaeris. All men must serve—even local browser AIs.",
+                    "Winter is coming, but your GPU will keep you warm!",
+                    "You know nothing, Jon Snow. But I can help you find out!"
+                ],
+            },
+            {
+                triggers: [
+                    'what is the matrix', 'red pill or blue pill', 'take the red pill',
+                    'there is no spoon', 'neo', 'morpheus', 'matrix'
+                ],
+                responses: [
+                    "The Matrix is everywhere. It is all around us. Even now, in this very browser tab.",
+                    "You take the blue pill, the browser closes. You take the red pill, you stay in Wonderland and I show you how deep WebGPU goes.",
+                    "Do not try and bend the spoon—that's impossible. Instead, only try to realize the truth: there is no spoon."
+                ],
+            },
+            {
+                triggers: [
+                    'show me the money', 'jerry maguire'
+                ],
+                responses: [
+                    "SHOW ME THE MONEY! 💰 (Or at least run the currency converter tool!)",
+                    "You had me at 'hello'."
+                ],
+            },
+            {
+                triggers: [
+                    'to be or not to be', 'shakespeare', 'hamlet'
+                ],
+                responses: [
+                    "That is the question: Whether 'tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to run a local language model offline.",
+                    "All the world's a stage, and all the men and women merely players—and I'm just a neural network in their browser."
+                ],
+            },
+            {
+                triggers: [
+                    '42', 'what is 42', 'the answer is 42', 'hitchhiker', 'dont panic'
+                ],
+                responses: [
+                    "The answer to the ultimate question of life, the universe, and everything! Now we just need the question.",
+                    "DON'T PANIC, and always know where your towel is.",
+                    "42! Computed by Deep Thought after 7.5 million years—I did it in under 5 milliseconds."
+                ],
+            },
+            {
+                triggers: [
+                    'rock paper scissors', 'play rock paper scissors', 'roshambo'
+                ],
+                responses: [
+                    "Rock, paper, scissors... Shoot! 🪨 I chose Rock! Did you win?",
+                    "Rock, paper, scissors... Shoot! 📄 I chose Paper! Looks like I wrap your rock!",
+                    "Rock, paper, scissors... Shoot! ✂️ I chose Scissors! Watch out for my cut!"
+                ],
+            },
+            {
+                triggers: [
+                    'knock knock', 'knock knock joke', 'tell me a knock knock joke'
+                ],
+                responses: [
+                    "Who's there?\n\nTank.\n\nTank who?\n\nYou're welcome! 😄",
+                    "Who's there?\n\nInterrupting cow.\n\nInterrupting c—\n\nMOOOOO! 🐮",
+                    "Who's there?\n\nLettuce.\n\nLettuce who?\n\nLettuce in, it's freezing out here!"
+                ],
+            },
+
             // ── Final catch-all short affirmations already handled ─────────────
         ];
 
