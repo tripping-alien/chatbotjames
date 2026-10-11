@@ -836,7 +836,7 @@ async function handleToolCalls(message, targetId, originChatId) {
             const body = match[1].trim();
             if (body) {
                 const subJson = extractJsonObjects(body);
-                if (subJson.length > 1) {
+                if (subJson.length > 0) {
                     calls.push(...subJson);
                 } else {
                     calls.push(body);
@@ -851,7 +851,7 @@ async function handleToolCalls(message, targetId, originChatId) {
                 const body = match[1].trim().replace(/^```|```$/g, '').trim();
                 if (body) {
                     const subJson = extractJsonObjects(body);
-                    if (subJson.length > 1) {
+                    if (subJson.length > 0) {
                         calls.push(...subJson);
                     } else {
                         calls.push(body);

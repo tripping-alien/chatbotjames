@@ -1,9 +1,10 @@
 // Single source of truth for "does this message carry tool calls?".
-// Covers three formats the model may produce:
+// Covers multiple formats the model may produce:
 //  1. ```tool:run  (standard fenced block, with or without leading backticks)
-//  2. ^tool:run    (bare, no backticks, at start of message)
-//  3. {"tool":     (bare or embedded JSON object with a "tool" key)
-export const TOOL_CALL_PATTERN = /(?:```\s*tool:run\b)|(?:^tool:run\b)|\{\s*"tool"\s*:/m;
+//  2. ^\s*tool:run (bare, no backticks, at start of line)
+//  3. {"tool":     (bare or embedded JSON object with a "tool" key, double/single quotes or unquoted)
+//  4. <tool>       (XML format supported by app.js)
+export const TOOL_CALL_PATTERN = /(?:```\s*tool:run\b)|(?:^\s*tool:run\b)|(?:\{\s*["']?tool(?:_name)?["']?\s*:)|(?:<tool\b)/m;
 export const hasToolCalls = (msg) => typeof msg === 'string' && TOOL_CALL_PATTERN.test(msg);
 
 class WorkerController {
@@ -124,11 +125,17 @@ class WorkerController {
         return new Promise((resolve, reject) => {
             const reqId = Date.now() + Math.random().toString(36).substring(2);
             const msg = { ...messageData, execId: reqId };
-            
+            let cleanup;
+
             const timeout = setTimeout(() => {
-                targetWorker.removeEventListener('message', listener);
+                cleanup();
                 reject(new Error('Worker RPC Timeout'));
             }, timeoutMs);
+
+            const errListener = (e) => {
+                cleanup();
+                reject(new Error(e.message || 'Worker runtime error'));
+            };
 
             const listener = (e) => {
                 if (e.data && e.data.execId === reqId) {
@@ -138,8 +145,7 @@ class WorkerController {
                     // Skip intermediate messages (e.g. status:'loading', 'stdout', 'ready')
                     if (e.data.status !== 'done' && e.data.status !== 'error') return;
 
-                    clearTimeout(timeout);
-                    targetWorker.removeEventListener('message', listener);
+                    cleanup();
 
                     if (e.data.status === 'error') {
                         reject(new Error(e.data.error || 'Worker error'));
@@ -149,7 +155,15 @@ class WorkerController {
                     }
                 }
             };
+
+            cleanup = () => {
+                clearTimeout(timeout);
+                targetWorker.removeEventListener('message', listener);
+                targetWorker.removeEventListener('error', errListener);
+            };
+
             targetWorker.addEventListener('message', listener);
+            targetWorker.addEventListener('error', errListener);
             targetWorker.postMessage(msg);
         });
     }
