@@ -18,15 +18,6 @@ let isAborted = false;
 let _initLock = false;        // prevents concurrent init messages from racing
 let _pendingInitPreset = null; // stores the latest switch request while one is in-flight
 
-// ─── Freeze-protection constants ────────────────────────────────────────────
-// Timeout (ms) before auto-aborting a stuck generation.
-// Large models (≥3B) get a longer budget since they generate more slowly.
-const GEN_TIMEOUT_LARGE_MS = 180_000; // 3 mins  for 3B+
-const GEN_TIMEOUT_DEFAULT_MS = 120_000;  // 2 mins  for everything else
-// If no new tokens arrive within this window we assume the GPU has stalled.
-const STALL_WATCHDOG_MS = 60_000;
-// Pause the GPU every N callback ticks to give the browser a breath.
-const YIELD_EVERY_N_TOKENS = 8;
 
 function normalizeError(err) {
     let msg = err?.message || String(err);
@@ -148,16 +139,11 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
     throw lastError || new Error('All model presets failed to load');
 }
 
-let _currentGenCancel = null;
-
 self.onmessage = async (e) => {
     const { type, messages, targetId, chatId } = e.data;
 
     if (type === 'abort') {
         isAborted = true;
-        if (_currentGenCancel) {
-            _currentGenCancel('UserAborted');
-        }
         return;
     }
 
@@ -223,57 +209,6 @@ self.onmessage = async (e) => {
         isGenerating = true;
         isAborted = false;
         let accumulatedResponse = '';
-
-        let cancelCurrentGen = null;
-        const cancelPromise = new Promise((_, reject) => {
-            cancelCurrentGen = (reason) => reject(new Error(reason || 'AbortGeneration'));
-        });
-        _currentGenCancel = cancelCurrentGen;
-
-        // ─── Freeze protection: generation timeout ──────────────────────────────
-        const isLargeModel = (activePreset?.params ?? 0) >= 3.0;
-        const GEN_TIMEOUT_MS = isLargeModel ? GEN_TIMEOUT_LARGE_MS : GEN_TIMEOUT_DEFAULT_MS;
-        const PREFILL_TIMEOUT_MS = isLargeModel ? 60_000 : 35_000;
-        const TOKEN_STALL_MS = STALL_WATCHDOG_MS; // 20_000 ms
-
-        let hasReceivedFirstToken = false;
-        let lastTokenTime = performance.now();
-
-        let genTimeoutId = setTimeout(() => {
-            if (isGenerating && !isAborted) {
-                console.warn('[worker] Generation timeout — aborting to prevent freeze');
-                isAborted = true;
-                if (cancelCurrentGen) cancelCurrentGen('GenerationTimeout');
-                self.postMessage({
-                    status: 'error',
-                    message: `Generation timed out after ${Math.round(GEN_TIMEOUT_MS / 1000)}s. ` +
-                        'Try a smaller model or shorten your prompt.',
-                    targetId,
-                    chatId
-                });
-            }
-        }, GEN_TIMEOUT_MS);
-
-        // ─── Freeze protection: stall watchdog ──────────────────────────────────
-        // Allows adequate time for prompt prefill, then watches token-to-token intervals.
-        let stallWatchdogId = setInterval(() => {
-            if (!isGenerating || isAborted) { clearInterval(stallWatchdogId); return; }
-            const elapsed = performance.now() - lastTokenTime;
-            const threshold = hasReceivedFirstToken ? TOKEN_STALL_MS : PREFILL_TIMEOUT_MS;
-            if (elapsed > threshold) {
-                console.warn('[worker] Token stall detected — aborting to prevent freeze');
-                isAborted = true;
-                clearInterval(stallWatchdogId);
-                if (cancelCurrentGen) cancelCurrentGen('TokenStall');
-                self.postMessage({
-                    status: 'error',
-                    message: 'The model stopped responding (possible GPU stall). ' +
-                        'Aborted to protect your device. Consider using a smaller model.',
-                    targetId,
-                    chatId
-                });
-            }
-        }, 3_000);
 
         try {
             self.postMessage({ status: 'thinking', targetId, chatId });
@@ -342,14 +277,7 @@ self.onmessage = async (e) => {
                 maxTokens = Math.min(maxTokens, available);
             }
 
-            // ─── GPU / IPC yield helper ──────────────────────────────────────────────
-            // callback_function is synchronous, so we can't await inside it.
-            // To reduce GPU saturation we throttle postMessage calls (expensive
-            // structured-clone IPC) to every YIELD_EVERY_N_TOKENS ticks, and
-            // rely on the stall watchdog + timeout to catch hard freezes.
-            let _callbackTick = 0;
-
-            const chatbotPromise = chatbot(prompt, {
+            const output = await chatbot(prompt, {
                 max_new_tokens: maxTokens,
                 do_sample: true,
                 temperature: temp,
@@ -361,15 +289,6 @@ self.onmessage = async (e) => {
 
                     const tokenIds = beams?.[0]?.output_token_ids;
                     if (!tokenIds) return;
-
-                    // Reset the stall watchdog on every incoming token and mark first token
-                    hasReceivedFirstToken = true;
-                    lastTokenTime = performance.now();
-                    _callbackTick++;
-
-                    // Throttle: only decode & postMessage every N ticks to reduce
-                    // IPC overhead and give the GPU scheduler room to breathe.
-                    if (_callbackTick % YIELD_EVERY_N_TOKENS !== 0) return;
 
                     const tokenData = tokenIds.data || tokenIds;
                     if (tokenData.length > promptTokenCount) {
@@ -389,8 +308,6 @@ self.onmessage = async (e) => {
                     }
                 }
             });
-
-            const output = await Promise.race([chatbotPromise, cancelPromise]);
 
             if (isAborted) {
                 self.postMessage({ status: 'aborted', message: accumulatedResponse.trim(), targetId, chatId });
@@ -412,20 +329,13 @@ self.onmessage = async (e) => {
                 chatId
             });
         } catch (err) {
-            if (err.message === 'AbortGeneration' || err.message === 'UserAborted') {
+            if (err.message === 'AbortGeneration') {
                 self.postMessage({
                     status: 'aborted',
                     message: accumulatedResponse.trim(),
                     targetId,
                     chatId
                 });
-            } else if (err.message === 'GenerationTimeout' || err.message === 'TokenStall') {
-                // Handlers already posted error status. If it stalled, dispose pipeline to clear poisoned GPU state.
-                if (err.message === 'TokenStall' && isLargeModel) {
-                    try { if (chatbot) chatbot.dispose(); } catch (_) {}
-                    chatbot = null;
-                    activePreset = null;
-                }
             } else {
                 // Handle GPU OOM / Device Lost explicitly
                 const errMsg = err.message || String(err);
@@ -440,10 +350,7 @@ self.onmessage = async (e) => {
                 }
             }
         } finally {
-            clearTimeout(genTimeoutId);
-            clearInterval(stallWatchdogId);
             isGenerating = false;
-            _currentGenCancel = null;
         }
     }
 };

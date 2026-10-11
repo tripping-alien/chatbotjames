@@ -92,8 +92,8 @@ async function getWebSearch(params) {
 
 // ── Fetch Page ────────────────────────────────────────────────────────────
 async function fetchPageTool(params) {
-    const { url } = params;
-    if (!url) throw new Error('fetch_page requires a url parameter');
+    const url = params?.url || params?.link || params?.target || params?.href || (typeof params === 'string' ? params : null);
+    if (!url) throw new Error('fetch requires a url parameter');
     try {
         const res = await fetch(`https://r.jina.ai/${url}`, {
             headers: {
@@ -824,6 +824,9 @@ const TOOL_HANDLERS = {
     ip: ipTool,
     ascii_art: asciiArtTool,
     fetch_page: fetchPageTool,
+    fetch: fetchPageTool,
+    read_page: fetchPageTool,
+    web_fetch: fetchPageTool,
     sprite: generateSprite,
 
     // ── Scientific calculators ───────────────────────────────────────────────
