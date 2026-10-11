@@ -17,12 +17,14 @@ const tok = (s) => Math.round(s.length / 3.5);
 const phone = { isMobile: true, isTV: false };
 const tv = { isMobile: false, isTV: true };
 const desktop = { isMobile: false, isTV: false };
+const integratedGpuDesktop = { isMobile: false, isTV: false, isIntegrated: true };
 
 check('lite preset -> lite', getPromptTier(byId('lite-smollm-135m-q4'), phone) === 'lite');
 check('360M -> lite', getPromptTier(byId('cpu-smollm-360m-q8'), desktop) === 'lite');
 check('0.5B -> compact', getPromptTier(byId('gpu-qwen25-05b-q4f16'), desktop) === 'compact');
 check('1.5B desktop -> compact', getPromptTier(byId('gpu-qwen25-15b-q4f16'), desktop) === 'compact');
 check('3B desktop -> full', getPromptTier(byId('gpu-llama32-3b-q4f16'), desktop) === 'full');
+check('3B on integrated GPU -> compact', getPromptTier(byId('gpu-llama32-3b-q4f16'), integratedGpuDesktop) === 'compact');
 check('3B on phone -> compact', getPromptTier(byId('gpu-llama32-3b-q4f16'), phone) === 'compact');
 check('3B on TV -> compact', getPromptTier(byId('gpu-llama32-3b-q4f16'), tv) === 'compact');
 check('no preset -> compact', getPromptTier(null, desktop) === 'compact');
@@ -31,6 +33,13 @@ check('no preset -> compact', getPromptTier(null, desktop) === 'compact');
 const autoOnPhone = rankAutoPresets({ hasGpu: false }, 4, true, null)[0];
 check('auto preset on constrained device exists', !!autoOnPhone);
 check('auto preset on constrained device gets lite', getPromptTier(autoOnPhone, phone) === 'lite');
+
+// Auto preset on integrated GPU desktop must NOT auto-select a 3B+ model
+const autoOnIntegrated = rankAutoPresets({ hasGpu: true, isIntegrated: true }, 8, false, null)[0];
+check('auto preset on integrated GPU exists', !!autoOnIntegrated);
+check('auto preset on integrated GPU is <= 1.7B', (autoOnIntegrated.params || 0) <= 1.7);
+check('auto preset on desktop does not pick 3B+', (rankAutoPresets({ hasGpu: true }, 8, false, null)[0]?.params || 0) < 3.0);
+
 
 // --- size budgets -----------------------------------------------------------
 console.log(`\nfull prompt   ~${tok(FULL)} tokens (${FULL.length} chars)`);
