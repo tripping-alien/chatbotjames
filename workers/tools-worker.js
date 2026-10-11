@@ -798,7 +798,7 @@ async function asciiArtTool(params) {
 }
 
 // ── Main message handler ──────────────────────────────────────────────────
-const TOOL_HANDLERS = {
+export const TOOL_HANDLERS = {
     help: helpTool,
     weather: getWeather,
     websearch: getWebSearch,
@@ -836,18 +836,20 @@ const TOOL_HANDLERS = {
     diffeq:     (p) => diffEq(p),
 };
 
-self.onmessage = async (e) => {
-    const { execId, tool, params } = e.data;
+if (typeof self !== 'undefined' && typeof self.postMessage === 'function') {
+    self.onmessage = async (e) => {
+        const { execId, tool, params } = e.data;
 
-    // Ignore non-tool messages (e.g. init ping from worker-controller)
-    if (!tool) return;
+        // Ignore non-tool messages (e.g. init ping from worker-controller)
+        if (!tool) return;
 
-    try {
-        const handler = TOOL_HANDLERS[tool];
-        if (!handler) throw new Error(`Unknown tool: ${tool}`);
-        const result = await handler(params);
-        self.postMessage({ status: 'done', result, execId });
-    } catch (err) {
-        self.postMessage({ status: 'error', error: err.message, execId });
-    }
-};
+        try {
+            const handler = TOOL_HANDLERS[tool];
+            if (!handler) throw new Error(`Unknown tool: ${tool}`);
+            const result = await handler(params);
+            self.postMessage({ status: 'done', result, execId });
+        } catch (err) {
+            self.postMessage({ status: 'error', error: err.message, execId });
+        }
+    };
+}
