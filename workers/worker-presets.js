@@ -1,7 +1,7 @@
 export const MODEL_PRESETS = [
     // GPU - WebGPU (High-End, 3B+ Params)
     { id: 'gpu-phi35-mini-q4f16', label: 'Phi-3.5 Mini 3.8B', backend: 'webgpu', model: 'onnx-community/Phi-3.5-mini-instruct-onnx-web', dtype: 'q4f16', requires: 'gpu', autoSelect: false, sizeMB: 2200, ram: '8 GB', params: 3.8 },
-    { id: 'gpu-llama32-3b-q4f16', label: 'Llama 3.2 3B', backend: 'webgpu', model: 'onnx-community/Llama-3.2-3B-Instruct', dtype: 'q4f16', requires: 'gpu', autoSelect: false, sizeMB: 2100, ram: '6 GB', params: 3.2 },
+    { id: 'gpu-llama32-3b-q4f16', label: 'Llama 3.2 3B', backend: 'webgpu', model: 'onnx-community/Llama-3.2-3B-Instruct', dtype: 'q4f16', requires: 'gpu', autoSelect: true, sizeMB: 2100, ram: '6 GB', params: 3.2 },
     { id: 'gpu-gemma3-4b-q4f16', label: 'Gemma 3 4B', backend: 'webgpu', model: 'onnx-community/gemma-3-4b-it-ONNX', dtype: 'q4f16', requires: 'gpu', autoSelect: false, sizeMB: 2800, ram: '8 GB', params: 4.0 },
     { id: 'gpu-qwen25-15b-q4f16', label: 'Qwen2.5 1.5B', backend: 'webgpu', model: 'onnx-community/Qwen2.5-1.5B-Instruct', dtype: 'q4f16', requires: 'gpu', autoSelect: true, sizeMB: 1100, ram: '4 GB', params: 1.5 },
 
