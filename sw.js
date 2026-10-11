@@ -1,4 +1,4 @@
-const CACHE_NAME = 'JAMES-v5.16';
+const CACHE_NAME = 'JAMES-v5.17';
 
 // Only cache truly static assets - NOT app logic files
 const STATIC_ASSETS = [
@@ -29,6 +29,7 @@ const NETWORK_FIRST = [
     '/workers/worker-downloader.js',
     '/workers/worker-presets.js',
     '/workers/worker-system-prompt.js',
+    '/workers/worker-prompt-tiers.js',
     '/workers/tools-worker.js',
     '/tools/tools-bridge.js',
     '/tools/tools-search.js',
