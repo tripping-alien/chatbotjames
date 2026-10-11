@@ -21,10 +21,10 @@ let _pendingInitPreset = null; // stores the latest switch request while one is 
 // ─── Freeze-protection constants ────────────────────────────────────────────
 // Timeout (ms) before auto-aborting a stuck generation.
 // Large models (≥3B) get a longer budget since they generate more slowly.
-const GEN_TIMEOUT_LARGE_MS = 120_000; // 2 min  for 3B+
-const GEN_TIMEOUT_DEFAULT_MS = 75_000;  // 75 s   for everything else
+const GEN_TIMEOUT_LARGE_MS = 180_000; // 3 mins  for 3B+
+const GEN_TIMEOUT_DEFAULT_MS = 120_000;  // 2 mins  for everything else
 // If no new tokens arrive within this window we assume the GPU has stalled.
-const STALL_WATCHDOG_MS = 20_000;
+const STALL_WATCHDOG_MS = 60_000;
 // Pause the GPU every N callback ticks to give the browser a breath.
 const YIELD_EVERY_N_TOKENS = 8;
 
