@@ -522,13 +522,41 @@ function _cross3(a, b) {
 
 function _frob(A) { return Math.sqrt(A.reduce((s,r) => s+r.reduce((t,x) => t+x*x,0), 0)); }
 
-export function linAlg(params) {
-    const { mode } = params;
-    const A = params.A ? _parseMat(params.A) : null;
-    const B = params.B ? _parseMat(params.B) : null;
-    const b = params.b ? _parseMat(params.b) : null;
-    const v = params.v ? _parseMat(params.v) : null;
-    const w = params.w ? _parseMat(params.w) : null;
+export function linAlg(params = {}) {
+    params = params || {};
+    let mode = (params.mode ?? params.type ?? params.action ?? params.op ?? '').toString().toLowerCase().trim();
+
+    const rawA = params.A ?? params.matrix ?? params.matrixA ?? params.matrix1 ?? params.m ?? null;
+    const rawB = params.B ?? params.matrixB ?? params.matrix2 ?? null;
+    const rawb = params.b ?? params.vectorB ?? params.constants ?? null;
+    const rawV = params.v ?? params.vector ?? params.vector1 ?? params.vec ?? params.v1 ?? null;
+    const rawW = params.w ?? params.vector2 ?? params.vec2 ?? params.w1 ?? params.v2 ?? null;
+
+    const A = rawA ? _parseMat(rawA) : null;
+    const B = rawB ? _parseMat(rawB) : null;
+    const b = rawb ? _parseMat(rawb) : null;
+    const v = rawV ? _parseMat(rawV) : null;
+    const w = rawW ? _parseMat(rawW) : null;
+
+    if (mode === 'multiply' || mode === 'matmul' || mode === 'mat_mul' || mode === 'mult' || mode === 'matrix_multiply' || mode === 'product') mode = 'multiply';
+    else if (mode === 'determinant' || mode === 'det') mode = 'determinant';
+    else if (mode === 'inverse' || mode === 'inv' || mode === 'invert') mode = 'inverse';
+    else if (mode === 'eigenvalues' || mode === 'eigen' || mode === 'eig' || mode === 'eigenvalue' || mode === 'eigen_values') mode = 'eigenvalues';
+    else if (mode === 'solve' || mode === 'linear_solve' || mode === 'solve_system' || mode === 'gaussian_elimination') mode = 'solve';
+    else if (mode === 'transpose' || mode === 'trans') mode = 'transpose';
+    else if (mode === 'rank' || mode === 'matrix_rank') mode = 'rank';
+    else if (mode === 'dot' || mode === 'dot_product' || mode === 'scalar_product') mode = 'dot';
+    else if (mode === 'cross' || mode === 'cross_product' || mode === 'vector_product') mode = 'cross';
+    else if (mode === 'norm' || mode === 'vector_norm' || mode === 'matrix_norm' || mode === 'frobenius') mode = 'norm';
+    else if (mode === 'trace' || mode === 'tr') mode = 'trace';
+    else if (!mode) {
+        if (A && B) mode = 'multiply';
+        else if (A && b) mode = 'solve';
+        else if (v && w) mode = 'dot';
+        else if (v) mode = 'norm';
+        else if (A) mode = 'determinant';
+        else mode = 'multiply';
+    }
 
     switch (mode) {
         case 'multiply': {
@@ -606,15 +634,28 @@ function _parseExpr(expr, args) {
         .replace(/\bpi\b/gi, 'Math.PI').replace(/\be\b(?!\w)/g, 'Math.E')
         .replace(/\b(sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|sqrt|cbrt|abs|exp|log|log2|log10|pow|sign)\b/g, 'Math.$1')
         .replace(/\bln\b/g, 'Math.log').replace(/\^/g, '**');
-    // eslint-disable-next-line no-new-func
     return new Function(...args, `"use strict"; return (${safe});`);
 }
 
 function _rnd(x, s=6) { return _round(x, s); }
 function _every(steps, maxPts=80) { return Math.max(1, Math.floor(steps/maxPts)); }
 
-export function diffEq(params) {
-    const { mode } = params;
+export function diffEq(params = {}) {
+    params = params || {};
+    let mode = (params.mode ?? params.type ?? params.method ?? '').toString().toLowerCase().trim();
+
+    if (mode === 'euler' || mode === 'forward_euler') mode = 'euler';
+    else if (mode === 'rk4' || mode === 'runge_kutta' || mode === 'runge-kutta') mode = 'rk4';
+    else if (mode === 'system_rk4' || mode === 'system' || mode === 'rk4_system') mode = 'system_rk4';
+    else if (mode === 'second_order_const' || mode === 'second_order' || mode === 'harmonic' || mode === 'oscillator') mode = 'second_order_const';
+    else if (mode === 'linear_first_order' || mode === 'first_order' || mode === 'linear') mode = 'linear_first_order';
+    else if (!mode) {
+        if (params.a !== undefined || params.yp0 !== undefined) mode = 'second_order_const';
+        else if (params.g !== undefined || params.z0 !== undefined) mode = 'system_rk4';
+        else if (params.P !== undefined || params.Q !== undefined) mode = 'linear_first_order';
+        else if (params.f !== undefined || params.expr !== undefined) mode = 'rk4';
+        else mode = 'rk4';
+    }
 
     switch (mode) {
         case 'euler': {
