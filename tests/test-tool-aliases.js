@@ -33,6 +33,12 @@ check('physics alias is registered', /\bphysics\s*:/.test(handlersBlock));
 check('particle_physics alias is registered', /\bparticle_physics\s*:/.test(handlersBlock));
 check('particlephysics alias is registered', /\bparticlephysics\s*:/.test(handlersBlock));
 check('linear_algebra alias is registered', /\blinear_algebra\s*:/.test(handlersBlock));
+check('matrix alias is registered', /\bmatrix\s*:/.test(handlersBlock));
+check('math alias is registered', /\bmath\s*:\s*calculatorTool/.test(handlersBlock));
+check('calc alias is registered', /\bcalc\s*:\s*calculatorTool/.test(handlersBlock));
+check('unit_convert alias is registered', /\bunit_convert\s*:\s*convertUnits/.test(handlersBlock));
+check('dice alias is registered', /\bdice\s*:\s*randomTool/.test(handlersBlock));
+check('coin alias is registered', /\bcoin\s*:\s*randomTool/.test(handlersBlock));
 check('differential_equations alias is registered', /\bdifferential_equations\s*:/.test(handlersBlock));
 
 // 2. Verify fetchPageTool parameter extraction handles flexible shapes
@@ -47,6 +53,16 @@ check('extracts url from { href }', parseUrl({ href: 'https://example.com' }) ==
 check('extracts url from direct string', parseUrl('https://example.com') === 'https://example.com');
 check('returns null for empty object', parseUrl({}) === null);
 check('returns null for null params', parseUrl(null) === null);
+
+// 3. Verify TOOL_CALL_PATTERN covers multiple formats
+import { TOOL_CALL_PATTERN, hasToolCalls } from '../core/worker-controller.js';
+check('TOOL_CALL_PATTERN detects fenced tool:run', hasToolCalls('```tool:run\n{"tool":"math"}\n```'));
+check('TOOL_CALL_PATTERN detects bare tool:run', hasToolCalls('tool:run\n{"tool":"physics"}'));
+check('TOOL_CALL_PATTERN detects indented tool:run', hasToolCalls('  tool:run\n{"tool":"physics"}'));
+check('TOOL_CALL_PATTERN detects JSON tool object', hasToolCalls('Here is the call: {"tool": "calculator", "params": "2+2"}'));
+check('TOOL_CALL_PATTERN detects single-quoted JSON tool', hasToolCalls("Let's run {'tool': 'calculator', 'params': '2+2'}"));
+check('TOOL_CALL_PATTERN detects XML tool format', hasToolCalls('<tool>calculator</tool><params><expression>2+2</expression></params>'));
+check('TOOL_CALL_PATTERN ignores normal chat', !hasToolCalls('I need a tool for my kitchen'));
 
 console.log('\n--- Freeze Resolver Regression Guard Tests ---');
 
