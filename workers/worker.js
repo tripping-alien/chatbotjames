@@ -224,13 +224,26 @@ self.onmessage = async (e) => {
         isAborted = false;
         let accumulatedResponse = '';
 
+        let cancelCurrentGen = null;
+        const cancelPromise = new Promise((_, reject) => {
+            cancelCurrentGen = (reason) => reject(new Error(reason || 'AbortGeneration'));
+        });
+        _currentGenCancel = cancelCurrentGen;
+
         // ─── Freeze protection: generation timeout ──────────────────────────────
         const isLargeModel = (activePreset?.params ?? 0) >= 3.0;
         const GEN_TIMEOUT_MS = isLargeModel ? GEN_TIMEOUT_LARGE_MS : GEN_TIMEOUT_DEFAULT_MS;
+        const PREFILL_TIMEOUT_MS = isLargeModel ? 60_000 : 35_000;
+        const TOKEN_STALL_MS = STALL_WATCHDOG_MS; // 20_000 ms
+
+        let hasReceivedFirstToken = false;
+        let lastTokenTime = performance.now();
+
         let genTimeoutId = setTimeout(() => {
             if (isGenerating && !isAborted) {
                 console.warn('[worker] Generation timeout — aborting to prevent freeze');
                 isAborted = true;
+                if (cancelCurrentGen) cancelCurrentGen('GenerationTimeout');
                 self.postMessage({
                     status: 'error',
                     message: `Generation timed out after ${Math.round(GEN_TIMEOUT_MS / 1000)}s. ` +
@@ -242,14 +255,16 @@ self.onmessage = async (e) => {
         }, GEN_TIMEOUT_MS);
 
         // ─── Freeze protection: stall watchdog ──────────────────────────────────
-        // Fires if the model stops producing tokens entirely (GPU stall / OOM).
-        let lastTokenTime = performance.now();
+        // Allows adequate time for prompt prefill, then watches token-to-token intervals.
         let stallWatchdogId = setInterval(() => {
             if (!isGenerating || isAborted) { clearInterval(stallWatchdogId); return; }
-            if (performance.now() - lastTokenTime > STALL_WATCHDOG_MS) {
+            const elapsed = performance.now() - lastTokenTime;
+            const threshold = hasReceivedFirstToken ? TOKEN_STALL_MS : PREFILL_TIMEOUT_MS;
+            if (elapsed > threshold) {
                 console.warn('[worker] Token stall detected — aborting to prevent freeze');
                 isAborted = true;
                 clearInterval(stallWatchdogId);
+                if (cancelCurrentGen) cancelCurrentGen('TokenStall');
                 self.postMessage({
                     status: 'error',
                     message: 'The model stopped responding (possible GPU stall). ' +
@@ -258,7 +273,7 @@ self.onmessage = async (e) => {
                     chatId
                 });
             }
-        }, 4_000);
+        }, 3_000);
 
         try {
             self.postMessage({ status: 'thinking', targetId, chatId });
@@ -334,7 +349,7 @@ self.onmessage = async (e) => {
             // rely on the stall watchdog + timeout to catch hard freezes.
             let _callbackTick = 0;
 
-            const output = await chatbot(prompt, {
+            const chatbotPromise = chatbot(prompt, {
                 max_new_tokens: maxTokens,
                 do_sample: true,
                 temperature: temp,
@@ -347,7 +362,8 @@ self.onmessage = async (e) => {
                     const tokenIds = beams?.[0]?.output_token_ids;
                     if (!tokenIds) return;
 
-                    // Reset the stall watchdog on every incoming token.
+                    // Reset the stall watchdog on every incoming token and mark first token
+                    hasReceivedFirstToken = true;
                     lastTokenTime = performance.now();
                     _callbackTick++;
 
@@ -374,6 +390,8 @@ self.onmessage = async (e) => {
                 }
             });
 
+            const output = await Promise.race([chatbotPromise, cancelPromise]);
+
             if (isAborted) {
                 self.postMessage({ status: 'aborted', message: accumulatedResponse.trim(), targetId, chatId });
                 return;
@@ -394,13 +412,20 @@ self.onmessage = async (e) => {
                 chatId
             });
         } catch (err) {
-            if (err.message === 'AbortGeneration') {
+            if (err.message === 'AbortGeneration' || err.message === 'UserAborted') {
                 self.postMessage({
                     status: 'aborted',
                     message: accumulatedResponse.trim(),
                     targetId,
                     chatId
                 });
+            } else if (err.message === 'GenerationTimeout' || err.message === 'TokenStall') {
+                // Handlers already posted error status. If it stalled, dispose pipeline to clear poisoned GPU state.
+                if (err.message === 'TokenStall' && isLargeModel) {
+                    try { if (chatbot) chatbot.dispose(); } catch (_) {}
+                    chatbot = null;
+                    activePreset = null;
+                }
             } else {
                 // Handle GPU OOM / Device Lost explicitly
                 const errMsg = err.message || String(err);
@@ -418,6 +443,7 @@ self.onmessage = async (e) => {
             clearTimeout(genTimeoutId);
             clearInterval(stallWatchdogId);
             isGenerating = false;
+            _currentGenCancel = null;
         }
     }
 };
