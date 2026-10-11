@@ -10,6 +10,7 @@ const testSuites = [
     { name: 'Tool Trigger Router', file: 'tests/test-tools-router.js' },
     { name: 'Maps & Helper Utilities', file: 'tests/test-maps-utils.js' },
     { name: 'Tool Aliases & Freeze Regression Guard', file: 'tests/test-tool-aliases.js' },
+    { name: 'SmallTalk & Instant Canned Handlers', file: 'tests/test-smalltalk.js' },
 ];
 
 async function runSuite(suite) {
