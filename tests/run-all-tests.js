@@ -11,6 +11,7 @@ const testSuites = [
     { name: 'Maps & Helper Utilities', file: 'tests/test-maps-utils.js' },
     { name: 'Tool Aliases & Freeze Regression Guard', file: 'tests/test-tool-aliases.js' },
     { name: 'SmallTalk & Instant Canned Handlers', file: 'tests/test-smalltalk.js' },
+    { name: 'Last Model Persistence & Reload', file: 'tests/test-last-preset.js' },
 ];
 
 async function runSuite(suite) {
