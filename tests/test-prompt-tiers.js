@@ -79,6 +79,15 @@ const gameHistory = [
 ];
 check('active game keeps game tools for bare "e5"', names('', gameHistory).includes('start_game'));
 
+// physics triggers and stickiness
+check('physics triggers on physics calcs', names("Do some tools physics calcs, let's try them").includes('physics'));
+const physicsHistory = [
+    { role: 'user', content: 'calculate momentum' },
+    { role: 'assistant', content: '```tool:run\n{"tool":"physics","params":{"mode":"relativistic_momentum","m":1.7,"v":0.9}}\n```' },
+    { role: 'system', content: '[Tool Result: physics]\n{"momentum_kg_ms": 1052290449}' },
+];
+check('physics tool result keeps physics sticky in prompt', names('', physicsHistory).includes('physics'));
+
 // pasted file contents must not trigger tools
 const withFile = user('summarise this\n\n[Attached Files Content]:\n' + 'python weather chess '.repeat(200));
 check('attachment text ignored for tool matching', names('', withFile).length === 0);

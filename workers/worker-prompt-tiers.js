@@ -56,8 +56,9 @@ const CATALOG = [
     },
     {
         name: 'physics',
-        re: /\b(lorentz|photon|de ?broglie|compton|photoelectric|rest energy|relativistic|uncertainty principle|half-?life|particle physics)\b/i,
-        lines: ['- physics(mode, ...params): modes lorentz_factor, rest_energy, relativistic_energy, relativistic_momentum, energy_momentum_relation, debroglie, compton, photoelectric, decay, uncertainty.'],
+        re: /\b(physics|lorentz|photon|de ?broglie|compton|photoelectric|rest energy|relativistic|momentum|energy_momentum|quantum|uncertainty principle|half-?life|decay|particle physics)\b/i,
+        sticky: /\bphysics\b/,
+        lines: ['- physics(mode, ...params): particle physics calculators. modes: lorentz_factor, rest_energy, relativistic_energy, relativistic_momentum, energy_momentum_relation (or energy_momentum), debroglie, compton, photoelectric, decay, uncertainty.'],
         ex: ['Lorentz factor at 0.9c?', 'physics', { mode: 'lorentz_factor', beta: 0.9 }],
     },
     {
@@ -244,7 +245,10 @@ export function selectTools(messages = [], max = MAX_TOOLS) {
     const picked = [];
     for (const entry of CATALOG) {
         if (picked.length >= max) break;
-        if (entry.re.test(lastUser) || (entry.sticky && entry.sticky.test(recent))) picked.push(entry);
+        const wasRecentlyUsed = new RegExp(`\\[Tool Result: ${entry.name}\\]|"tool":\\s*"${entry.name}"`, 'i').test(recent);
+        if (entry.re.test(lastUser) || (entry.sticky && entry.sticky.test(recent)) || wasRecentlyUsed) {
+            picked.push(entry);
+        }
     }
     return picked;
 }
