@@ -267,12 +267,29 @@ workerController.onModelInfo = (data) => {
     globalState.gpuInfo = data.gpuInfo;
     globalState.presets = data.presets;
     globalState.deviceRamGB = data.ramGB ?? 4;
-    updateModelInfo({ gpuInfo: globalState.gpuInfo, presets: globalState.presets, ramGB: globalState.deviceRamGB });
+    updateModelInfo({
+        gpuInfo: globalState.gpuInfo,
+        presets: globalState.presets,
+        ramGB: globalState.deviceRamGB,
+        activePresetId: globalState.activePresetId,
+        selectedPresetId: globalState.selectedPresetId
+    });
 };
 
 workerController.onWarmStart = (preset) => {
+    if (preset) {
+        globalState.activePresetId = preset.id;
+        globalState.selectedPresetId = preset.id;
+        updateModelInfo({ activePresetId: preset.id, selectedPresetId: preset.id });
+        refreshPresetCards();
+        uiManager.updateActiveModelLabel(preset.label);
+    }
     uiManager.updateStatusMeta(`Resuming: ${preset.label}…`);
     uiManager.updateStatusText(`RESUMING ${preset.label.toUpperCase()}…`);
+};
+
+workerController.onClearLastPreset = () => {
+    safeLocalStorage.removeItem('james-last-preset-id');
 };
 
 workerController.onDownloadProgress = (loaded, total, file) => {
@@ -294,9 +311,10 @@ workerController.onWorkerDone = (data) => {
         playDoneSound();
         sendNotification("JAMES AI", "Model loaded and ready to chat.");
 
-        const runningPreset = globalState.presets.find(
-            p => p.backend === data.backend && p.dtype === data.dtype && p.model === data.model
-        );
+        const runningPreset = (data.presetId && globalState.presets.find(p => p.id === data.presetId))
+            || (data.preset && globalState.presets.find(p => p.id === data.preset.id))
+            || globalState.presets.find(p => p.backend === data.backend && p.dtype === data.dtype && p.model === data.model)
+            || data.preset;
         if (runningPreset) {
             globalState.activePresetId = runningPreset.id;
             globalState.selectedPresetId = runningPreset.id;
