@@ -149,9 +149,26 @@ check('cross product of unit X and unit Y is unit Z', cross.cross_product[0] ===
 const tr = linAlg({ mode: 'trace', A: [[5, 1], [2, 9]] });
 check('trace of matrix is sum of diagonal elements (5+9=14)', tr.trace === 14);
 
+// 16. Linear algebra mode & parameter aliases
+const matMulAlias = linAlg({
+    mode: 'matmul',
+    matrix: [[1, 2], [3, 4]],
+    B: [[2, 0], [1, 2]]
+});
+check('linAlg matmul with matrix alias', matMulAlias.result[0][0] === 4 && matMulAlias.result[1][1] === 8);
+
+const detAlias = linAlg({ mode: 'det', matrix: [[1, 2], [3, 4]] });
+check('linAlg det alias', detAlias.determinant === -2);
+
+const invAlias = linAlg({ mode: 'inv', matrix: [[4, 7], [2, 6]] });
+check('linAlg inv alias', approxEq(invAlias.inverse[0][0], 0.6));
+
+const inferredMul = linAlg({ A: [[1, 0], [0, 1]], B: [[5, 6], [7, 8]] });
+check('linAlg mode auto-inference for A & B', inferredMul.result[0][0] === 5);
+
 console.log('\n--- Differential Equations Tests ---');
 
-// 16. RK4 solver: dy/dx = y, y(0)=1 => y(x) = e^x, at x=1 y(1) ~ e ~ 2.71828
+// 17. RK4 solver: dy/dx = y, y(0)=1 => y(x) = e^x, at x=1 y(1) ~ e ~ 2.71828
 const rk4 = diffEq({
     mode: 'rk4',
     f: 'y',
@@ -162,7 +179,7 @@ const rk4 = diffEq({
 });
 check('RK4 solves dy/dx = y with y(1) approx e', approxEq(rk4.final_y, Math.E, 1e-4));
 
-// 17. Euler method: dy/dx = 2*x, y(0)=0 => y(x) = x^2, at x=2 y(2) ~ 4
+// 18. Euler method: dy/dx = 2*x, y(0)=0 => y(x) = x^2, at x=2 y(2) ~ 4
 const euler = diffEq({
     mode: 'euler',
     f: '2*x',
@@ -172,6 +189,9 @@ const euler = diffEq({
     steps: 200
 });
 check('Euler method solves dy/dx = 2x with y(2) approx 4', approxEq(euler.final_y, 4, 0.05));
+
+const diffEqInfer = diffEq({ f: 'y', x0: 0, y0: 1, x_end: 1, steps: 100 });
+check('diffEq mode auto-inference to RK4', approxEq(diffEqInfer.final_y, Math.E, 1e-4));
 
 console.log(failed === 0 ? '\nALL PHYSICS & MATH TESTS PASSED' : `\n${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);
