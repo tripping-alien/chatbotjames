@@ -268,11 +268,11 @@ export function buildCompactPrompt(messages = []) {
 }
 
 /** Pick a tier from the loaded preset and the device class. */
-export function getPromptTier(preset, { isMobile = false, isTV = false } = {}) {
+export function getPromptTier(preset, { isMobile = false, isTV = false, isIntegrated = false } = {}) {
     if (!preset) return 'compact'; // unknown model: be safe
     const params = typeof preset.params === 'number' ? preset.params : 1;
     if (String(preset.id || '').startsWith('lite-') || params < 0.5) return 'lite';
-    if (isMobile || isTV || params < 3.0) return 'compact';
+    if (isMobile || isTV || isIntegrated || params < 3.0) return 'compact';
     return 'full';
 }
 

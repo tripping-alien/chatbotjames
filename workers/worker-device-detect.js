@@ -137,6 +137,11 @@ export async function detectGpu() {
         else if (combined.includes('apple')) normalizedVendor = 'apple';
     }
 
+    const combinedAll = (description + ' ' + device + ' ' + architecture + ' ' + normalizedVendor).toLowerCase();
+    const isIntelIntegrated = normalizedVendor === 'intel' && !combinedAll.includes('arc');
+    const isAmdIntegrated = (combinedAll.includes('radeon(tm)') || combinedAll.includes('vega') || combinedAll.includes('radeon graphics')) && !combinedAll.includes('rx ');
+    const isIntegrated = isIntelIntegrated || isAmdIntegrated || combinedAll.includes('mali') || combinedAll.includes('adreno');
+
     const isFallback = !!(adapter && adapter.isFallbackAdapter);
     const maxStorageMB = adapter ? (adapter.limits?.maxStorageBufferBindingSize || 0) / (1024 * 1024) : 0;
     const maxBufferMB = adapter ? (adapter.limits?.maxBufferSize || 0) / (1024 * 1024) : 0;
@@ -145,14 +150,14 @@ export async function detectGpu() {
     if (isFallback || !adapter) {
         return {
             hasGpu: false, vendor: normalizedVendor, architecture, device, description,
-            isFallback, maxStorageMB, maxBufferMB, features: featureList, browserInfo, reason: 'No GPU or software fallback'
+            isFallback, isIntegrated: false, maxStorageMB, maxBufferMB, features: featureList, browserInfo, reason: 'No GPU or software fallback'
         };
     }
 
     return {
         hasGpu: true, vendor: normalizedVendor, architecture, device, description,
-        isFallback, maxStorageMB, maxBufferMB,
-        features: featureList, browserInfo, reason: 'GPU detected'
+        isFallback, isIntegrated, maxStorageMB, maxBufferMB,
+        features: featureList, browserInfo, reason: isIntegrated ? 'Integrated GPU detected' : 'GPU detected'
     };
 }
 
