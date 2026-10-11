@@ -832,10 +832,14 @@ export const TOOL_HANDLERS = {
     sprite: generateSprite,
 
     // ── Scientific calculators ───────────────────────────────────────────────
-    physics:    (p) => particlePhysics(p),
-    relativity: (p) => relativityCalc(p),
-    linalg:     (p) => linAlg(p),
-    diffeq:     (p) => diffEq(p),
+    physics:                (p) => particlePhysics(p),
+    particle_physics:       (p) => particlePhysics(p),
+    particlephysics:        (p) => particlePhysics(p),
+    relativity:             (p) => relativityCalc(p),
+    linalg:                 (p) => linAlg(p),
+    linear_algebra:         (p) => linAlg(p),
+    diffeq:                 (p) => diffEq(p),
+    differential_equations: (p) => diffEq(p),
 };
 
 if (typeof self !== 'undefined' && typeof self.postMessage === 'function') {

@@ -35,8 +35,57 @@ function _norm(v) { return Math.sqrt(v.reduce((s, x) => s + x * x, 0)); }
 // PARTICLE PHYSICS
 // ══════════════════════════════════════════════════════════════════════════════
 
-export function particlePhysics(params) {
-    const { mode } = params;
+export function particlePhysics(params = {}) {
+    params = params || {};
+    let mode = (params.mode ?? params.type ?? params.action ?? '').toString().toLowerCase().trim();
+
+    // Mode normalizations and aliases
+    if (mode === 'energy_momentum' || mode === 'energymomentum' || mode === 'energy-momentum' || mode === 'em' || mode === 'em_relation' || mode === 'energy_momentum_relation') {
+        mode = 'energy_momentum_relation';
+    } else if (mode === 'lorentz_factor' || mode === 'lorentz' || mode === 'gamma' || mode === 'lorentzfactor') {
+        mode = 'lorentz_factor';
+    } else if (mode === 'relativistic_momentum' || mode === 'momentum' || mode === 'rel_momentum' || mode === 'rel_p') {
+        mode = 'relativistic_momentum';
+    } else if (mode === 'relativistic_energy' || mode === 'energy' || mode === 'rel_energy' || mode === 'rel_e') {
+        mode = 'relativistic_energy';
+    } else if (mode === 'rest_energy' || mode === 'restenergy' || mode === 'rest_e') {
+        mode = 'rest_energy';
+    } else if (mode === 'debroglie' || mode === 'de_broglie' || mode === 'debroglie_wavelength' || mode === 'wavelength' || mode === 'matter_wave') {
+        mode = 'debroglie';
+    } else if (mode === 'compton' || mode === 'compton_scattering' || mode === 'compton_wavelength') {
+        mode = 'compton';
+    } else if (mode === 'photoelectric' || mode === 'photoelectric_effect' || mode === 'photo_electric') {
+        mode = 'photoelectric';
+    } else if (mode === 'decay' || mode === 'radioactive_decay' || mode === 'radioactive' || mode === 'nuclear_decay' || mode === 'half_life') {
+        mode = 'decay';
+    } else if (mode === 'uncertainty' || mode === 'heisenberg' || mode === 'uncertainty_principle' || mode === 'heisenberg_uncertainty') {
+        mode = 'uncertainty';
+    } else if (!mode) {
+        // Automatic inference from provided parameters
+        if (params.lambda !== undefined || params.wavelength !== undefined || params.lambda_m !== undefined || params.lambda_nm !== undefined || params.lambda_pm !== undefined || params.lambda_angstrom !== undefined) {
+            mode = (params.work_function_eV !== undefined || params.phi_eV !== undefined) ? 'photoelectric' : 'debroglie';
+        } else if (params.theta_deg !== undefined || params.angle_deg !== undefined || params.lambda_i_m !== undefined) {
+            mode = 'compton';
+        } else if (params.half_life_s !== undefined || params.decay_constant !== undefined || params.N0 !== undefined) {
+            mode = 'decay';
+        } else if (params.delta_x !== undefined || params.delta_p !== undefined || params.delta_t !== undefined || params.delta_E_eV !== undefined) {
+            mode = 'uncertainty';
+        } else if (params.f_Hz !== undefined || params.work_function_eV !== undefined || params.phi_eV !== undefined) {
+            mode = 'photoelectric';
+        } else if ((params.p !== undefined || params.p_MeV_c !== undefined || params.p_kg_ms !== undefined) && (params.m !== undefined || params.m_MeV_c2 !== undefined || params.mass !== undefined || params.mass_kg !== undefined)) {
+            mode = 'energy_momentum_relation';
+        } else if ((params.E !== undefined || params.E_MeV !== undefined) && (params.p !== undefined || params.p_MeV_c !== undefined || params.m !== undefined || params.m_MeV_c2 !== undefined)) {
+            mode = 'energy_momentum_relation';
+        } else if ((params.v !== undefined || params.beta !== undefined) && (params.m !== undefined || params.mass_kg !== undefined || params.mass !== undefined)) {
+            mode = 'relativistic_momentum';
+        } else if (params.beta !== undefined || params.v !== undefined) {
+            mode = 'lorentz_factor';
+        } else if (params.mass_kg !== undefined || params.m !== undefined || params.mass !== undefined) {
+            mode = 'rest_energy';
+        } else {
+            mode = 'energy_momentum_relation';
+        }
+    }
 
     switch (mode) {
         case 'lorentz_factor': {
@@ -105,13 +154,55 @@ export function particlePhysics(params) {
         }
 
         case 'debroglie': {
+            const m = (params.mass_kg !== undefined || params.m !== undefined || params.mass !== undefined)
+                ? Number(params.mass_kg ?? params.m ?? params.mass)
+                : null;
+            const v = (params.v !== undefined || params.v_ms !== undefined || params.velocity !== undefined)
+                ? Number(params.v ?? params.v_ms ?? params.velocity)
+                : null;
+            const ke = (params.KE_eV !== undefined || params.ke_ev !== undefined || params.ke !== undefined)
+                ? Number(params.KE_eV ?? params.ke_ev ?? params.ke)
+                : null;
+            const rawP = params.p_kg_ms !== undefined ? params.p_kg_ms : (params.p !== undefined ? params.p : params.momentum);
+
+            let lam = null;
+            if (params.lambda_m !== undefined) lam = Number(params.lambda_m);
+            else if (params.lambda_nm !== undefined) lam = Number(params.lambda_nm) * 1e-9;
+            else if (params.lambda_pm !== undefined) lam = Number(params.lambda_pm) * 1e-12;
+            else if (params.lambda_angstrom !== undefined) lam = Number(params.lambda_angstrom) * 1e-10;
+            else if (params.lambda !== undefined || params.wavelength !== undefined) lam = Number(params.lambda ?? params.wavelength);
+
             let p;
-            if (params.p_kg_ms !== undefined)                                           p = Number(params.p_kg_ms);
-            else if (params.mass_kg !== undefined && params.v !== undefined)            p = Number(params.mass_kg) * Number(params.v);
-            else if (params.KE_eV !== undefined && params.mass_kg !== undefined)        p = Math.sqrt(2 * Number(params.mass_kg) * Number(params.KE_eV) * EV);
-            else throw new Error('Provide p_kg_ms, or (mass_kg + v), or (mass_kg + KE_eV)');
-            const lam = H / p;
-            return { momentum_kg_ms: _round(p), wavelength_m: _round(lam), wavelength_nm: _round(lam*1e9), wavelength_pm: _round(lam*1e12), wavelength_angstrom: _round(lam*1e10), note: 'lambda = h/p' };
+            if (rawP !== undefined && rawP !== null) {
+                p = Number(rawP);
+                lam = H / p;
+            } else if (m !== null && v !== null) {
+                p = m * v;
+                lam = H / p;
+            } else if (m !== null && ke !== null) {
+                p = Math.sqrt(2 * m * ke * EV);
+                lam = H / p;
+            } else if (lam !== null && lam > 0) {
+                p = H / lam;
+            } else {
+                throw new Error('Provide p_kg_ms (or p), or (m + v), or (m + KE_eV), or (lambda + m)');
+            }
+
+            const computedV = (v !== null) ? v : (m && m > 0 ? p / m : null);
+            const computedKE_J = (m && m > 0) ? (p * p) / (2 * m) : null;
+            const computedKE_eV = (computedKE_J !== null) ? computedKE_J / EV : null;
+
+            return {
+                momentum_kg_ms: _round(p),
+                wavelength_m: _round(lam),
+                wavelength_nm: _round(lam * 1e9),
+                wavelength_pm: _round(lam * 1e12),
+                wavelength_angstrom: _round(lam * 1e10),
+                ...(m !== null ? { mass_kg: m } : {}),
+                ...(computedV !== null ? { v_ms: _round(computedV) } : {}),
+                ...(computedKE_eV !== null ? { KE_eV: _round(computedKE_eV) } : {}),
+                note: 'lambda = h/p, p = h/lambda'
+            };
         }
 
         case 'compton': {
@@ -186,8 +277,27 @@ export function particlePhysics(params) {
 // SPECIAL / GENERAL RELATIVITY
 // ══════════════════════════════════════════════════════════════════════════════
 
-export function relativityCalc(params) {
-    const { mode } = params;
+export function relativityCalc(params = {}) {
+    params = params || {};
+    let mode = (params.mode ?? params.type ?? params.action ?? '').toString().toLowerCase().trim();
+
+    if (mode === 'timedilation' || mode === 'time' || mode === 'time_dilation') mode = 'time_dilation';
+    else if (mode === 'lengthcontraction' || mode === 'length' || mode === 'length_contraction') mode = 'length_contraction';
+    else if (mode === 'velocityaddition' || mode === 'velocity' || mode === 'velocity_addition') mode = 'velocity_addition';
+    else if (mode === 'lorentzboost' || mode === 'boost' || mode === 'lorentz_boost') mode = 'lorentz_boost';
+    else if (mode === 'schwarzschild' || mode === 'blackhole' || mode === 'event_horizon' || mode === 'schwarzschild_radius') mode = 'schwarzschild_radius';
+    else if (mode === 'gravitational_dilation' || mode === 'gravitational_time' || mode === 'gravitational_time_dilation') mode = 'gravitational_time_dilation';
+    else if (mode === 'doppler' || mode === 'redshift') mode = 'doppler';
+    else if (!mode) {
+        if (params.r_m !== undefined || params.r !== undefined) mode = 'gravitational_time_dilation';
+        else if (params.proper_length_m !== undefined || params.L0 !== undefined) mode = 'length_contraction';
+        else if (params.proper_time_s !== undefined || params.t0 !== undefined) mode = 'time_dilation';
+        else if (params.f_source_Hz !== undefined || params.freq !== undefined) mode = 'doppler';
+        else if (params.w !== undefined) mode = 'velocity_addition';
+        else if (params.x !== undefined || params.t !== undefined) mode = 'lorentz_boost';
+        else if (params.mass_kg !== undefined || params.M !== undefined) mode = 'schwarzschild_radius';
+        else mode = 'time_dilation';
+    }
 
     switch (mode) {
         case 'time_dilation': {

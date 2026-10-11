@@ -51,9 +51,40 @@ check('energy_momentum_relation with E, p, m computes result', typeof emEpm.m_Me
 const emRest = particlePhysics({ mode: 'energy_momentum_relation', m: 0.511, p: 0 });
 check('energy_momentum_relation for rest electron gives E = 0.511 MeV', approxEq(emRest.E_MeV, 0.511));
 
+// 3e. User query: energy_momentum alias with p=5, m=1
+const em51 = particlePhysics({ mode: 'energy_momentum', p: 5, m: 1 });
+check('energy_momentum alias computes E = sqrt(26) ~ 5.099 MeV', approxEq(em51.E_MeV, Math.sqrt(26)));
+
+// 3f. User query: energy_momentum alias with p=3, m=2
+const em32 = particlePhysics({ mode: 'energy_momentum', p: 3, m: 2 });
+check('energy_momentum alias computes E = sqrt(13) ~ 3.6056 MeV', approxEq(em32.E_MeV, Math.sqrt(13)));
+
+// 3g. User query: energy_momentum alias with p=2, m=4
+const em24 = particlePhysics({ mode: 'energy_momentum', p: 2, m: 4 });
+check('energy_momentum alias computes E = sqrt(20) ~ 4.4721 MeV', approxEq(em24.E_MeV, Math.sqrt(20)));
+
+// 3h. User query: relativistic_momentum m=1.7, v=0.9
+const rm17 = particlePhysics({ mode: 'relativistic_momentum', m: 1.7, v: 0.9 });
+check('relativistic_momentum with m=1.7, v=0.9 computes beta=0.9 and gamma ~ 2.294', approxEq(rm17.gamma, 2.294157, 1e-3));
+
+// 3i. User query: relativistic_energy m=1.7, v=0.9
+const re17 = particlePhysics({ mode: 'relativistic_energy', m: 1.7, v: 0.9 });
+check('relativistic_energy with m=1.7, v=0.9 computes E_total ~ gamma*mc^2', approxEq(re17.gamma, 2.294157, 1e-3) && re17.E_total_J > 0);
+
+// 3j. Automatic mode inference when mode is missing/undefined
+const emInfer = particlePhysics({ p: 5, m: 1 });
+check('mode auto-inference infers energy_momentum_relation from p and m', approxEq(emInfer.E_MeV, Math.sqrt(26)));
+
+const emDefault = particlePhysics({});
+check('empty params fallback to energy_momentum_relation guide without error', emDefault.formula && emDefault.formula.includes('E^2'));
+
 // 4. de Broglie wavelength
 const db = particlePhysics({ mode: 'debroglie', p_kg_ms: 1e-24 });
 check('de Broglie wavelength computed', typeof db.wavelength_m === 'number' && db.wavelength_m > 0);
+
+// 4b. User query: de Broglie wavelength with lambda=1.2 and m=0.3
+const dbLam = particlePhysics({ mode: 'debroglie', lambda: 1.2, m: 0.3 });
+check('de Broglie with lambda=1.2 and m=0.3 computes momentum and velocity', typeof dbLam.momentum_kg_ms === 'number' && typeof dbLam.v_ms === 'number');
 
 // 5. Uncertainty principle
 const unc = particlePhysics({ mode: 'uncertainty', delta_x: 1e-10 });

@@ -796,33 +796,91 @@ async function handleToolCalls(message, targetId, originChatId) {
 
         const calls = [];
 
-        // 1. ```tool:run ... ``` (or missing backticks)
-        const runRegex = /(?:```\s*)?tool:run\n?([\s\S]*?)(?:```|$)/g;
-        let match;
-        while ((match = runRegex.exec(message)) !== null) {
-            calls.push(match[1].trim());
+        // Helper to extract balanced JSON objects containing "tool"
+        function extractJsonObjects(str) {
+            const results = [];
+            let depth = 0, start = -1, inString = false, escape = false;
+            for (let i = 0; i < str.length; i++) {
+                const c = str[i];
+                if (inString) {
+                    if (escape) escape = false;
+                    else if (c === '\\') escape = true;
+                    else if (c === '"') inString = false;
+                    continue;
+                }
+                if (c === '"') {
+                    inString = true;
+                } else if (c === '{') {
+                    if (depth === 0) start = i;
+                    depth++;
+                } else if (c === '}') {
+                    if (depth > 0) {
+                        depth--;
+                        if (depth === 0 && start !== -1) {
+                            const candidate = str.slice(start, i + 1);
+                            if (candidate.includes('"tool"') || candidate.includes("'tool'") || candidate.includes('tool:')) {
+                                results.push(candidate);
+                            }
+                            start = -1;
+                        }
+                    }
+                }
+            }
+            return results;
         }
 
-        // 2. Code blocks containing "tool":
-        if (calls.length === 0) {
-            const codeRegex = /```(?:json)?\n?([\s\S]*?)```/g;
-            while ((match = codeRegex.exec(message)) !== null) {
-                if (match[1].includes('"tool"')) {
-                    calls.push(match[1].trim());
+        // 1. Fenced ```tool:run ... ``` blocks
+        const fencedRegex = /```\s*tool:run\s*\n?([\s\S]*?)```/g;
+        let match;
+        while ((match = fencedRegex.exec(message)) !== null) {
+            const body = match[1].trim();
+            if (body) {
+                const subJson = extractJsonObjects(body);
+                if (subJson.length > 1) {
+                    calls.push(...subJson);
+                } else {
+                    calls.push(body);
                 }
             }
         }
 
-        // 3. Bare / embedded JSON object containing "tool" anywhere in the message
+        // 2. Unfenced bare tool:run blocks
         if (calls.length === 0) {
-            // Scan for any { ... "tool" ... } block, even if embedded in prose
-            const jsonScanRegex = /\{[^{}]*"tool"[^{}]*\}/g;
-            let jm;
-            while ((jm = jsonScanRegex.exec(message)) !== null) {
-                try {
-                    JSON.parse(jm[0]); // validate it's real JSON before accepting
-                    calls.push(jm[0]);
-                } catch (_) { /* not valid JSON, skip */ }
+            const bareRunRegex = /(?:^|\n)\s*tool:run\s*\n?([\s\S]*?)(?=(?:\n\s*(?:```\s*)?tool:run\b)|$)/g;
+            while ((match = bareRunRegex.exec(message)) !== null) {
+                const body = match[1].trim().replace(/^```|```$/g, '').trim();
+                if (body) {
+                    const subJson = extractJsonObjects(body);
+                    if (subJson.length > 1) {
+                        calls.push(...subJson);
+                    } else {
+                        calls.push(body);
+                    }
+                }
+            }
+        }
+
+        // 3. Code blocks containing "tool":
+        if (calls.length === 0) {
+            const codeRegex = /```(?:json)?\n?([\s\S]*?)```/g;
+            while ((match = codeRegex.exec(message)) !== null) {
+                if (match[1].includes('"tool"')) {
+                    const body = match[1].trim();
+                    const subJson = extractJsonObjects(body);
+                    if (subJson.length > 0) {
+                        calls.push(...subJson);
+                    } else {
+                        calls.push(body);
+                    }
+                }
+            }
+        }
+
+        // 4. Bare / embedded JSON objects containing "tool" anywhere in the message
+        if (calls.length === 0) {
+            const jsonObjs = extractJsonObjects(message);
+            for (const jm of jsonObjs) {
+                calls.push(jm.trim());
             }
         }
 

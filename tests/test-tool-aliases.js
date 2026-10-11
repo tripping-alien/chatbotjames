@@ -29,6 +29,11 @@ check('read_page alias is registered', /read_page\s*:\s*fetchPageTool/.test(hand
 check('web_fetch alias is registered', /web_fetch\s*:\s*fetchPageTool/.test(handlersBlock));
 check('websearch alias is registered', /websearch\s*:\s*getWebSearch/.test(handlersBlock));
 check('web_search alias is registered', /web_search\s*:\s*getWebSearch/.test(handlersBlock));
+check('physics alias is registered', /\bphysics\s*:/.test(handlersBlock));
+check('particle_physics alias is registered', /\bparticle_physics\s*:/.test(handlersBlock));
+check('particlephysics alias is registered', /\bparticlephysics\s*:/.test(handlersBlock));
+check('linear_algebra alias is registered', /\blinear_algebra\s*:/.test(handlersBlock));
+check('differential_equations alias is registered', /\bdifferential_equations\s*:/.test(handlersBlock));
 
 // 2. Verify fetchPageTool parameter extraction handles flexible shapes
 const parseUrl = (params) => typeof params === 'string'
