@@ -38,7 +38,7 @@ check('auto preset on constrained device gets lite', getPromptTier(autoOnPhone, 
 const autoOnIntegrated = rankAutoPresets({ hasGpu: true, isIntegrated: true }, 8, false, null)[0];
 check('auto preset on integrated GPU exists', !!autoOnIntegrated);
 check('auto preset on integrated GPU is <= 1.7B', (autoOnIntegrated.params || 0) <= 1.7);
-check('auto preset on desktop does not pick 3B+', (rankAutoPresets({ hasGpu: true }, 8, false, null)[0]?.params || 0) < 3.0);
+check('auto preset on desktop with dedicated GPU picks 3B+', (rankAutoPresets({ hasGpu: true }, 8, false, null)[0]?.params || 0) >= 3.0);
 
 
 // --- size budgets -----------------------------------------------------------
