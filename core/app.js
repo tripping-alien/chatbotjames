@@ -1367,6 +1367,10 @@ if (isTVDevice()) uiManager.initTVMode();
 
 uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
 const _savedLastPresetId = safeLocalStorage.getItem('james-last-preset-id');
+if (_savedLastPresetId) {
+    globalState.selectedPresetId = _savedLastPresetId;
+    globalState.activePresetId = _savedLastPresetId;
+}
 workerController.initWorkers(safeLocalStorage);
 uiManager.updateStatusText(_savedLastPresetId ? 'RESUMING LAST MODEL…' : 'INITIALIZING...');
 
