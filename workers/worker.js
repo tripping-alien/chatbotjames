@@ -18,6 +18,16 @@ let isAborted = false;
 let _initLock = false;        // prevents concurrent init messages from racing
 let _pendingInitPreset = null; // stores the latest switch request while one is in-flight
 
+// ─── Freeze-protection constants ────────────────────────────────────────────
+// Timeout (ms) before auto-aborting a stuck generation.
+// Large models (≥3B) get a longer budget since they generate more slowly.
+const GEN_TIMEOUT_LARGE_MS = 120_000; // 2 min  for 3B+
+const GEN_TIMEOUT_DEFAULT_MS = 75_000;  // 75 s   for everything else
+// If no new tokens arrive within this window we assume the GPU has stalled.
+const STALL_WATCHDOG_MS = 20_000;
+// Pause the GPU every N callback ticks to give the browser a breath.
+const YIELD_EVERY_N_TOKENS = 8;
+
 function normalizeError(err) {
     let msg = err?.message || String(err);
     msg = msg.replace(/https?:\/\/[^\s]+/g, '(url)');
@@ -205,6 +215,42 @@ self.onmessage = async (e) => {
         isAborted = false;
         let accumulatedResponse = '';
 
+        // ─── Freeze protection: generation timeout ──────────────────────────────
+        const isLargeModel = (activePreset?.params ?? 0) >= 3.0;
+        const GEN_TIMEOUT_MS = isLargeModel ? GEN_TIMEOUT_LARGE_MS : GEN_TIMEOUT_DEFAULT_MS;
+        let genTimeoutId = setTimeout(() => {
+            if (isGenerating && !isAborted) {
+                console.warn('[worker] Generation timeout — aborting to prevent freeze');
+                isAborted = true;
+                self.postMessage({
+                    status: 'error',
+                    message: `Generation timed out after ${Math.round(GEN_TIMEOUT_MS / 1000)}s. ` +
+                        'Try a smaller model or shorten your prompt.',
+                    targetId,
+                    chatId
+                });
+            }
+        }, GEN_TIMEOUT_MS);
+
+        // ─── Freeze protection: stall watchdog ──────────────────────────────────
+        // Fires if the model stops producing tokens entirely (GPU stall / OOM).
+        let lastTokenTime = performance.now();
+        let stallWatchdogId = setInterval(() => {
+            if (!isGenerating || isAborted) { clearInterval(stallWatchdogId); return; }
+            if (performance.now() - lastTokenTime > STALL_WATCHDOG_MS) {
+                console.warn('[worker] Token stall detected — aborting to prevent freeze');
+                isAborted = true;
+                clearInterval(stallWatchdogId);
+                self.postMessage({
+                    status: 'error',
+                    message: 'The model stopped responding (possible GPU stall). ' +
+                        'Aborted to protect your device. Consider using a smaller model.',
+                    targetId,
+                    chatId
+                });
+            }
+        }, 4_000);
+
         try {
             self.postMessage({ status: 'thinking', targetId, chatId });
 
@@ -272,6 +318,13 @@ self.onmessage = async (e) => {
                 maxTokens = Math.min(maxTokens, available);
             }
 
+            // ─── GPU / IPC yield helper ──────────────────────────────────────────────
+            // callback_function is synchronous, so we can't await inside it.
+            // To reduce GPU saturation we throttle postMessage calls (expensive
+            // structured-clone IPC) to every YIELD_EVERY_N_TOKENS ticks, and
+            // rely on the stall watchdog + timeout to catch hard freezes.
+            let _callbackTick = 0;
+
             const output = await chatbot(prompt, {
                 max_new_tokens: maxTokens,
                 do_sample: true,
@@ -284,6 +337,14 @@ self.onmessage = async (e) => {
 
                     const tokenIds = beams?.[0]?.output_token_ids;
                     if (!tokenIds) return;
+
+                    // Reset the stall watchdog on every incoming token.
+                    lastTokenTime = performance.now();
+                    _callbackTick++;
+
+                    // Throttle: only decode & postMessage every N ticks to reduce
+                    // IPC overhead and give the GPU scheduler room to breathe.
+                    if (_callbackTick % YIELD_EVERY_N_TOKENS !== 0) return;
 
                     const allTokens = Array.from(tokenIds.data || tokenIds);
                     if (allTokens.length > promptTokenCount) {
@@ -343,6 +404,8 @@ self.onmessage = async (e) => {
                 }
             }
         } finally {
+            clearTimeout(genTimeoutId);
+            clearInterval(stallWatchdogId);
             isGenerating = false;
         }
     }
