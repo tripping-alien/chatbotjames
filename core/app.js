@@ -861,8 +861,20 @@ async function handleToolCalls(message, targetId, originChatId) {
                     toolName = parsed.tool ?? parsed.name ?? parsed.tool_name ?? '';
                     params = parsed.params ?? parsed.parameters ?? parsed.args ?? {};
                 } catch {
-                    toolName = '';
-                    params = {};
+                    // Lenient repair: quote unquoted keys (e.g. m:0.511), single quotes, trailing commas
+                    try {
+                        const repaired = trimmed
+                            .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+                            .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, '"$1"')
+                            .replace(/,\s*([}\]])/g, '$1');
+                        const parsed = JSON.parse(repaired);
+                        toolName = parsed.tool ?? parsed.name ?? parsed.tool_name ?? '';
+                        params = parsed.params ?? parsed.parameters ?? parsed.args ?? {};
+                    } catch {
+                        const tm = trimmed.match(/["']?tool(?:_name)?["']?\s*:\s*["']([^"']+)["']/i);
+                        toolName = tm ? tm[1] : '';
+                        params = {};
+                    }
                 }
             }
             // ── XML format: <tool>name</tool><params><key>val</key>...</params> ──
@@ -898,6 +910,13 @@ async function handleToolCalls(message, targetId, originChatId) {
                         params[k] = v;
                     }
                 }
+            }
+
+            if (!toolName) {
+                const failMsg = `Error parsing tool call. Invalid syntax: ${trimmed.slice(0, 100)}`;
+                targetHistory.push({ role: 'system', content: `[Tool Result: error]\n${failMsg}` });
+                if (isActiveChat) appendErrorToChat(failMsg);
+                continue;
             }
 
             if (isActiveChat) uiManager.updateStatusText(`RUNNING ${toolName.toUpperCase()}...`);

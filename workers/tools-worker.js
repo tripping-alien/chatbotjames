@@ -842,10 +842,11 @@ if (typeof self !== 'undefined' && typeof self.postMessage === 'function') {
     self.onmessage = async (e) => {
         const { execId, tool, params } = e.data;
 
-        // Ignore non-tool messages (e.g. init ping from worker-controller)
-        if (!tool) return;
+        // Ignore non-tool messages without an execId (e.g. init ping)
+        if (!tool && !execId) return;
 
         try {
+            if (!tool) throw new Error('No tool name specified');
             const handler = TOOL_HANDLERS[tool];
             if (!handler) throw new Error(`Unknown tool: ${tool}`);
             const result = await handler(params);

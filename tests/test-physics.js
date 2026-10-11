@@ -34,6 +34,23 @@ const reRel = particlePhysics({ mode: 'relativistic_energy', mass_kg: 1, beta: 0
 check('relativistic energy gamma=1.25', approxEq(reRel.gamma, 1.25));
 check('relativistic kinetic energy is (gamma-1)*mc^2', approxEq(reRel.KE_J / reRel.E_rest_J, 0.25));
 
+// 3a. Relativistic momentum with fraction-of-c v: 0.9 and m: 0.511
+const rm09 = particlePhysics({ mode: 'relativistic_momentum', m: 0.511, v: 0.9 });
+check('relativistic_momentum with v=0.9c computes beta=0.9', rm09.beta === 0.9);
+check('relativistic_momentum with v=0.9c computes gamma ~ 2.294', approxEq(rm09.gamma, 2.294157, 1e-3));
+
+// 3b. Energy-momentum relation with conceptual context (no numbers)
+const emContext = particlePhysics({ mode: 'energy_momentum_relation', context: 'quantum entanglement' });
+check('energy_momentum_relation without numbers returns formula', emContext.formula.includes('E^2'));
+
+// 3c. Energy-momentum relation with relaxed aliases E, p, m
+const emEpm = particlePhysics({ mode: 'energy_momentum_relation', E: 1, p: 1, m: 1 });
+check('energy_momentum_relation with E, p, m computes result', typeof emEpm.m_MeV_c2 === 'number');
+
+// 3d. Energy-momentum relation with m=0.511 and p=0 (rest electron)
+const emRest = particlePhysics({ mode: 'energy_momentum_relation', m: 0.511, p: 0 });
+check('energy_momentum_relation for rest electron gives E = 0.511 MeV', approxEq(emRest.E_MeV, 0.511));
+
 // 4. de Broglie wavelength
 const db = particlePhysics({ mode: 'debroglie', p_kg_ms: 1e-24 });
 check('de Broglie wavelength computed', typeof db.wavelength_m === 'number' && db.wavelength_m > 0);

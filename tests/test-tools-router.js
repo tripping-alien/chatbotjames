@@ -127,5 +127,26 @@ for (const pc of plainChats) {
 check('toolRouter.tools returns non-empty list of unique tools', Array.isArray(toolRouter.tools) && toolRouter.tools.length > 10);
 check('toolRouter.describe returns description', toolRouter.describe('weather').includes('weather'));
 
+// 17. Lenient JSON block repair (handles unquoted keys from LLMs)
+const parseLenientTool = (raw) => {
+    try {
+        return JSON.parse(raw);
+    } catch {
+        const repaired = raw
+            .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+            .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, '"$1"')
+            .replace(/,\s*([}\]])/g, '$1');
+        return JSON.parse(repaired);
+    }
+};
+
+const brokenCall1 = '{"tool":"physics","params":{"mode":"energy_momentum_relation",m:0.511,"p":0}}';
+const parsed1 = parseLenientTool(brokenCall1);
+check('relaxed JSON repairs unquoted keys (m:0.511)', parsed1.tool === 'physics' && parsed1.params.m === 0.511 && parsed1.params.p === 0);
+
+const brokenCall2 = '{"tool":"physics","params":{"mode":"relativistic_momentum",m:0.511,"v":0.9}}';
+const parsed2 = parseLenientTool(brokenCall2);
+check('relaxed JSON repairs unquoted keys (m:0.511, v:0.9)', parsed2.tool === 'physics' && parsed2.params.m === 0.511 && parsed2.params.v === 0.9);
+
 console.log(failed === 0 ? '\nALL TOOL ROUTER TESTS PASSED' : `\n${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);

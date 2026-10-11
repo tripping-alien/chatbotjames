@@ -42,20 +42,22 @@ export function particlePhysics(params) {
         case 'lorentz_factor': {
             const beta = params.beta !== undefined
                 ? Number(params.beta)
-                : Number(params.v) / C;
+                : (params.v !== undefined && Math.abs(Number(params.v)) <= 1 ? Number(params.v) : (params.v !== undefined ? Number(params.v) / C : 0));
             const gamma = _lorentz(beta);
             return { beta: _round(beta,10), v_ms: _round(beta*C), gamma: _round(gamma,10), note: 'gamma = 1/sqrt(1-beta^2)' };
         }
 
         case 'rest_energy': {
-            const m = Number(params.mass_kg ?? params.m);
+            const m = Number(params.mass_kg ?? params.m ?? params.mass ?? 1);
             const E = m * C * C;
             return { mass_kg: m, E_J: _round(E), E_eV: _round(E/EV), E_MeV: _round(E/EV/1e6), E_GeV: _round(E/EV/1e9), note: 'E = mc^2' };
         }
 
         case 'relativistic_energy': {
-            const m = Number(params.mass_kg ?? params.m);
-            const beta = params.beta !== undefined ? Number(params.beta) : Number(params.v) / C;
+            const m = Number(params.mass_kg ?? params.m ?? params.mass ?? 1);
+            const beta = params.beta !== undefined
+                ? Number(params.beta)
+                : (params.v !== undefined && Math.abs(Number(params.v)) <= 1 ? Number(params.v) : (params.v !== undefined ? Number(params.v) / C : 0));
             const gamma = _lorentz(beta);
             const Er = m*C*C, Et = gamma*m*C*C, KE = (gamma-1)*m*C*C;
             return {
@@ -68,22 +70,38 @@ export function particlePhysics(params) {
         }
 
         case 'relativistic_momentum': {
-            const m = Number(params.mass_kg ?? params.m);
-            const beta = params.beta !== undefined ? Number(params.beta) : Number(params.v) / C;
+            const m = Number(params.mass_kg ?? params.m ?? params.mass ?? 1);
+            const beta = params.beta !== undefined
+                ? Number(params.beta)
+                : (params.v !== undefined && Math.abs(Number(params.v)) <= 1 ? Number(params.v) : (params.v !== undefined ? Number(params.v) / C : 0));
             const gamma = _lorentz(beta);
             const p = gamma * m * beta * C;
             return { mass_kg: m, beta: _round(beta,10), gamma: _round(gamma,10), momentum_kg_ms: _round(p), momentum_MeV_c: _round(p*C/EV/1e6), note: 'p = gamma*mv' };
         }
 
         case 'energy_momentum_relation': {
-            const hasE = params.E_MeV !== undefined, hasP = params.p_MeV_c !== undefined, hasM = params.m_MeV_c2 !== undefined;
-            const E = hasE ? Number(params.E_MeV) : null;
-            const p = hasP ? Number(params.p_MeV_c) : null;
-            const mc2 = hasM ? Number(params.m_MeV_c2) : null;
+            const valE = params.E_MeV ?? params.E ?? params.energy;
+            const valP = params.p_MeV_c ?? params.p ?? params.momentum;
+            const valM = params.m_MeV_c2 ?? params.m ?? params.mass ?? params.mass_kg;
+            const hasE = valE !== undefined && valE !== null && !isNaN(Number(valE));
+            const hasP = valP !== undefined && valP !== null && !isNaN(Number(valP));
+            const hasM = valM !== undefined && valM !== null && !isNaN(Number(valM));
+            const E = hasE ? Number(valE) : null;
+            const p = hasP ? Number(valP) : null;
+            const mc2 = hasM ? Number(valM) : null;
+            if (hasP && hasM) return { E_MeV: _round(Math.sqrt(p*p+mc2*mc2)), p_MeV_c: p, m_MeV_c2: mc2, note: 'E^2 = (pc)^2 + (mc^2)^2' };
             if (hasE && hasP) return { E_MeV: E, p_MeV_c: p, m_MeV_c2: _round(Math.sqrt(Math.max(0, E*E-p*p))), note: 'E^2 = (pc)^2 + (mc^2)^2' };
             if (hasE && hasM) return { E_MeV: E, p_MeV_c: _round(Math.sqrt(Math.max(0, E*E-mc2*mc2))), m_MeV_c2: mc2, note: 'E^2 = (pc)^2 + (mc^2)^2' };
-            if (hasP && hasM) return { E_MeV: _round(Math.sqrt(p*p+mc2*mc2)), p_MeV_c: p, m_MeV_c2: mc2, note: 'E^2 = (pc)^2 + (mc^2)^2' };
-            throw new Error('Provide any two of: E_MeV, p_MeV_c, m_MeV_c2');
+            return {
+                formula: 'E^2 = (p*c)^2 + (m*c^2)^2',
+                relation: 'Relativistic energy-momentum relation connecting total energy E, momentum p, and rest mass m.',
+                variables: {
+                    E: 'Total energy (in MeV or J)',
+                    p: 'Relativistic momentum (in MeV/c or kg·m/s)',
+                    m: 'Rest mass (in MeV/c^2 or kg)'
+                },
+                note: 'Provide any two of: E_MeV (or E), p_MeV_c (or p), m_MeV_c2 (or m) to compute the third.'
+            };
         }
 
         case 'debroglie': {
