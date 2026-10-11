@@ -31,7 +31,9 @@ check('websearch alias is registered', /websearch\s*:\s*getWebSearch/.test(handl
 check('web_search alias is registered', /web_search\s*:\s*getWebSearch/.test(handlersBlock));
 
 // 2. Verify fetchPageTool parameter extraction handles flexible shapes
-const parseUrl = (params) => params?.url || params?.link || params?.target || params?.href || (typeof params === 'string' ? params : null);
+const parseUrl = (params) => typeof params === 'string'
+    ? params
+    : (params?.url || params?.link || params?.target || params?.href || null);
 
 check('extracts url from { url }', parseUrl({ url: 'https://example.com' }) === 'https://example.com');
 check('extracts url from { link }', parseUrl({ link: 'https://example.com' }) === 'https://example.com');

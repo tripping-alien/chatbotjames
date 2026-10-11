@@ -92,7 +92,9 @@ async function getWebSearch(params) {
 
 // ── Fetch Page ────────────────────────────────────────────────────────────
 async function fetchPageTool(params) {
-    const url = params?.url || params?.link || params?.target || params?.href || (typeof params === 'string' ? params : null);
+    const url = typeof params === 'string'
+        ? params
+        : (params?.url || params?.link || params?.target || params?.href || null);
     if (!url) throw new Error('fetch requires a url parameter');
     try {
         const res = await fetch(`https://r.jina.ai/${url}`, {
