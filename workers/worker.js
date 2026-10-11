@@ -71,17 +71,13 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
         }
         chatbot = await initializeModel(preset.backend, preset.dtype, preset.model);
         activePreset = preset;
-        self.postMessage({ status: 'done', backend: preset.backend, dtype: preset.dtype, model: preset.model, isMobile, isTV });
+        self.postMessage({ status: 'done', presetId: preset.id, preset, backend: preset.backend, dtype: preset.dtype, model: preset.model, isMobile, isTV });
         return;
     }
 
     if (lastPresetId) {
         const last = MODEL_PRESETS.find(p => p.id === lastPresetId);
-        // If the user previously had a 3B+ model saved on an integrated GPU, clear it to prevent freezing
-        if (last && (gpuInfo?.isIntegrated && (last.params || 0) >= 3.0)) {
-            console.warn('[worker] Saved preset was 3B+ on integrated GPU; clearing to prevent freeze');
-            self.postMessage({ status: 'clear-last-preset' });
-        } else if (last) {
+        if (last) {
             self.postMessage({ status: 'warm-start', preset: last });
             if (chatbot) {
                 try { chatbot.dispose(); } catch (_) {}
@@ -90,9 +86,10 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
             try {
                 chatbot = await initializeModel(last.backend, last.dtype, last.model);
                 activePreset = last;
-                self.postMessage({ status: 'done', backend: last.backend, dtype: last.dtype, model: last.model, isMobile, isTV });
+                self.postMessage({ status: 'done', presetId: last.id, preset: last, backend: last.backend, dtype: last.dtype, model: last.model, isMobile, isTV });
                 return;
             } catch (err) {
+                console.warn('[worker] Last preset failed to initialize on reload, clearing cache:', err);
                 self.postMessage({ status: 'clear-last-preset' });
                 lastError = err;
             }
@@ -109,7 +106,7 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
             }
             chatbot = await initializeModel(preset.backend, preset.dtype, preset.model);
             activePreset = preset;
-            self.postMessage({ status: 'done', backend: preset.backend, dtype: preset.dtype, model: preset.model, isMobile, isTV });
+            self.postMessage({ status: 'done', presetId: preset.id, preset, backend: preset.backend, dtype: preset.dtype, model: preset.model, isMobile, isTV });
             return;
         } catch (err) {
             lastError = err;
@@ -129,7 +126,7 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
             }
             chatbot = await initializeModel(preset.backend, preset.dtype, preset.model);
             activePreset = preset;
-            self.postMessage({ status: 'done', backend: preset.backend, dtype: preset.dtype, model: preset.model, isMobile, isTV });
+            self.postMessage({ status: 'done', presetId: preset.id, preset, backend: preset.backend, dtype: preset.dtype, model: preset.model, isMobile, isTV });
             return;
         } catch (err) {
             lastError = err;

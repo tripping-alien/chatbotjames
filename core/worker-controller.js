@@ -21,6 +21,7 @@ class WorkerController {
         this.onWarmStart = null;
         this.onDownloadProgress = null;
         this.onWorkerDone = null; // (e.data.backend)
+        this.onClearLastPreset = null;
         this.onStreaming = null; // (chatId, targetId, message)
         this.onThinking = null; // (chatId, targetId)
         this.onComplete = null; // (chatId, targetId, message)
