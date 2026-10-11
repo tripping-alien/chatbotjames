@@ -148,11 +148,16 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
     throw lastError || new Error('All model presets failed to load');
 }
 
+let _currentGenCancel = null;
+
 self.onmessage = async (e) => {
     const { type, messages, targetId, chatId } = e.data;
 
     if (type === 'abort') {
         isAborted = true;
+        if (_currentGenCancel) {
+            _currentGenCancel('UserAborted');
+        }
         return;
     }
 
@@ -179,7 +184,7 @@ self.onmessage = async (e) => {
                 const [gpuInfo, wasmCaps] = await Promise.all([detectGpu(), detectWasmCapabilities()]);
                 const mobile = isMobileDevice({ screenWidth: e.data.screenWidth, maxTouchPoints: e.data.maxTouchPoints });
                 const tv = isTVDevice();
-                deviceFlags = { isMobile: mobile, isTV: tv };
+                deviceFlags = { isMobile: mobile, isTV: tv, isIntegrated: !!gpuInfo?.isIntegrated };
                 await tryInitializeModels(
                     gpuInfo, mobile, tv,
                     presetId,
