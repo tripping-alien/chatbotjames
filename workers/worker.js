@@ -86,7 +86,11 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
 
     if (lastPresetId) {
         const last = MODEL_PRESETS.find(p => p.id === lastPresetId);
-        if (last) {
+        // If the user previously had a 3B+ model saved on an integrated GPU, clear it to prevent freezing
+        if (last && (gpuInfo?.isIntegrated && (last.params || 0) >= 3.0)) {
+            console.warn('[worker] Saved preset was 3B+ on integrated GPU; clearing to prevent freeze');
+            self.postMessage({ status: 'clear-last-preset' });
+        } else if (last) {
             self.postMessage({ status: 'warm-start', preset: last });
             if (chatbot) {
                 try { chatbot.dispose(); } catch (_) {}
