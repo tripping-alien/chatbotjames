@@ -82,7 +82,6 @@ class WorkerController {
         switch (status) {
             case 'clear-last-preset':
                 if (this.onClearLastPreset) this.onClearLastPreset();
-                if (this.onWorkerDone) this.onWorkerDone(e.data);
                 break;
             case 'model-info':
                 if (this.onModelInfo) this.onModelInfo(e.data);
