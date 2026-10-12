@@ -42,7 +42,7 @@ AVAILABLE TOOLS:
 - start_game(game: string, ai_color: string): "chess" or "checkers". MANDATORY when user asks to play.
 - make_move(move: string): SAN ("e4") for chess, numeric ("11-15") for checkers.
 - write_note(note: string): Silently save user facts.
-- physics(mode: string, params: object): Particle physics calculator. DO NOT pass mode="relativity" — that is a different tool (see `relativity` below).
+- physics(mode: string, params: object): Particle physics calculator. DO NOT pass mode="relativity" — that is a different tool (see 'relativity' below).
   • energy_momentum_relation (or energy_momentum): E^2 = (pc)^2 + (mc^2)^2 (params: p, m, E)
   • relativistic_momentum: p = gamma*m*v (params: m, v or beta)
   • relativistic_energy: E_total & rest energy (params: m, v or beta)
