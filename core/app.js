@@ -697,6 +697,10 @@ function sendMessage(preExecutedMove = null) {
 
     const messagesForModel = getMessagesWindow(chatManager.chatHistory);
     const targetId = getNextTargetId();
+    // Register in activeGenerations BEFORE calling updateLiveBubble so the
+    // ghost-bubble guard (activeMap.get(currentId) !== targetId) doesn't fire
+    // prematurely and skip bubble creation — matching the tool re-query path.
+    workerController.activeGenerations.set(chatManager.currentChatId, targetId);
     updateLiveBubble('...', targetId);
     // Scroll to bottom after adding user message + thinking bubble
     const _chatLog = document.getElementById('chatLog');
