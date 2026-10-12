@@ -81,8 +81,16 @@ export function openChatDB() {
                 }
             },
             blocked() {
-                // Another tab has the DB open at an older version — warn but don't crash
-                console.warn('[IDB] Database upgrade blocked by another tab. Please close other tabs and reload.');
+                // Another tab has the DB open at an older version — warn and
+                // schedule a reload for when the user closes that tab and returns here.
+                console.warn('[IDB] Database upgrade blocked by another tab. Close other JAMES tabs to allow the upgrade.');
+                const onVisible = () => {
+                    if (document.visibilityState === 'visible') {
+                        document.removeEventListener('visibilitychange', onVisible);
+                        window.location.reload();
+                    }
+                };
+                document.addEventListener('visibilitychange', onVisible);
             },
             blocking() {
                 // This tab is blocking a newer version in another tab — close gracefully

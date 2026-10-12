@@ -36,9 +36,11 @@ class WorkerController {
 
         this.worker.onmessage = this.workerMessageHandler.bind(this);
         this.worker.onerror = (e) => {
-            // e.message is often undefined for cross-origin module load failures in Chromium.
-            // Log all available fields for diagnostics.
-            const detail = e.message || `${e.filename || '(unknown file)'}:${e.lineno ?? '?'}`;
+            // e.message is often undefined for cross-origin module load failures in Chromium
+            // (e.g. CDN fetch error, bad MIME type, CSP block on the HuggingFace transformers import).
+            // In that case e.filename and e.lineno are also empty, so we fall back to a hint.
+            const fileInfo = e.filename ? `${e.filename}:${e.lineno ?? '?'}` : null;
+            const detail = e.message || fileInfo || 'module import failed (check network / CSP / CDN availability)';
             console.error('WORKER ERROR:', detail, e);
             if (this.onWorkerStatus) this.onWorkerStatus('error', 'Worker failed to load: ' + detail, e);
         };
