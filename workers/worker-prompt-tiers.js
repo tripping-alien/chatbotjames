@@ -56,17 +56,17 @@ const CATALOG = [
     },
     {
         name: 'physics',
-        re: /\b(photon|de ?broglie|compton|photoelectric|rest energy|relativistic (momentum|energy)|energy_momentum|uncertainty principle|half-?life|decay|particle physics)\b/i,
+        re: /\b(physics|lorentz|photon|de ?broglie|compton|photoelectric|rest energy|relativistic|momentum|energy_momentum|quantum|uncertainty principle|half-?life|decay|particle physics)\b/i,
         sticky: /\bphysics\b/,
-        lines: ['- physics(mode, params): particle physics only. DO NOT use mode="relativity" — use the relativity tool instead. modes: energy_momentum (p, m, E), relativistic_momentum (m, v or beta), relativistic_energy (m, v or beta), debroglie (lambda, m, v, or p), lorentz_factor (beta or v), rest_energy (m), decay (half_life_s, t), uncertainty (delta_x or delta_p).'],
+        lines: ['- physics(mode, params): particle physics. modes: energy_momentum (p, m, E), relativistic_momentum (m, v or beta), relativistic_energy (m, v or beta), debroglie (lambda, m, v, or p), lorentz_factor (beta or v), rest_energy (m), decay (half_life_s, t), uncertainty (delta_x or delta_p).'],
         ex: ['Find energy from p=5, m=1', 'physics', { mode: 'energy_momentum', p: 5, m: 1 }],
     },
     {
         name: 'relativity',
-        re: /\b(relativity|time.?dilation|dilat|length.?contraction|contract|schwarzschild|black.?hole|velocity.?addition|lorentz.?boost|speed of light|lorentz factor|beta\s*=|\d+(\.\d+)?\s*c\b|traveling at|moving at|0\.\d+c|relativistic|spacetime|doppler)\b/i,
+        re: /\b(relativity|time dilation|length contraction|schwarzschild|black hole|velocity addition|doppler|lorentz boost)\b/i,
         sticky: /\brelativity\b/,
-        lines: ['- relativity(mode, params): special & general relativity. modes: time_dilation (beta, proper_time_s), length_contraction (beta, proper_length_m), velocity_addition (v, w), lorentz_boost (v, x, t), doppler (beta, f_source_Hz), schwarzschild_radius (mass_kg), gravitational_time_dilation (mass_kg, r_m). Use this — NOT physics — for anything involving speed-of-light travel, beta, gamma factor, or spacetime.'],
-        ex: ['Time dilation at 0.99c for 4.46 s?', 'relativity', { mode: 'time_dilation', beta: 0.99, proper_time_s: 4.46 }],
+        lines: ['- relativity(mode, params): relativity calculators. modes: time_dilation (beta, proper_time_s), length_contraction (beta, proper_length_m), velocity_addition (v, w), schwarzschild_radius (mass_kg), doppler (beta, f_source_Hz).'],
+        ex: ['Time dilation at 0.8c for 10 s?', 'relativity', { mode: 'time_dilation', beta: 0.8, proper_time_s: 10 }],
     },
     {
         name: 'linalg',
