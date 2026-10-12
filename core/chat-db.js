@@ -66,14 +66,32 @@ let _idbPromise = null;
 const _chatWriteQueues = new Map();
 const _noteWriteQueues = new Map();
 
-export async function openChatDB() {
+export function openChatDB() {
     if (!_idbPromise) {
         _idbPromise = openDB(IDB_NAME, 2, {
-            upgrade(db) {
-                if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE, { keyPath: 'id' });
-                if (!db.objectStoreNames.contains(IDB_NOTES_STORE)) db.createObjectStore(IDB_NOTES_STORE, { keyPath: 'id' });
-                if (!db.objectStoreNames.contains(IDB_CONFIG_STORE)) db.createObjectStore(IDB_CONFIG_STORE);
+            upgrade(db, oldVersion /*, newVersion, tx */) {
+                // v1 schema (initial release): chats only
+                if (oldVersion < 1) {
+                    db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+                }
+                // v1 → v2: add user-notes and config stores
+                if (oldVersion < 2) {
+                    if (!db.objectStoreNames.contains(IDB_NOTES_STORE)) db.createObjectStore(IDB_NOTES_STORE, { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains(IDB_CONFIG_STORE)) db.createObjectStore(IDB_CONFIG_STORE);
+                }
+            },
+            blocked() {
+                // Another tab has the DB open at an older version — warn but don't crash
+                console.warn('[IDB] Database upgrade blocked by another tab. Please close other tabs and reload.');
+            },
+            blocking() {
+                // This tab is blocking a newer version in another tab — close gracefully
+                _idbPromise = null;
             }
+        }).catch(err => {
+            // Reset so the next openChatDB() call retries rather than replaying a cached rejection
+            _idbPromise = null;
+            throw err;
         });
     }
     return _idbPromise;

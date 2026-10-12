@@ -36,8 +36,11 @@ class WorkerController {
 
         this.worker.onmessage = this.workerMessageHandler.bind(this);
         this.worker.onerror = (e) => {
-            console.error('WORKER ERROR:', e);
-            if (this.onWorkerStatus) this.onWorkerStatus('error', 'Worker failed to load: ' + e.message, e);
+            // e.message is often undefined for cross-origin module load failures in Chromium.
+            // Log all available fields for diagnostics.
+            const detail = e.message || `${e.filename || '(unknown file)'}:${e.lineno ?? '?'}`;
+            console.error('WORKER ERROR:', detail, e);
+            if (this.onWorkerStatus) this.onWorkerStatus('error', 'Worker failed to load: ' + detail, e);
         };
         this.toolsWorker.onerror = (e) => {
             console.error('TOOLS-WORKER ERROR (this will cause all tool RPCs to time out):', e);
