@@ -68,15 +68,21 @@ const _noteWriteQueues = new Map();
 
 export function openChatDB() {
     if (!_idbPromise) {
-        _idbPromise = openDB(IDB_NAME, 2, {
+        _idbPromise = openDB(IDB_NAME, 3, {
             upgrade(db, oldVersion /*, newVersion, tx */) {
                 // v1 schema (initial release): chats only
                 if (oldVersion < 1) {
                     db.createObjectStore(IDB_STORE, { keyPath: 'id' });
                 }
-                // v1 → v2: add user-notes and config stores
+                // v1 → v2: add user-notes store
                 if (oldVersion < 2) {
                     if (!db.objectStoreNames.contains(IDB_NOTES_STORE)) db.createObjectStore(IDB_NOTES_STORE, { keyPath: 'id' });
+                }
+                // v2 → v3: add config store.
+                // NOTE: config was originally in the oldVersion<2 block, but an intermediate
+                // production deploy shipped v2 with only user-notes. Any DB already at v2
+                // will never re-run that block, so we fix it here unconditionally for v3.
+                if (oldVersion < 3) {
                     if (!db.objectStoreNames.contains(IDB_CONFIG_STORE)) db.createObjectStore(IDB_CONFIG_STORE);
                 }
             },
