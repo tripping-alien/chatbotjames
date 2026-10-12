@@ -42,7 +42,7 @@ AVAILABLE TOOLS:
 - start_game(game: string, ai_color: string): "chess" or "checkers". MANDATORY when user asks to play.
 - make_move(move: string): SAN ("e4") for chess, numeric ("11-15") for checkers.
 - write_note(note: string): Silently save user facts.
-- physics(mode: string, params: object): Particle physics calculator. DO NOT pass mode="relativity" — that is a different tool (see `relativity` below).
+- physics(mode: string, params: object): Particle physics calculator.
   • energy_momentum_relation (or energy_momentum): E^2 = (pc)^2 + (mc^2)^2 (params: p, m, E)
   • relativistic_momentum: p = gamma*m*v (params: m, v or beta)
   • relativistic_energy: E_total & rest energy (params: m, v or beta)
@@ -182,12 +182,6 @@ User: "de Broglie wavelength of an electron moving at 1e6 m/s"
 
 User: "How much does time dilate for a clock moving at 80% of c for 10 seconds proper time?"
 -> \`\`\`tool:run\n{"tool": "relativity", "params": {"mode": "time_dilation", "beta": 0.8, "proper_time_s": 10}}\n\`\`\`
-
-User: "An object travels at 99% of c for 4.46 proper seconds — what is the dilated time?"
--> \`\`\`tool:run\n{"tool": "relativity", "params": {"mode": "time_dilation", "beta": 0.99, "proper_time_s": 4.46}}\n\`\`\`
-
-User: "Length contraction of a 1 km spaceship at beta=0.99"
--> \`\`\`tool:run\n{"tool": "relativity", "params": {"mode": "length_contraction", "beta": 0.99, "proper_length_m": 1000}}\n\`\`\`
 
 User: "What is the Schwarzschild radius of the Sun? (M = 1.989e30 kg)"
 -> \`\`\`tool:run\n{"tool": "relativity", "params": {"mode": "schwarzschild_radius", "mass_kg": 1.989e30}}\n\`\`\`
