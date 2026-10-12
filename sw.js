@@ -1,4 +1,4 @@
-const CACHE_NAME = 'JAMES-v5.18';
+const CACHE_NAME = 'JAMES-v5.19';
 
 // Only cache truly static assets - NOT app logic files
 const STATIC_ASSETS = [
@@ -113,8 +113,13 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // CDN assets: cache-first
-    if (url.hostname.includes('jsdelivr.net') || url.hostname.includes('cdn.') || url.hostname.includes('esm.sh')) {
+    // CDN assets: cache-first — but NOT HuggingFace transformers JS library
+    // (that file is a module import in a Worker; if cached with wrong MIME type it silently breaks).
+    // Model weights (.onnx/.bin/.safetensors) are handled by the custom fetch in worker-downloader.js
+    // and stored in a separate 'JAMES-model-cache-*' cache, not here.
+    const isTransformersLib = url.hostname.includes('jsdelivr.net') &&
+        url.pathname.includes('@huggingface/transformers');
+    if (!isTransformersLib && (url.hostname.includes('jsdelivr.net') || url.hostname.includes('cdn.') || url.hostname.includes('esm.sh'))) {
         event.respondWith(
             caches.match(event.request, { ignoreSearch: true }).then(cached =>
                 cached ?? fetch(event.request).then(res => {

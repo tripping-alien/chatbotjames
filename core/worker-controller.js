@@ -30,7 +30,7 @@ class WorkerController {
     }
 
     initWorkers(safeLocalStorage) {
-        this.worker = new Worker('workers/worker.js?v=7', { type: 'module' });
+        this.worker = new Worker('workers/worker.js?v=8', { type: 'module' });
         this.toolsWorker = new Worker('workers/tools-worker.js?v=6', { type: 'module' });
         this.pythonWorker = new Worker('workers/python-worker.js?v=6');
 

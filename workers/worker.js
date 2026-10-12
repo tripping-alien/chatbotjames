@@ -1,4 +1,4 @@
-import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0';
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/dist/transformers.web.js';
 import { CONFIG } from '../core/config.js';
 import { setupDownloadManager } from './worker-downloader.js';
 import { getPromptTier, buildSystemPrompt } from './worker-prompt-tiers.js';
