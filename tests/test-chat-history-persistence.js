@@ -27,6 +27,12 @@ check('chat-db.js does NOT keep openCursor across async decryptObject (avoids Tr
 check('chat-db.js decrypts chats via Promise.all after getAll',
     /Promise\.all\(rows\.map\(async\s+row/.test(chatDbContent));
 
+check('chat-db.js uses targetVersion >= 3 to prevent VersionError (requested version 2 is less than existing version 3)',
+    /targetVersion\s*=\s*3/.test(chatDbContent));
+
+check('chat-db.js catches and recovers from VersionError dynamically',
+    /err\.name === 'VersionError'/.test(chatDbContent));
+
 // 2. Verify core/app.js implementation
 const appPath = path.resolve('core/app.js');
 const appContent = fs.readFileSync(appPath, 'utf8');

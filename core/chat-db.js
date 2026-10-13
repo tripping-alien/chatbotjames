@@ -68,13 +68,35 @@ const _noteWriteQueues = new Map();
 
 export async function openChatDB() {
     if (!_idbPromise) {
-        _idbPromise = openDB(IDB_NAME, 2, {
-            upgrade(db) {
+        _idbPromise = (async () => {
+            let targetVersion = 3;
+            try {
+                if (typeof indexedDB !== 'undefined' && indexedDB.databases) {
+                    const dbs = await indexedDB.databases();
+                    const existing = dbs.find(d => d.name === IDB_NAME);
+                    if (existing && existing.version && existing.version > targetVersion) {
+                        targetVersion = existing.version;
+                    }
+                }
+            } catch (_) {}
+
+            const upgradeStores = (db) => {
                 if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE, { keyPath: 'id' });
                 if (!db.objectStoreNames.contains(IDB_NOTES_STORE)) db.createObjectStore(IDB_NOTES_STORE, { keyPath: 'id' });
                 if (!db.objectStoreNames.contains(IDB_CONFIG_STORE)) db.createObjectStore(IDB_CONFIG_STORE);
+            };
+
+            try {
+                return await openDB(IDB_NAME, targetVersion, { upgrade: upgradeStores });
+            } catch (err) {
+                if (err && (err.name === 'VersionError' || String(err).includes('VersionError'))) {
+                    const match = String(err).match(/existing version \((\d+)\)/i);
+                    const existingVer = match ? parseInt(match[1], 10) : targetVersion + 1;
+                    return await openDB(IDB_NAME, existingVer, { upgrade: upgradeStores });
+                }
+                throw err;
             }
-        });
+        })();
     }
     return _idbPromise;
 }
