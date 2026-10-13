@@ -268,9 +268,10 @@ self.onmessage = async (e) => {
                                  : 2048;
             if (promptTokenCount + maxTokens > CONTEXT_LIMIT) {
                 const available = CONTEXT_LIMIT - promptTokenCount;
-                if (available < 256) {
-                    throw new Error('Context window full — please start a new chat or select a smaller model to continue.');
+                    maxTokens = Math.min(maxTokens, available);
                 }
+            }
+
             if (isAborted) {
                 self.postMessage({ status: 'aborted', message: accumulatedResponse.trim(), targetId, chatId });
                 return;
