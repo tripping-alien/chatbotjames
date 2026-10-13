@@ -271,7 +271,9 @@ self.onmessage = async (e) => {
                 if (available < 256) {
                     throw new Error('Context window full — please start a new chat or select a smaller model to continue.');
                 }
-                maxTokens = Math.min(maxTokens, available);
+            if (isAborted) {
+                self.postMessage({ status: 'aborted', message: accumulatedResponse.trim(), targetId, chatId });
+                return;
             }
 
             const output = await chatbot(prompt, {
