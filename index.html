@@ -135,7 +135,7 @@
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="./assets/favicon.ico">
-    <link rel="apple-touch-icon" href="./assets/preview.png">
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
     <link rel="shortcut icon" href="./assets/favicon.ico">
     <link rel="manifest" href="./manifest.json">
     <link rel="stylesheet" href="./style.css">
@@ -172,6 +172,39 @@
 
 <!-- We use vanilla JS to control panels for maximum compatibility with the legacy architecture -->
 <body>
+    <!-- App Startup Splash Screen (Mobile & Desktop) -->
+    <div id="appSplash" class="app-splash" aria-hidden="true">
+        <div class="app-splash-content">
+            <div class="app-splash-logo-wrap">
+                <img src="./assets/favicon.ico" alt="JAMES" class="app-splash-icon" width="76" height="76">
+                <span class="app-splash-emoji" aria-hidden="true">⚡</span>
+            </div>
+            <div class="app-splash-title">JAMES</div>
+            <div class="app-splash-subtitle">NEURAL TERMINAL</div>
+            <div class="app-splash-loader">
+                <div class="app-splash-bar"></div>
+            </div>
+            <div class="app-splash-status">INITIALIZING SYSTEM...</div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            function dismissSplash() {
+                var splash = document.getElementById('appSplash');
+                if (!splash || splash.classList.contains('splash-fade-out')) return;
+                splash.classList.add('splash-fade-out');
+                setTimeout(function() {
+                    if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+                }, 450);
+            }
+            if (document.readyState === 'complete') {
+                setTimeout(dismissSplash, 250);
+            } else {
+                window.addEventListener('load', function() { setTimeout(dismissSplash, 250); });
+            }
+            setTimeout(dismissSplash, 1600);
+        })();
+    </script>
     <!-- Rich Noscript for SEO crawlers and users without JS -->
     <noscript>
         <div style="padding: 20px; background: #000; color: #0f0; font-family: monospace;">

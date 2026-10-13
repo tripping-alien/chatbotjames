@@ -55,6 +55,9 @@ const NETWORK_FIRST = [
     'style.css',
     'manifest.json',
     '/assets/favicon.ico',
+    '/assets/icon-192.png',
+    '/assets/icon-512.png',
+    '/assets/apple-touch-icon.png',
     '/assets/preview.png'
 ];
 
