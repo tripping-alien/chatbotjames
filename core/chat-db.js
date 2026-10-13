@@ -117,24 +117,21 @@ export async function dbLoadAllChats() {
     await initEncryption();
     try {
         const db = await openChatDB();
-        const tx = db.transaction(IDB_STORE, 'readonly');
-        let cursor = await tx.store.openCursor(null, 'prev');
-        const chats = [];
-        
-        while (cursor) {
+        const rows = await db.getAll(IDB_STORE);
+        rows.reverse();
+        const chats = await Promise.all(rows.map(async row => {
             try {
-                if (cursor.value.data) {
-                    const payload = await decryptObject(cursor.value.data);
-                    chats.push({ id: cursor.value.id, ...payload });
-                } else {
-                    chats.push(cursor.value);
+                if (row.data) {
+                    const payload = await decryptObject(row.data);
+                    return { id: row.id, ...payload };
                 }
+                return row;
             } catch (e) {
-                console.warn(`⚠️ Could not decrypt chat ${cursor.value.id}:`, e);
+                console.warn(`⚠️ Could not decrypt chat ${row.id}:`, e);
+                return null;
             }
-            cursor = await cursor.continue();
-        }
-        return chats;
+        }));
+        return chats.filter(Boolean);
     } catch (e) {
         console.warn('IDB load failed, returning empty state:', e);
         return [];
