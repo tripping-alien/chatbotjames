@@ -107,6 +107,25 @@ export function flushStreamQueue(targetId) {
 }
 
 /**
+ * Cancel and delete the streaming queue for a targetId immediately,
+ * preventing any further typewriter timeout ticks or DOM updates.
+ */
+export function cancelStream(targetId) {
+    if (targetId == null) return;
+    const state = streamQueues.get(targetId);
+    if (state) {
+        if (state.timeoutId) {
+            clearTimeout(state.timeoutId);
+            state.timeoutId = null;
+        }
+        state.running = false;
+        streamQueues.delete(targetId);
+    }
+    _finished.add(targetId);
+    if (_finished.size > 1024) _finished.delete(_finished.values().next().value);
+}
+
+/**
  * Pause DOM updates for every stream that is not the given targetId.
  * Used when switching chats so a background stream cannot inject a ghost bubble
  * into the newly visible chat log.

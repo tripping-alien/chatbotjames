@@ -296,6 +296,43 @@ export function updateLiveBubbleAppend(newChars, targetId) {
     if (distFromBottom < 120) chatLog.scrollTop = chatLog.scrollHeight;
 }
 
+export function removeThinkingBubble(targetId = null) {
+    const chatLog = document.getElementById('chatLog');
+    if (!chatLog) return;
+
+    if (targetId != null) {
+        const bubble = document.getElementById(`bubble-${targetId}`);
+        if (bubble) {
+            const isThinking = bubble.querySelector('.typing-indicator') !== null ||
+                               bubble.textContent.trim() === '...' ||
+                               bubble.textContent.trim() === '';
+            if (isThinking) {
+                const wrap = bubble.closest('.message-wrap') || bubble.parentElement;
+                if (wrap) wrap.remove();
+            }
+        }
+    }
+
+    // Clean up any other thinking indicator animation bubbles in the chat log
+    const indicators = chatLog.querySelectorAll('.typing-indicator');
+    indicators.forEach(ind => {
+        const wrap = ind.closest('.message-wrap') || ind.parentElement;
+        if (wrap) wrap.remove();
+    });
+
+    // Also clean up any empty or ellipsis-only assistant message bubbles
+    const emptyBubbles = chatLog.querySelectorAll('.assistant-msg .message-content');
+    emptyBubbles.forEach(b => {
+        if (b.querySelector('.typing-indicator') || b.textContent.trim() === '...' || b.textContent.trim() === '') {
+            const wrap = b.closest('.message-wrap') || b.parentElement;
+            if (wrap) wrap.remove();
+        }
+    });
+
+    const legacyThinking = document.getElementById('thinking-bubble');
+    if (legacyThinking) legacyThinking.remove();
+}
+
 export function appendErrorToChat(errorMessage) {
     const chatLog = document.getElementById('chatLog');
     if (!chatLog) return;
