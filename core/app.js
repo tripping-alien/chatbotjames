@@ -393,10 +393,7 @@ workerController.onComplete = (chatId, targetId, message) => {
         playReceiveSound();
         sendNotification("JAMES AI", "Response completed.");
         if (!message || message.trim() === '') {
-            const bubble = document.getElementById(`bubble-${targetId}`);
-            if (bubble && bubble.parentElement) {
-                bubble.parentElement.remove();
-            }
+            removeThinkingBubble(targetId);
         } else {
             updateLiveBubble(message, targetId, true);
             chatManager.chatHistory.push({ role: 'assistant', content: message });
@@ -465,10 +462,7 @@ workerController.onToolCalls = (message, targetId, chatId) => {
     import('./stream-manager.js').then(sm => {
         sm.flushStreamQueue(targetId);
         if (chatId === chatManager.currentChatId) {
-            const bubble = document.getElementById(`bubble-${targetId}`);
-            if (bubble && bubble.parentElement) {
-                bubble.parentElement.remove();
-            }
+            removeThinkingBubble(targetId);
         }
         handleToolCalls(message, targetId, chatId);
     });
