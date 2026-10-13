@@ -198,9 +198,7 @@ async function simulateCannedResponse(text) {
     }
 
     sm.flushStreamQueue(targetId);
-    chatManager.chatHistory.push({ role: 'assistant', content: text });
-
-    import('./chat-db.js').then(db => db.dbSaveChat(chatManager.chatMap.get(chatId)));
+    chatManager.persistCurrentChat(() => gameController.getGameState());
 
     _cannedGenActive = false;
     uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
