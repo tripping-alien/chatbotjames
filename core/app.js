@@ -31,6 +31,7 @@ import {
     escapeHTML,
     appendUserMessage,
     updateLiveBubble,
+    removeThinkingBubble,
     appendErrorToChat,
     renderChatLog as coreRender
 } from './message-renderer.js';
