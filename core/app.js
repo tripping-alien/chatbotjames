@@ -195,9 +195,26 @@ async function simulateCannedResponse(text) {
     // Typewriter effect
     let accumulated = '';
     for (let i = 0; i < text.length; i++) {
+        if (!globalState.isGeneratingUI || !_cannedGenActive) {
+            sm.cancelStream(targetId);
+            removeThinkingBubble(targetId);
+            if (window.workerController) {
+                window.workerController.activeGenerations.delete(chatId);
+            }
+            return;
+        }
         accumulated += text[i];
         sm.queueStreamText(targetId, accumulated, { updateDom: true });
         await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
+    }
+
+    if (!globalState.isGeneratingUI || !_cannedGenActive) {
+        sm.cancelStream(targetId);
+        removeThinkingBubble(targetId);
+        if (window.workerController) {
+            window.workerController.activeGenerations.delete(chatId);
+        }
+        return;
     }
 
     sm.flushStreamQueue(targetId);
