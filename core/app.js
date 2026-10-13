@@ -198,6 +198,7 @@ async function simulateCannedResponse(text) {
     }
 
     sm.flushStreamQueue(targetId);
+    chatManager.chatHistory.push({ role: 'assistant', content: text });
     chatManager.persistCurrentChat(() => gameController.getGameState());
 
     _cannedGenActive = false;
