@@ -39,10 +39,10 @@ const CATALOG = [
         re: /\b(chess|checkers|draughts|play a game|let'?s play)\b/i,
         sticky: /\b(start_game|make_move)\b/,
         lines: [
-            '- start_game(game, ai_color): game is "chess" or "checkers". Call it immediately when the user wants to play.',
+            '- start_game(game, ai_color): game is "chess" or "checkers". Call it immediately when the user wants to play. Player always goes first (White); AI is always 2nd (Black).',
             '- make_move(move): your move during an active game. SAN ("e4") for chess, numeric ("11-15") for checkers. Never ask the user for your move.',
         ],
-        ex: ['Let\'s play chess', 'start_game', { game: 'chess', ai_color: 'white' }],
+        ex: ['Let\'s play chess', 'start_game', { game: 'chess', ai_color: 'black' }],
     },
     {
         name: 'eval_python',

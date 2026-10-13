@@ -73,7 +73,7 @@ check('url -> fetch_page', names('read this page https://example.com').includes(
 // sticky: during a game the user just types a move
 const gameHistory = [
     { role: 'user', content: "let's play chess" },
-    { role: 'assistant', content: '```tool:run\n{"tool":"start_game","params":{"game":"chess","ai_color":"white"}}\n```' },
+    { role: 'assistant', content: '```tool:run\n{"tool":"start_game","params":{"game":"chess","ai_color":"black"}}\n```' },
     { role: 'system', content: '[Tool Result: start_game] started' },
     { role: 'user', content: 'e5' },
 ];

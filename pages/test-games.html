@@ -19,6 +19,7 @@
 
     <script type="module">
         import { ChessGame, CheckersGame, parseUserMove, extractAIMove } from '../games/game-logic.js';
+        import { gameController } from '../games/game-controller.js';
         
         let total = 0, passed = 0;
         const output = document.getElementById('output');
@@ -107,6 +108,39 @@
             const testGame2 = new ChessGame();
             const p2 = parseUserMove('pawn in front of the king', testGame2);
             assert(p2 && (p2.move.san === 'e4' || p2.move.san === 'e3'), 'Parses natural language "pawn in front of king". Got: ' + JSON.stringify(p2));
+
+            // --- Turn Order Tests (Player always goes first, AI always 2nd) ---
+            group('Turn Order (Player 1st, AI 2nd)');
+            let sysMsg = [];
+            gameController.handleStartGame({ game: 'chess' }, msg => sysMsg.push(msg));
+            assert(gameController.activeGame.aiColor === 'b', 'Chess AI color is forced to Black (b)');
+            assert(gameController.activeGame.getTurn() === 'w', 'Chess initial turn is White (w) - player goes first');
+            assert(sysMsg.some(m => m.includes("You are Black. User is White. It is White's turn.")), 'Chess system prompt informs AI it is 2nd');
+            
+            // AI cannot move first
+            const blockedChessAi = gameController.handleMakeMove({ move: 'e4' });
+            assert(blockedChessAi.success === false, 'AI is blocked from moving first in chess');
+
+            // Player moves first, then AI moves 2nd
+            const uChess = gameController.parseUserMove('e4');
+            gameController.handleGameMove(uChess);
+            assert(gameController.activeGame.getTurn() === 'b', 'Turn flips to Black (AI) after player moves first');
+            const aiChess = gameController.handleMakeMove({ move: 'e5' });
+            assert(aiChess.success === true, 'AI can legally move 2nd as Black');
+
+            // Checkers Turn Order
+            let chkSysMsg = [];
+            gameController.handleStartGame({ game: 'checkers', ai_color: 'white' }, msg => chkSysMsg.push(msg));
+            assert(gameController.activeGame.aiColor === 'b', 'Checkers AI color is forced to Black (b) even if white requested');
+            assert(gameController.activeGame.getTurn() === 'w', 'Checkers initial turn is White (w) - player goes first');
+            const blockedChkAi = gameController.handleMakeMove({ move: '22-18' });
+            assert(blockedChkAi.success === false, 'AI is blocked from moving first in checkers');
+            const uChk = gameController.parseUserMove('22-18');
+            gameController.handleGameMove(uChk);
+            assert(gameController.activeGame.getTurn() === 'b', 'Checkers turn flips to Black after player moves first');
+            const aiChk = gameController.handleMakeMove({ move: '11-15' });
+            assert(aiChk.success === true, 'AI can legally move 2nd as Black in checkers');
+            gameController.closeActiveGame();
 
             // Summary
             const summary = document.createElement('div');

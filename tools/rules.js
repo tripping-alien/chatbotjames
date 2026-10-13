@@ -101,6 +101,6 @@ export const RULES = [
             /^(chess|checkers)\s+(?:game|please|now)\b/i,
             /^(chess|checkers)$/i,
         ],
-        params: m => ({ game: (m[1] || m[2] || '').toLowerCase() }),
+        params: m => ({ game: (m[1] || m[2] || '').toLowerCase(), ai_color: 'black' }),
     },
 ];

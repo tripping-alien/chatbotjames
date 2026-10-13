@@ -140,7 +140,8 @@ class GameController {
 
     handleStartGame(params, addSystemMessageCallback, queryModelCallback) {
         const gameType = (params.game || 'chess').toLowerCase();
-        const aiColor = (params.ai_color || 'black').toLowerCase() === 'white' ? 'w' : 'b';
+        // In chess and checkers, AI should always be 2nd (Black) and player goes first (White)
+        const aiColor = 'b';
         
         if (gameType === 'checkers') {
             this.activeGame = new CheckersGame();
@@ -153,11 +154,7 @@ class GameController {
 
         const boardName = gameType === 'checkers' ? 'Checkers Board' : 'FEN';
         if (addSystemMessageCallback) {
-            if (aiColor === 'w') {
-                addSystemMessageCallback(`[System]: ${gameType} started. Current ${boardName}: ${this.activeGame.getFen()}. You are White. User is Black. Please make the first move using the make_move tool.`);
-            } else {
-                addSystemMessageCallback(`[System]: ${gameType} started. Current ${boardName}: ${this.activeGame.getFen()}. You are Black. User is White. It is White's turn. Wait for the user to make their move.`);
-            }
+            addSystemMessageCallback(`[System]: ${gameType} started. Current ${boardName}: ${this.activeGame.getFen()}. You are Black. User is White. It is White's turn. Wait for the user to make their move.`);
         }
         
         if (window.renderChatLog) {
