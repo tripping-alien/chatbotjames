@@ -230,7 +230,7 @@ export function updateLiveBubble(text, targetId, force = false) {
     }
 
     if (text === '...') {
-        bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+        bubble.innerHTML = '<div class="typing-indicator"><span class="thinking-sandclock" role="img" aria-label="Thinking">⏳</span></div>';
         chatLog.scrollTop = chatLog.scrollHeight;
         return;
     }

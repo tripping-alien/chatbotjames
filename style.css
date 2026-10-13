@@ -2068,12 +2068,42 @@ body.tv-mode .game-board-message {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 5px;
-    padding: 6px 10px;
+    gap: 6px;
+    padding: 6px 12px;
     min-height: 28px;
 }
 
-.typing-indicator span {
+.thinking-sandclock {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 1.25rem;
+    line-height: 1;
+    user-select: none;
+    transform-origin: 50% 50%;
+    will-change: transform;
+    animation: sandclock-spin 2s linear infinite;
+    filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.45));
+}
+
+@keyframes sandclock-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .thinking-sandclock {
+        animation: none;
+    }
+}
+
+.typing-indicator span:not(.thinking-sandclock) {
     display: inline-block; /* required on some mobile browsers */
     width: 7px;
     height: 7px;
@@ -2086,9 +2116,9 @@ body.tv-mode .game-board-message {
 }
 
 /* Negative delays: dots are already mid-animation on first paint — no startup lag */
-.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-.typing-indicator span:nth-child(3) { animation-delay:    0s;  }
+.typing-indicator span:not(.thinking-sandclock):nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:not(.thinking-sandclock):nth-child(2) { animation-delay: -0.16s; }
+.typing-indicator span:not(.thinking-sandclock):nth-child(3) { animation-delay:    0s;  }
 
 @keyframes typing-bounce {
     0%, 80%, 100% {

@@ -18,6 +18,16 @@ console.log('--- Stop Generation & Thinking Bubble Tests ---');
 const appPath = path.resolve('core/app.js');
 const appContent = fs.readFileSync(appPath, 'utf8');
 
+const rendererPath = path.resolve('core/message-renderer.js');
+const rendererContent = fs.readFileSync(rendererPath, 'utf8');
+check('message-renderer.js renders thinking-sandclock emoji',
+    /thinking-sandclock/.test(rendererContent) && /⏳/.test(rendererContent));
+
+const cssPath = path.resolve('style.css');
+const cssContent = fs.readFileSync(cssPath, 'utf8');
+check('style.css defines sandclock-spin keyframes and thinking-sandclock class',
+    /\.thinking-sandclock/.test(cssContent) && /@keyframes\s+sandclock-spin/.test(cssContent));
+
 check('app.js imports removeThinkingBubble',
     /import\s*\{[^}]*removeThinkingBubble[^}]*\}\s*from\s*['"]\.\/message-renderer\.js['"]/.test(appContent));
 
