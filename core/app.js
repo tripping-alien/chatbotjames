@@ -248,6 +248,9 @@ workerController.onWorkerStatus = (status, message, e) => {
             const errChatId = e.data?.chatId;
             if (errChatId) workerController.activeGenerations.delete(errChatId);
             const errText = message || 'An unknown worker error occurred.';
+            if (errChatId === chatManager.currentChatId) {
+                removeThinkingBubble(e.data?.targetId);
+            }
 
             // Trim any dangling partial assistant/system messages from history
             // so a retry doesn't produce a "roles must alternate" error.
