@@ -13,6 +13,7 @@ const testSuites = [
     { name: 'SmallTalk & Instant Canned Handlers', file: 'tests/test-smalltalk.js' },
     { name: 'Last Model Persistence & Reload', file: 'tests/test-last-preset.js' },
     { name: 'Chat History Persistence & Reload', file: 'tests/test-chat-history-persistence.js' },
+    { name: 'Stop Generation & Thinking Bubble Cleanup', file: 'tests/test-stop-thinking-bubble.js' },
 ];
 
 async function runSuite(suite) {
