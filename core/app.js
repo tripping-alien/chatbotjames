@@ -125,19 +125,27 @@ window._alpineDeleteChat = (id) => {
 };
 
 // Chat Manager Callbacks
-chatManager.onChatListUpdated = () => {
-    if (window.Alpine) {
-        Alpine.store('james').chats = [...chatManager.allChats];
-        Alpine.store('james').currentChatId = chatManager.currentChatId;
-    }
+const syncAlpineChats = () => {
+    try {
+        if (window.Alpine && Alpine.store && Alpine.store('james')) {
+            Alpine.store('james').chats = [...chatManager.allChats];
+            Alpine.store('james').currentChatId = chatManager.currentChatId;
+        }
+    } catch (_) {}
 };
 
+chatManager.onChatListUpdated = syncAlpineChats;
+
 chatManager.onChatChanged = (chatId) => {
-    if (window.Alpine) {
-        Alpine.store('james').currentChatId = chatId;
-    }
+    try {
+        if (window.Alpine && Alpine.store && Alpine.store('james')) {
+            Alpine.store('james').currentChatId = chatId;
+        }
+    } catch (_) {}
     renderChatLog();
 };
+
+document.addEventListener('alpine:init', syncAlpineChats);
 
 chatManager.onNotesLoaded = (notes) => {
     _updateNotesUI(notes);
