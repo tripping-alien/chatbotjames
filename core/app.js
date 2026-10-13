@@ -99,6 +99,8 @@ window.workerController = workerController;
 window.renderChatLog = renderChatLog;
 window.globalState = globalState;
 window.sendMessage = sendMessage;
+window.handleStopGeneration = handleStopGeneration;
+window.removeThinkingBubble = removeThinkingBubble;
 
 
 // Export chat actions to the global scope for the inline Alpine store to call
