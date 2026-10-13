@@ -12,6 +12,7 @@ const testSuites = [
     { name: 'Tool Aliases & Freeze Regression Guard', file: 'tests/test-tool-aliases.js' },
     { name: 'SmallTalk & Instant Canned Handlers', file: 'tests/test-smalltalk.js' },
     { name: 'Last Model Persistence & Reload', file: 'tests/test-last-preset.js' },
+    { name: 'Chat History Persistence & Reload', file: 'tests/test-chat-history-persistence.js' },
 ];
 
 async function runSuite(suite) {

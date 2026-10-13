@@ -160,8 +160,8 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('james', {
-                chats: [],
-                currentChatId: null,
+                chats: window.chatManager ? [...window.chatManager.allChats] : [],
+                currentChatId: window.chatManager ? window.chatManager.currentChatId : null,
                 loadChat(id) { window._alpineLoadChat && window._alpineLoadChat(id) },
                 deleteChat(id) { window._alpineDeleteChat && window._alpineDeleteChat(id) }
             });
