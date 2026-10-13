@@ -18,22 +18,22 @@
     <meta name="coverage" content="Worldwide">
     <meta name="rating" content="general">
     <meta name="language" content="English">
-    <link rel="canonical" href="https://chatbotjames.onrender.com/docs.html">
+    <link rel="canonical" href="https://chatbotjames.onrender.com/pages/docs.html">
     <meta property="og:title" content="JAMES AI Docs — Retro Terminal Local Browser AI | Tools & Models">
     <meta property="og:description"
         content="Full guide to JAMES AI: in-browser Python, live web search, chess, WebGPU models (Llama, Qwen, DeepSeek), offline PWA, and encrypted local storage inside a retro terminal UI.">
-    <meta property="og:image" content="https://chatbotjames.onrender.com/preview.png">
+    <meta property="og:image" content="https://chatbotjames.onrender.com/assets/preview.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="JAMES AI documentation">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://chatbotjames.onrender.com/docs.html">
+    <meta property="og:url" content="https://chatbotjames.onrender.com/pages/docs.html">
     <meta property="og:site_name" content="JAMES AI">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="JAMES AI Docs — Retro Terminal Local Browser AI | Tools & Models">
     <meta name="twitter:description"
         content="Full documentation for JAMES AI: Python execution, web search, WebGPU models, offline PWA setup, and encrypted local history in a retro terminal UI.">
-    <meta name="twitter:image" content="https://chatbotjames.onrender.com/preview.png">
+    <meta name="twitter:image" content="https://chatbotjames.onrender.com/assets/preview.png">
     <meta name="twitter:creator" content="@AndreyLopukhov">
     <script type="application/ld+json">
     {
@@ -41,7 +41,7 @@
       "@type": "TechArticle",
       "headline": "JAMES AI Documentation — Retro Terminal Local Browser AI Chatbot",
       "description": "Complete reference for JAMES AI: all built-in tools (Python/Pyodide, web search, weather, Wikipedia, chess, checkers, unit converter, currency, password generator, UUID, ASCII art, color palette, timer, clipboard, base64, hash), zero-delay smalltalk handler, WebGPU and WASM model selection (Llama 3.2, Qwen2.5, DeepSeek R1, SmolLM2, Phi-3.5, Gemma 2), advanced hardware detection (WebGL fallback), offline PWA installation, and encrypted local storage architecture in a hacker terminal UI.",
-      "url": "https://chatbotjames.onrender.com/docs.html",
+      "url": "https://chatbotjames.onrender.com/pages/docs.html",
       "keywords": "retro terminal AI docs, hacker terminal AI, local AI chatbot, browser AI tools, WebGPU LLM, in-browser Python, Pyodide, offline AI, private AI, Llama 3.2, zero-delay smalltalk, hardware detection",
       "articleSection": "AI Tools, WebGPU Models, Privacy Architecture, Offline PWA",
       "author": { "@type": "Person", "name": "Andrey Lopukhov", "url": "https://github.com/tripping-alien" },
@@ -61,7 +61,7 @@
       "@type": "BreadcrumbList",
       "itemListElement": [
         { "@type": "ListItem", "position": 1, "name": "JAMES AI", "item": "https://chatbotjames.onrender.com/" },
-        { "@type": "ListItem", "position": 2, "name": "Documentation", "item": "https://chatbotjames.onrender.com/docs.html" }
+        { "@type": "ListItem", "position": 2, "name": "Documentation", "item": "https://chatbotjames.onrender.com/pages/docs.html" }
       ]
     }
     </script>
@@ -447,14 +447,13 @@
             </section>
             <section class="doc-section" id="stop">
                 <h2>Stop Generation</h2>
-                <p>The stop button instantly halts any active generation by refreshing the page. This prevents the worker from getting stuck in an unresponsive state and ensures a clean environment for your next prompt.</p>
+                <p>The stop button instantly halts any active generation by aborting the inference session within the Web Worker. This cancels the stream, removes the thinking indicator, and preserves terminal responsiveness without reloading the page.</p>
                 <ol>
-                    <li>Worker is terminated immediately.</li>
-                    <li>Partial streamed text is saved if available.</li>
-                    <li>The model restarts from the browser cache.</li>
+                    <li>Worker abort signal is dispatched immediately.</li>
+                    <li>Active stream is cancelled and any partial generated text is preserved.</li>
+                    <li>The thinking indicator is cleared and the terminal resets to the READY state.</li>
                 </ol>
-                <div class="callout">Stopping forces a fresh worker session. It may take a few seconds afterward, but no
-                    model re-download occurs.</div>
+                <div class="callout">Stopping halts generation cleanly in-place. The model remains loaded in the worker cache with no page refresh or re-download needed.</div>
             </section>
             <section class="doc-section" id="python">
                 <h2>Python Execution</h2>

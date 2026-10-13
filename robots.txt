@@ -4,12 +4,13 @@
 User-agent: *
 Allow: /
 Allow: /index.html
-Allow: /about.html
-Allow: /docs.html
+Allow: /pages/about.html
+Allow: /pages/docs.html
+Allow: /pages/faq.html
+Allow: /pages/share.html
 Allow: /style.css
 Allow: /manifest.json
-Allow: /preview.png
-Allow: /favicon.ico
+Allow: /assets/
 Allow: /sitemap.xml
 
 # Let bots crawl JS files to render the application correctly

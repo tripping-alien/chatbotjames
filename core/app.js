@@ -49,7 +49,7 @@ function sendNotification(title, body) {
     if (document.visibilityState === 'visible') return;
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
         try {
-            const notif = new Notification(title, { body, icon: 'preview.png' });
+            const notif = new Notification(title, { body, icon: 'assets/preview.png' });
             notif.onclick = () => {
                 window.focus();
                 notif.close();

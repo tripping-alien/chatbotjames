@@ -19,7 +19,7 @@ JAMES is a fully local, browser-native AI assistant designed with privacy as the
 * **Browser-Powered Performance:** Utilizes WASM and WebGPU for fast, hardware-accelerated client-side model execution.
 * **Integrated Python Runtime:** Powered by Pyodide, allowing JAMES to execute Python code securely within the browser environment.
 * **Scientific Calculators:** Native tools for particle physics, relativity, linear algebra, and differential equations without needing Python.
-* **Procedural Pixel Art:** Generates unique, 8-bit retro symmetrical pixel art and space invader sprites entirely via pure JavaScript algorithms.
+* **Procedural Pixel Art:** Generates unique, 8-bit retro symmetrical pixel art and Space Invader sprites entirely via pure JavaScript algorithms.
 * **Zero-Delay Smalltalk Engine:** Instantly responds to greetings, jokes, and easter eggs (like HAL 9000 & Portal) without waiting for the heavy LLM to spin up.
 * **Playable Minigames:** Play fully interactive, rule-enforced Chess and Checkers directly in the chat with AI-powered moves.
 * **Web Search:** Capable of fetching live web content, weather, and Wikipedia summaries on demand.
@@ -43,7 +43,7 @@ The most significant feature of JAMES is the **Persistent Personal Memory** syst
 * **Runtime Environments:** ONNX Runtime Web & Pyodide (WASM)
 * **Storage:** Unified IndexedDB (via `idb`) for fully asynchronous, blocking-free storage of encrypted chat history, memory, and application configuration.
 * **Utilities:** `dayjs` for robust timezone and time-math operations
-* **Testing:** Custom zero-dependency automated unit test runner (`tests.html`)
+* **Testing:** Custom zero-dependency automated unit test runner (`tests/run-all-tests.js` & `pages/tests.html`)
 
 ## Getting Started
 
