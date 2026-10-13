@@ -1484,6 +1484,7 @@ setupModelPanel({
             const currentTargetId = workerController.activeGenerations.get(chatManager.currentChatId);
             if (currentTargetId) {
                 workerController.worker.postMessage({ type: 'abort', targetId: currentTargetId });
+                removeThinkingBubble(currentTargetId);
             }
             workerController.activeGenerations.clear();
         }
