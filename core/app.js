@@ -734,7 +734,22 @@ function sendMessage(preExecutedMove = null) {
 
 function handleStopGeneration() {
     if (workerController.activeGenerations.has(chatManager.currentChatId) || globalState.isGeneratingUI) {
+        const currentTargetId = workerController.activeGenerations.get(chatManager.currentChatId);
+
+        if (currentTargetId != null) {
+            import('./stream-manager.js').then(sm => {
+                if (typeof sm.cancelStream === 'function') sm.cancelStream(currentTargetId);
+            });
+        }
+
         workerController.abortGeneration();
+
+        _cannedGenActive = false;
+        globalState.cannedGenId++;
+
+        // Immediately remove any thinking bubble / typing animation
+        removeThinkingBubble(currentTargetId);
+
         uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
         updateStatusLight('idle');
         uiManager.updateStatusText('READY');
@@ -763,6 +778,7 @@ window.simulateCannedResponse = function (text) {
         // exit — but only clear _cannedGenActive if we are still the current gen.
         if (!globalState.isGeneratingUI || globalState.cannedGenId !== currentGenId) {
             if (globalState.cannedGenId === currentGenId) _cannedGenActive = false;
+            removeThinkingBubble(targetId);
             return;
         }
         uiManager.updateStatusText('RESPONDING...');
@@ -774,6 +790,7 @@ window.simulateCannedResponse = function (text) {
                 // Superseded by a newer canned gen — don't clear the flag if a newer gen is live.
                 if (globalState.cannedGenId === currentGenId) _cannedGenActive = false;
                 workerController.activeGenerations.delete(chatManager.currentChatId);
+                removeThinkingBubble(targetId);
                 return;
             }
 
