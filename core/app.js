@@ -1339,12 +1339,14 @@ if (document.readyState === 'loading') {
 (async () => {
     await initConfigCache();
     await chatManager.loadSavedChats((await import('./chat-db.js')).migrateFromLocalStorage, (await import('./crypto-utils.js')).initEncryption);
-    const lastChatId = Number(safeLocalStorage.getItem('james-last-chat-id'));
-    const lastChat = chatManager.chatMap.get(lastChatId);
+    const rawLastId = safeLocalStorage.getItem('james-last-chat-id');
+    const lastChat = rawLastId != null
+        ? (chatManager.chatMap.get(Number(rawLastId)) || chatManager.chatMap.get(rawLastId) || chatManager.chatMap.get(String(rawLastId)))
+        : null;
 
     if (lastChat) {
         chatManager.loadChatHistory(
-            lastChatId,
+            lastChat.id,
             () => gameController.getGameState(),
             (state) => gameController.restoreGameState(state),
             safeLocalStorage
@@ -1365,9 +1367,15 @@ if (document.readyState === 'loading') {
         );
     }
 
+    if (chatManager.onChatListUpdated) chatManager.onChatListUpdated();
+
     window._chatsLoadedForRecovery = true;
     if (workerController._recoveryInitDone) initRecovery();
 })();
+
+window.addEventListener('beforeunload', () => {
+    chatManager.persistCurrentChat(() => gameController.getGameState());
+});
 
 uiManager.initSidebarState(safeLocalStorage.getItem('james-sidebar-collapsed'));
 if (isTVDevice()) uiManager.initTVMode();
