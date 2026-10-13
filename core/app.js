@@ -470,30 +470,34 @@ workerController.onToolCalls = (message, targetId, chatId) => {
 
 workerController.onAborted = (chatId, targetId, message) => {
     import('./stream-manager.js').then(sm => sm.flushStreamQueue(targetId));
-    if (chatId === chatManager.currentChatId && message !== undefined && message !== null) {
-        updateLiveBubble(message, targetId, true); // force=true: bypass throttle so the final aborted content always renders
-        chatManager.chatHistory.push({ role: 'assistant', content: message });
+    if (chatId === chatManager.currentChatId) {
+        if (!message || message.trim() === '') {
+            removeThinkingBubble(targetId);
+        } else {
+            updateLiveBubble(message, targetId, true); // force=true: bypass throttle so the final aborted content always renders
+            chatManager.chatHistory.push({ role: 'assistant', content: message });
 
-        if (window.gameController && window.gameController.activeGame) {
-            import('../games/game-logic.js').then(({ extractAIMove }) => {
-                const aiMove = extractAIMove(message, window.gameController.activeGame);
-                if (aiMove) {
-                    window.gameController.handleMakeMove(
-                        { move: aiMove },
-                        (msg) => {
-                            chatManager.chatHistory.push({ role: 'system', content: msg });
-                            renderChatLog();
-                        },
-                        (v) => uiManager.setIdleState(v, (x) => globalState.isGeneratingUI = x),
-                        null
-                    );
-                    chatManager.persistCurrentChat(() => window.gameController.getGameState());
-                }
-            });
+            if (window.gameController && window.gameController.activeGame) {
+                import('../games/game-logic.js').then(({ extractAIMove }) => {
+                    const aiMove = extractAIMove(message, window.gameController.activeGame);
+                    if (aiMove) {
+                        window.gameController.handleMakeMove(
+                            { move: aiMove },
+                            (msg) => {
+                                chatManager.chatHistory.push({ role: 'system', content: msg });
+                                renderChatLog();
+                            },
+                            (v) => uiManager.setIdleState(v, (x) => globalState.isGeneratingUI = x),
+                            null
+                        );
+                        chatManager.persistCurrentChat(() => window.gameController.getGameState());
+                    }
+                });
+            }
+
+            chatManager.persistCurrentChat(() => gameController.getGameState());
         }
-
-        chatManager.persistCurrentChat(() => gameController.getGameState());
-    } else if (chatId !== chatManager.currentChatId && message) {
+    } else if (chatId !== chatManager.currentChatId && message && message.trim() !== '') {
         const bgChat = chatManager.chatMap.get(chatId);
         if (bgChat) {
             bgChat.messages.push({ role: 'assistant', content: message });
