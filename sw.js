@@ -1,4 +1,4 @@
-const CACHE_NAME = 'JAMES-v5.18';
+const CACHE_NAME = 'JAMES-v5.19';
 
 // Only cache truly static assets - NOT app logic files
 const STATIC_ASSETS = [

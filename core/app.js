@@ -1337,40 +1337,52 @@ if (document.readyState === 'loading') {
 }
 
 (async () => {
-    await initConfigCache();
-    await chatManager.loadSavedChats((await import('./chat-db.js')).migrateFromLocalStorage, (await import('./crypto-utils.js')).initEncryption);
-    const rawLastId = safeLocalStorage.getItem('james-last-chat-id');
-    const lastChat = rawLastId != null
-        ? (chatManager.chatMap.get(Number(rawLastId)) || chatManager.chatMap.get(rawLastId) || chatManager.chatMap.get(String(rawLastId)))
-        : null;
+    try {
+        await initConfigCache();
+        await chatManager.loadSavedChats(
+            (await import('./chat-db.js')).migrateFromLocalStorage,
+            (await import('./crypto-utils.js')).initEncryption
+        );
+        const rawLastId = safeLocalStorage.getItem('james-last-chat-id');
+        const lastChat = rawLastId != null
+            ? (chatManager.chatMap.get(Number(rawLastId)) || chatManager.chatMap.get(rawLastId) || chatManager.chatMap.get(String(rawLastId)))
+            : null;
 
-    if (lastChat) {
-        chatManager.loadChatHistory(
-            lastChat.id,
-            () => gameController.getGameState(),
-            (state) => gameController.restoreGameState(state),
-            safeLocalStorage
-        );
-    } else if (chatManager.allChats.length > 0) {
-        chatManager.loadChatHistory(
-            chatManager.allChats[0].id,
-            () => gameController.getGameState(),
-            (state) => gameController.restoreGameState(state),
-            safeLocalStorage
-        );
-    } else {
+        if (lastChat) {
+            chatManager.loadChatHistory(
+                lastChat.id,
+                () => gameController.getGameState(),
+                (state) => gameController.restoreGameState(state),
+                safeLocalStorage
+            );
+        } else if (chatManager.allChats.length > 0) {
+            chatManager.loadChatHistory(
+                chatManager.allChats[0].id,
+                () => gameController.getGameState(),
+                (state) => gameController.restoreGameState(state),
+                safeLocalStorage
+            );
+        } else {
+            chatManager.startNewChat(
+                () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice()),
+                safeLocalStorage,
+                () => gameController.getGameState(),
+                (state) => gameController.restoreGameState(state)
+            );
+        }
+    } catch (err) {
+        console.error('Initialization error during chat loading:', err);
         chatManager.startNewChat(
             () => uiManager.getWelcomeMessage(isMobileDevice(), isTVDevice()),
             safeLocalStorage,
             () => gameController.getGameState(),
             (state) => gameController.restoreGameState(state)
         );
+    } finally {
+        if (chatManager.onChatListUpdated) chatManager.onChatListUpdated();
+        window._chatsLoadedForRecovery = true;
+        if (workerController._recoveryInitDone) initRecovery();
     }
-
-    if (chatManager.onChatListUpdated) chatManager.onChatListUpdated();
-
-    window._chatsLoadedForRecovery = true;
-    if (workerController._recoveryInitDone) initRecovery();
 })();
 
 window.addEventListener('beforeunload', () => {

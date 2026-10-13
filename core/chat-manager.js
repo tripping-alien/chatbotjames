@@ -52,10 +52,10 @@ class ChatManager {
         this.persistCurrentChat(getGameStateCallback);
         this.currentChatId = chatId;
         if (safeLocalStorage) safeLocalStorage.setItem('james-last-chat-id', this.currentChatId);
-        this.chatHistory = [...chat.messages];
+        this.chatHistory = Array.isArray(chat.messages) ? [...chat.messages] : [];
         
         if (restoreGameStateCallback) {
-            restoreGameStateCallback(chat.gameState);
+            restoreGameStateCallback(chat.gameState || null);
         }
 
         if (this.onChatChanged) {

@@ -39,6 +39,12 @@ export async function initEncryption() {
         if (storedKey) {
             _cryptoKey = storedKey;
             db.close();
+            try {
+                if (!localStorage.getItem(KEY_STORAGE_KEY)) {
+                    const jwk = await crypto.subtle.exportKey('jwk', storedKey);
+                    localStorage.setItem(KEY_STORAGE_KEY, btoa(JSON.stringify(jwk)));
+                }
+            } catch (_) {}
             return _cryptoKey;
         }
 
@@ -61,11 +67,6 @@ export async function initEncryption() {
             );
             await _writeStoredKey(db, _cryptoKey);
             db.close();
-            try {
-                localStorage.removeItem(KEY_STORAGE_KEY);
-            } catch (e) {
-                console.warn('⚠️ Could not remove the legacy encryption key:', e);
-            }
             return _cryptoKey;
         }
 
@@ -78,8 +79,13 @@ export async function initEncryption() {
         _cryptoKey = key;
         await _writeStoredKey(db, key);
         db.close();
-        console.log('🔐 New AES-256-GCM encryption key generated.');
 
+        try {
+            const jwk = await crypto.subtle.exportKey('jwk', key);
+            localStorage.setItem(KEY_STORAGE_KEY, btoa(JSON.stringify(jwk)));
+        } catch (_) {}
+
+        console.log('🔐 New AES-256-GCM encryption key generated.');
         return key;
     };
     _cryptoKeyPromise = navigator.locks
