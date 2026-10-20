@@ -580,20 +580,56 @@ window.attachmentManager = attachmentManager;
 // CORE SEND LOGIC
 // ==========================================
 
+// ── Token-budget helpers ─────────────────────────────────────────────────────
+// Rough estimator: ~3.5 chars per token (English + code mix). Used on the
+// main thread to trim history BEFORE the worker counts real tokens, which
+// prevents context-window OOMs on long multi-tool conversations.
+const _CHARS_PER_TOKEN = 3.5;
+function _estTokens(text) { return Math.ceil((text || '').length / _CHARS_PER_TOKEN); }
+
+// Map a preset's param count to the tier key used in CONFIG.tiers.
+function _presetTierKey(params) {
+    if (!params || params < 0.5) return 'lite';
+    if (params < 3.0)            return 'compact';
+    if (params < 4.0)            return '3b';
+    return '4b';
+}
+
 function getMessagesWindow(messages) {
     // Single pass: partition background vs regular simultaneously.
     const background = [], regular = [];
     for (const m of messages) (m.isBackground ? background : regular).push(m);
 
-    // Slice to the window and trim any leading non-user messages.
-    let windowed = regular.length > CONFIG.ui.maxHistory
-        ? regular.slice(-CONFIG.ui.maxHistory)
+    // ── Tier-aware maxHistory ────────────────────────────────────────────────
+    // Use the active preset to pick the right history cap instead of the global
+    // CONFIG.ui.maxHistory (which is a worst-case ceiling, not a per-model cap).
+    const _activePreset = globalState.presets?.find(p => p.id === globalState.activePresetId);
+    const _tierKey      = _presetTierKey(_activePreset?.params);
+    const _tierCfg      = CONFIG.tiers[_tierKey] || CONFIG.tiers['compact'];
+    const _maxHistory   = _tierCfg.maxHistory;
+
+    // Slice to the tier-appropriate window and trim leading non-user messages.
+    let windowed = regular.length > _maxHistory
+        ? regular.slice(-_maxHistory)
         : regular;
     let start = 0;
     while (start < windowed.length && windowed[start].role !== 'user') start++;
     if (start > 0) windowed = windowed.slice(start);
 
-    // Single pass: find lastUserIdx AND drop old tool results in one loop.
+    // Re-truncate any tool results that may pre-date the 1500-char per-call cap.
+    // Stale oversized payloads (web search, fetch_page) are the main OOM cause.
+    const _MAX_TOOL_HIST_CHARS = 1500;
+    windowed = windowed.map(m => {
+        if (m.role === 'system' && typeof m.content === 'string' &&
+            m.content.startsWith('[Tool Result:') &&
+            m.content.length > _MAX_TOOL_HIST_CHARS) {
+            return { ...m, content: m.content.slice(0, _MAX_TOOL_HIST_CHARS) + '\n\u2026[truncated]' };
+        }
+        return m;
+    });
+
+    // Drop old system messages (tool results) that appear before the most
+    // recent user turn — they add tokens but rarely help the model.
     let lastUserIdx = -1;
     for (let i = windowed.length - 1; i >= 0; i--) {
         if (windowed[i].role === 'user') { lastUserIdx = i; break; }
@@ -605,32 +641,60 @@ function getMessagesWindow(messages) {
     // ── Role-alternation sanitiser ───────────────────────────────────────────
     // Some small models (1B/1.5B) strictly require user/assistant alternation.
     // Merge consecutive same-role messages so the runtime never rejects them.
-    const sanitized = [];
+    let sanitized = [];
     for (const msg of windowed) {
         const last = sanitized[sanitized.length - 1];
         if (last && last.role === msg.role) {
-            // Merge into the previous message with a separator
             last.content += '\n\n' + msg.content;
         } else {
             sanitized.push({ ...msg });
         }
     }
 
+    // ── Build prefix (notes + datetime) ─────────────────────────────────────
+    // Build this BEFORE the token-budget trim so we can account for its cost.
     const now = new Date();
     const dateTimeStr = now.toLocaleString(undefined, {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
     });
-
-    // Combine all prefix context (notes + datetime) into ONE system block
-    // so the worker's own system prompt + these become exactly 2 system msgs max.
     let prefixParts = [`[Current date & time]\n${dateTimeStr}`];
     if (chatManager.userNotes && chatManager.userNotes.length > 0) {
         const notesText = chatManager.userNotes.map(n => `- ${n.text}`).join('\n');
         prefixParts.unshift(`[System Memory: These are notes about the user that you have previously saved. Use them to answer questions.]\n${notesText}`);
     }
-    const prefix = [{ role: 'system', content: prefixParts.join('\n\n'), isBackground: true }];
+    const prefixContent = prefixParts.join('\n\n');
 
+    // ── Token-budget trim ────────────────────────────────────────────────────
+    // Compute how many tokens are left for history after reserving space for:
+    //   • the worker's system prompt (tier-specific size)
+    //   • the prefix block we just built
+    //   • the generation budget (max new tokens)
+    //   • 128-token overhead for chat-template tags (BOS, role markers, etc.)
+    const _prefixTokens  = _estTokens(prefixContent);
+    const _historyBudget = _tierCfg.contextLimit
+                         - _tierCfg.genTokens
+                         - _tierCfg.sysPromptEst
+                         - _prefixTokens
+                         - 128; // template overhead
+
+    if (_historyBudget > 0 && sanitized.length > 0) {
+        // Walk newest → oldest, keeping messages that fit within the budget.
+        // Always keep at least the last user message so the model has a prompt.
+        let _used = 0;
+        const _kept = [];
+        for (let i = sanitized.length - 1; i >= 0; i--) {
+            const _t = _estTokens(sanitized[i].content);
+            if (_used + _t > _historyBudget && _kept.length > 0) break;
+            _kept.unshift(sanitized[i]);
+            _used += _t;
+        }
+        sanitized = _kept;
+    }
+
+    // Combine all prefix context (notes + datetime) into ONE system block
+    // so the worker's own system prompt + these become exactly 2 system msgs max.
+    const prefix = [{ role: 'system', content: prefixContent, isBackground: true }];
     return [...prefix, ...sanitized, ...background];
 }
 

@@ -5,6 +5,14 @@ import { getPromptTier, buildSystemPrompt } from './worker-prompt-tiers.js';
 import { isMobileDevice, isTVDevice, detectWasmCapabilities, detectGpu, getDeviceRamGB } from './worker-device-detect.js';
 import { MODEL_PRESETS, rankAutoPresets } from './worker-presets.js';
 
+// Resolve a preset's param count to the CONFIG.tiers key (mirrors app.js _presetTierKey).
+function _workerTierKey(params) {
+    if (!params || params < 0.5) return 'lite';
+    if (params < 3.0)            return 'compact';
+    if (params < 4.0)            return '3b';
+    return '4b';
+}
+
 // --- CONFIGURATION ---
 env.allowLocalModels = false;
 env.useBrowserCache = true;
@@ -239,33 +247,18 @@ self.onmessage = async (e) => {
             const promptTokenCount = promptTokens.input_ids.data.length;
             console.log(`[worker] prompt tier=${promptTier} tokens=${promptTokenCount}`);
 
-            let maxTokens = CONFIG.worker.maxTokens;
-            let temp = CONFIG.worker.temperature;
+            // ── Tier-aware generation budget ───────────────────────────────────────────────
+            // All budget constants live in CONFIG.tiers (single source of truth
+            // shared with app.js getMessagesWindow), so we only define them once.
+            const _tierKey  = _workerTierKey(activePreset?.params);
+            const _tierCfg  = CONFIG.tiers[_tierKey] || CONFIG.tiers['compact'];
+            let maxTokens   = _tierCfg.genTokens;
+            let temp        = _tierCfg.temperature;
+            const CONTEXT_LIMIT = _tierCfg.contextLimit;
 
-            // Token budget per model tier — keep these conservative.
-            // The 3B model now gets a larger system prompt (tool examples etc.) plus
-            // tool-result history on follow-up calls, so capping at 1280 prevents OOM.
-            if (activePreset) {
-                if (activePreset.params < 1.0) {
-                    maxTokens = 512;
-                    temp = 0.8;
-                } else if (activePreset.params >= 4.0) {
-                    maxTokens = 1536;  // Gemma 4B / Phi-3.5+ — larger context window available
-                    temp = 0.7;
-                } else if (activePreset.params >= 3.0) {
-                    maxTokens = 1280;  // Llama 3.2 3B — conservative to avoid OOM after tool calls
-                    temp = 0.7;
-                }
-            }
-
-            // Safety guard: if the prompt alone is within 512 tokens of our
-            // generation budget, shrink maxTokens to leave at least 256 free,
-            // or bail out with a friendly error rather than crashing the GPU.
-            // Context limits tier by model size — larger models have bigger context windows
-            // but also bigger system prompts, so we budget accordingly.
-            const CONTEXT_LIMIT = activePreset?.params >= 4.0 ? 8192
-                                 : activePreset?.params >= 3.0 ? 4096
-                                 : 2048;
+            // Safety guard: if the prompt alone nearly fills the context, shrink
+            // maxTokens to leave at least 256 tokens free, or surface a friendly
+            // error instead of crashing the GPU / WASM runtime.
             if (promptTokenCount + maxTokens > CONTEXT_LIMIT) {
                 const available = CONTEXT_LIMIT - promptTokenCount;
                 if (available < 256) {
