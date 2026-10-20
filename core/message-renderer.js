@@ -230,7 +230,11 @@ export function updateLiveBubble(text, targetId, force = false) {
     }
 
     if (text === '...') {
-        bubble.innerHTML = '<div class="typing-indicator"><span class="thinking-sandclock" role="img" aria-label="Thinking">⏳</span></div>';
+        bubble.innerHTML =
+            '<div class="typing-indicator">' +
+            '<div class="thinking-sandclock" aria-label="Thinking" role="status"></div>' +
+            '<span class="thinking-label">Thinking…</span>' +
+            '</div>';
         chatLog.scrollTop = chatLog.scrollHeight;
         return;
     }
@@ -294,6 +298,29 @@ export function updateLiveBubbleAppend(newChars, targetId) {
     // Only force a scroll if the user is already near the bottom (avoids forced layout on every tick)
     const distFromBottom = chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight;
     if (distFromBottom < 120) chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+/**
+ * Switch the spinner inside an existing thinking bubble between phases
+ * WITHOUT destroying the bubble or creating a new one.
+ *
+ * @param {number|string} targetId
+ * @param {'thinking'|'tool'} phase  - 'thinking' = purple arc, 'tool' = amber arc
+ * @param {string} [label]           - optional label text override
+ */
+export function setThinkingBubblePhase(targetId, phase, label) {
+    const bubble = document.getElementById(`bubble-${targetId}`);
+    if (!bubble) return;
+    const spinner = bubble.querySelector('.thinking-sandclock');
+    const labelEl = bubble.querySelector('.thinking-label');
+    if (!spinner) return;
+    if (phase === 'tool') {
+        spinner.classList.add('thinking-sandclock--tool');
+        if (labelEl) labelEl.textContent = label || 'Running tool…';
+    } else {
+        spinner.classList.remove('thinking-sandclock--tool');
+        if (labelEl) labelEl.textContent = label || 'Thinking…';
+    }
 }
 
 export function removeThinkingBubble(targetId = null) {

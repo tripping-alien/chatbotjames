@@ -32,6 +32,7 @@ import {
     appendUserMessage,
     updateLiveBubble,
     removeThinkingBubble,
+    setThinkingBubblePhase,
     appendErrorToChat,
     renderChatLog as coreRender
 } from './message-renderer.js';
@@ -462,7 +463,10 @@ workerController.onToolCalls = (message, targetId, chatId) => {
     import('./stream-manager.js').then(sm => {
         sm.flushStreamQueue(targetId);
         if (chatId === chatManager.currentChatId) {
-            removeThinkingBubble(targetId);
+            // Switch the spinner to amber "tool" phase instead of destroying it.
+            // This keeps a visible indicator alive while the tool RPC is in flight
+            // (web search, Python, etc. can take several seconds).
+            setThinkingBubblePhase(targetId, 'tool');
         }
         handleToolCalls(message, targetId, chatId);
     });
@@ -1262,9 +1266,18 @@ async function handleToolCalls(message, targetId, originChatId) {
 
         if (isActiveChat) {
             uiManager.updateStatusText('THINKING...');
-            const nextTargetId = getNextTargetId();
-            workerController.postQuery(getMessagesWindow(targetHistory), nextTargetId, originChatId);
-            updateLiveBubble('...', nextTargetId);
+            // Reuse the same targetId so the spinner bubble stays in place
+            // and we avoid a visible gap between tool result and next AI reply.
+            // If the bubble was cleared (e.g. by renderChatLog), recreate it.
+            const bubbleExists = !!document.getElementById(`bubble-${targetId}`);
+            if (bubbleExists) {
+                // Switch amber → purple and reset label
+                setThinkingBubblePhase(targetId, 'thinking');
+            } else {
+                // Bubble was removed (chat switch / renderChatLog) — recreate
+                updateLiveBubble('...', targetId);
+            }
+            workerController.postQuery(getMessagesWindow(targetHistory), targetId, originChatId);
         } else {
             const nextTargetId = Date.now().toString(36);
             workerController.postQuery(getMessagesWindow(targetHistory), nextTargetId, originChatId);
