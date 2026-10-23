@@ -250,15 +250,22 @@ _reset_streams()
         try {
             resultProxy = await pyodide.runPythonAsync(code);
         } catch (pyErr) {
-            // Prefer stderr (contains the Python traceback) over the JS error.
+            // Prefer stderr (contains the Python traceback) over the JS error,
+            // while preserving any stdout produced before the exception occurred.
             let stderr = '';
+            let stdout = '';
             try {
                 stderr = await pyodide.runPythonAsync('sys.stderr.getvalue()');
             } catch (_) { /* ignore */ }
+            try {
+                stdout = await pyodide.runPythonAsync('sys.stdout.getvalue()');
+            } catch (_) { /* ignore */ }
+            const errorDetails = [stdout.trim(), (stderr || pyErr.message).trim()].filter(Boolean).join('\n');
             self.postMessage({
                 status: 'error',
                 execId,
-                error: (stderr || pyErr.message).trim(),
+                error: errorDetails || 'Python execution failed.',
+                stdout: stdout.trim()
             });
             return;
         }
