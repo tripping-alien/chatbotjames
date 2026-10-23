@@ -15,6 +15,7 @@ const NETWORK_FIRST = [
     '/core/stream-manager.js',
     '/core/message-renderer.js',
     '/core/model-panel.js',
+    '/games/chess.js',
     '/games/game-logic.js',
     '/games/game-ui.js',
     '/games/game-controller.js',

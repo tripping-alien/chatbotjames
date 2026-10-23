@@ -14,12 +14,12 @@ function _fromNow(timestamp) {
 
 import { globalState } from './global-state.js';
 import { chatManager } from './chat-manager.js';
-import { gameController } from '../games/game-controller.js?v=5';
+import { gameController } from '../games/game-controller.js';
 import { attachmentManager } from './attachment-manager.js';
 import { uiManager } from './ui-manager.js';
 import { workerController, hasToolCalls } from './worker-controller.js';
 
-import { smallTalk } from '../nlp/smalltalk.js?v=4';
+import { smallTalk } from '../nlp/smalltalk.js';
 
 import { CONFIG } from './config.js';
 import { safeLocalStorage, dbSaveNote, dbDeleteNote, dbClearNotes, initConfigCache } from './chat-db.js';
