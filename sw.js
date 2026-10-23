@@ -35,6 +35,8 @@ const NETWORK_FIRST = [
     '/tools/tools-bridge.js',
     '/tools/tools-search.js',
     '/tools/tool-router.js',
+    '/tools/tool-router-bundle.js',
+    '/pages/tests.html',
     '/workers/python-worker.js',
     '/core/orama.js',
     '/nlp/smalltalk.js',
