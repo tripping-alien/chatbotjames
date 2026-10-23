@@ -190,44 +190,59 @@ async function simulateCannedResponse(text) {
         window.workerController.activeGenerations.set(chatId, targetId);
     }
 
-    const sm = await import('./stream-manager.js');
-
-    updateLiveBubble('...', targetId);
-    playReceiveSound();
+    if (chatManager.currentChatId === chatId) {
+        updateLiveBubble('...', targetId);
+        playReceiveSound();
+    }
 
     // Typewriter effect
     let accumulated = '';
     for (let i = 0; i < text.length; i++) {
         if (!globalState.isGeneratingUI || !_cannedGenActive) {
-            sm.cancelStream(targetId);
+            cancelStream(targetId);
             removeThinkingBubble(targetId);
             if (window.workerController) {
                 window.workerController.activeGenerations.delete(chatId);
             }
+            _cannedGenActive = false;
             return;
         }
         accumulated += text[i];
-        sm.queueStreamText(targetId, accumulated, { updateDom: true });
+        const isCurrentChat = chatManager.currentChatId === chatId;
+        queueStreamText(targetId, accumulated, { updateDom: isCurrentChat });
         await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
     }
 
     if (!globalState.isGeneratingUI || !_cannedGenActive) {
-        sm.cancelStream(targetId);
+        cancelStream(targetId);
         removeThinkingBubble(targetId);
         if (window.workerController) {
             window.workerController.activeGenerations.delete(chatId);
         }
+        _cannedGenActive = false;
         return;
     }
 
-    sm.flushStreamQueue(targetId);
-    chatManager.chatHistory.push({ role: 'assistant', content: text });
-    chatManager.persistCurrentChat(() => gameController.getGameState());
+    flushStreamQueue(targetId);
 
+    if (chatManager.currentChatId === chatId) {
+        chatManager.chatHistory.push({ role: 'assistant', content: text });
+        chatManager.persistCurrentChat(() => gameController.getGameState());
+        uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
+        updateStatusLight('idle');
+        uiManager.updateStatusText('READY');
+    } else {
+        const bgChat = chatManager.chatMap.get(chatId);
+        if (bgChat) {
+            bgChat.messages.push({ role: 'assistant', content: text });
+            import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
+        }
+    }
+
+    if (window.workerController) {
+        window.workerController.activeGenerations.delete(chatId);
+    }
     _cannedGenActive = false;
-    uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
-    updateStatusLight('idle');
-    uiManager.updateStatusText('READY');
 }
 
 // ── Bug #3 guard: tracks consecutive invalid-move retries per background chat.
