@@ -70,24 +70,43 @@
     <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
     <link rel="stylesheet" href="../style.css">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             background-color: transparent;
             color: var(--text-primary);
-            overflow: auto;
+            overflow-x: hidden;
+            overflow-y: auto;
             height: auto;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
         }
 
         nav {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(6, 9, 19, 0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(6, 9, 19, 0.88);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            width: 100%;
+        }
+
+        .nav-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 2rem;
         }
 
         .nav-brand {
@@ -95,6 +114,16 @@
             text-decoration: none;
             font-weight: 700;
             letter-spacing: 0.14em;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.2s ease, text-shadow 0.2s ease;
+        }
+
+        .nav-brand:hover {
+            color: var(--primary-blue);
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.4);
         }
 
         .nav-links {
@@ -116,17 +145,28 @@
             color: var(--primary-blue);
         }
 
+        .docs-layout {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            min-height: calc(100vh - 76px);
+            position: relative;
+        }
+
         aside {
-            width: 260px;
+            width: 280px;
+            flex-shrink: 0;
             position: sticky;
             top: 76px;
             align-self: flex-start;
             max-height: calc(100vh - 76px);
             overflow-y: auto;
-            padding: 2rem 1.5rem;
+            padding: 2.5rem 1.75rem;
             border-right: 1px solid var(--border);
-            background: rgba(6, 9, 19, 0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(6, 9, 19, 0.7);
+            backdrop-filter: blur(12px);
+            scrollbar-width: thin;
         }
 
         .sidebar-section {
@@ -135,40 +175,62 @@
 
         .sidebar-section-label {
             display: block;
-            margin-bottom: 0.75rem;
-            font-size: 0.68rem;
-            letter-spacing: 0.35em;
+            margin-bottom: 0.85rem;
+            font-size: 0.7rem;
+            letter-spacing: 0.25em;
             text-transform: uppercase;
-            color: var(--text-secondary);
+            color: var(--primary-blue);
+            font-weight: 700;
+            opacity: 0.85;
         }
 
         .sidebar-link {
             display: block;
             color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.84rem;
-            line-height: 1.6;
-            transition: color 0.15s;
+            font-size: 0.86rem;
+            line-height: 1.7;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border-left: 2px solid transparent;
+            transition: all 0.2s ease;
         }
 
-        .sidebar-link:hover,
+        .sidebar-link:hover {
+            color: var(--primary-purple);
+            background: rgba(168, 85, 247, 0.08);
+            border-left-color: var(--primary-purple);
+            padding-left: 0.75rem;
+        }
+
         .sidebar-link.active {
             color: var(--primary-purple);
+            font-weight: 700;
+            background: rgba(168, 85, 247, 0.12);
+            border-left-color: var(--primary-purple);
+            padding-left: 0.75rem;
         }
 
         .sidebar-link.sub {
-            padding-left: 1rem;
-            font-size: 0.8rem;
+            padding-left: 1.25rem;
+            font-size: 0.82rem;
+            opacity: 0.9;
+        }
+
+        .sidebar-link.sub:hover,
+        .sidebar-link.sub.active {
+            padding-left: 1.5rem;
         }
 
         main {
             flex: 1;
-            padding: 3rem 3rem 4rem;
-            max-width: 880px;
+            min-width: 0;
+            padding: 3rem 3.5rem 5rem;
+            max-width: 1040px;
         }
 
         .page-header {
-            margin-bottom: 3rem;
+            margin-bottom: 3.5rem;
             border-bottom: 1px solid var(--border);
             padding-bottom: 2rem;
         }
@@ -195,17 +257,40 @@
         }
 
         .doc-section {
-            margin-bottom: 3.5rem;
-            scroll-margin-top: 90px;
+            margin-bottom: 3.75rem;
+            scroll-margin-top: 100px;
         }
 
         .doc-section h2 {
-            font-size: 1.1rem;
+            font-size: 1.35rem;
             font-weight: 700;
             color: var(--primary-purple);
             letter-spacing: 0.08em;
             margin-bottom: 1.25rem;
             position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .doc-section h2::before {
+            content: "//";
+            color: var(--primary-blue);
+            opacity: 0.7;
+            font-size: 1.1rem;
+        }
+
+        .doc-section h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            letter-spacing: 0.05em;
+            margin: 2.25rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed rgba(59, 130, 246, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .doc-section p,
@@ -218,69 +303,142 @@
         .doc-section ul,
         .doc-section ol {
             padding-left: 1.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .doc-section li {
+            margin-bottom: 0.4rem;
         }
 
         pre {
-            background: var(--assistant-bubble);
+            background: rgba(13, 17, 23, 0.85);
             border: 1px solid var(--border);
-            padding: 1.2rem 1.4rem;
+            padding: 1.1rem 1.3rem;
             border-left: 3px solid var(--primary-blue);
+            border-radius: 6px;
             color: var(--primary-blue);
             font-family: inherit;
             font-size: 0.85rem;
             overflow-x: auto;
             margin-bottom: 1.25rem;
+            line-height: 1.5;
         }
 
         code {
-            background: rgba(59, 130, 246, 0.1);
-            padding: 0.15rem 0.4rem;
-            border-radius: 6px;
+            background: rgba(59, 130, 246, 0.12);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
             color: var(--primary-blue);
             font-family: monospace;
+            font-size: 0.9em;
         }
 
         .callout {
             border-left: 3px solid var(--primary-blue);
-            background: rgba(59, 130, 246, 0.08);
-            padding: 1rem 1.2rem;
-            margin: 1rem 0 1.5rem;
+            background: rgba(59, 130, 246, 0.07);
+            border-radius: 0 6px 6px 0;
+            padding: 1.1rem 1.3rem;
+            margin: 1.5rem 0;
             color: var(--text-primary);
+            line-height: 1.75;
         }
 
         .callout strong {
             color: var(--primary-purple);
         }
 
+        .doc-visual {
+            margin: 1.5rem 0 2rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(13, 17, 23, 0.9);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+        }
+
+        .doc-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .caption {
+            padding: 0.65rem 1.1rem;
+            font-size: 0.72rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            background: rgba(6, 9, 19, 0.95);
+            border-top: 1px solid var(--border);
+            margin: 0;
+            font-weight: 600;
+        }
+
         .tool-grid {
             display: grid;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
         }
 
         .tool-card {
             background: var(--assistant-bubble);
             border: 1px solid var(--border);
-            padding: 1.3rem;
-            display: grid;
-            gap: 0.75rem;
+            border-radius: 8px;
+            padding: 1.25rem 1.4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-purple);
+            box-shadow: 0 6px 20px rgba(0, 243, 255, 0.08);
         }
 
         .tool-name {
             font-weight: 700;
             color: var(--primary-purple);
+            font-size: 1rem;
+            letter-spacing: 0.05em;
             margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .tool-name::before {
+            content: "›";
+            color: var(--primary-blue);
+            font-weight: bold;
+        }
+
+        .tool-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .tool-body p {
-            margin-bottom: 0.5rem;
             color: var(--text-secondary);
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .tool-body pre {
+            margin-top: auto;
+            margin-bottom: 0.25rem;
+            font-size: 0.8rem;
+            padding: 0.75rem 1rem;
         }
 
         .arch-diagram {
             background: var(--assistant-bubble);
             border: 1px solid var(--border);
+            border-radius: 8px;
             padding: 1.8rem;
             color: var(--text-secondary);
             line-height: 1.9;
@@ -294,13 +452,65 @@
             font-weight: 700;
         }
 
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin: 1.5rem 0 2rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--assistant-bubble);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(13, 17, 23, 0.95);
+            color: var(--primary-blue);
+            font-weight: 600;
+            padding: 1rem 1.25rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 0.9rem 1.25rem;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.45);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(59, 130, 246, 0.04);
+        }
+
         .page-footer {
             border-top: 1px solid var(--border);
-            padding: 1.5rem 2rem;
+            padding: 1.75rem 2rem;
+            width: 100%;
+            background: rgba(6, 9, 19, 0.88);
+        }
+
+        .footer-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
             display: flex;
             justify-content: space-between;
+            align-items: center;
             gap: 1rem;
             color: var(--text-secondary);
+            font-size: 0.85rem;
             flex-wrap: wrap;
         }
 
@@ -313,8 +523,19 @@
             color: var(--primary-blue);
         }
 
-        @media (max-width: 960px) {
-            body {
+        @media (max-width: 1100px) {
+            aside {
+                width: 240px;
+                padding: 2rem 1.25rem;
+            }
+
+            main {
+                padding: 2.5rem 2.25rem 4rem;
+            }
+        }
+
+        @media (max-width: 860px) {
+            .docs-layout {
                 display: block;
             }
 
@@ -323,7 +544,16 @@
             }
 
             main {
-                padding: 2rem 1.5rem 4rem;
+                padding: 2rem 1.25rem 4rem;
+                max-width: 100%;
+            }
+
+            nav, .page-footer {
+                padding: 1rem 1.25rem;
+            }
+
+            .tool-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -331,15 +561,17 @@
 
 <body>
     <nav>
-        <a class="nav-brand" href="../index.html">JAMES</a>
-        <div class="nav-links">
-            <a href="../index.html">Terminal</a>
-            <a href="./about.html">About</a>
-            <a href="./docs.html" class="active">Docs</a>
-            <a href="./faq.html">FAQ</a>
+        <div class="nav-inner">
+            <a class="nav-brand" href="../index.html">JAMES</a>
+            <div class="nav-links">
+                <a href="../index.html">Terminal</a>
+                <a href="./about.html">About</a>
+                <a href="./docs.html" class="active">Docs</a>
+                <a href="./faq.html">FAQ</a>
+            </div>
         </div>
     </nav>
-    <div style="display:flex; gap:0; min-height:calc(100vh - 76px);">
+    <div class="docs-layout">
         <aside>
             <div class="sidebar-section">
                 <p class="sidebar-section-label">Getting Started</p>
@@ -726,19 +958,23 @@ move: 5,2 to 4,3  &lt;!-- Checkers row,col --&gt;</pre>
                 <div class="callout"><strong>Chess:</strong> Full standard rules via chess.js — en passant, castling, auto-queen promotion, check &amp; checkmate. Click a piece to see its legal moves highlighted.<br><br><strong>Checkers (English draughts):</strong> Forced captures, multi-jump sequences, king promotion (♛), and game-over detection with a winner banner.</div>
             </section>
             <section class="doc-section" id="architecture">
-                <h2>Architecture</h2>
+                <h2>Architecture &amp; Data Flow</h2>
+                <div class="doc-visual">
+                    <img src="../assets/docs-architecture.jpg" alt="JAMES Technical Architecture Blueprint & Pipeline" class="doc-image">
+                    <p class="caption">// FIG 1.0: HIGH-PERFORMANCE CLIENT-SIDE INFERENCE &amp; DATA PIPELINE</p>
+                </div>
                 <div class="arch-diagram">
                     <strong>Browser Main Thread</strong>
-                    <br>&rarr; app.js (UI & State)
+                    <br>&rarr; app.js (UI &amp; State)
                     <br>&rarr; Alpine.js (Declarative UI State Management)
-                    <br>&rarr; tools/ (Modular Tool Routing, Maps & Rules)
-                    <br><br><strong>Web Worker (worker.js & worker-*.js)</strong>
-                    <br>&rarr; Inference, Prompts & Hardware Detection
+                    <br>&rarr; tools/ (Modular Tool Routing, Maps &amp; Rules)
+                    <br><br><strong>Web Worker (worker.js &amp; worker-*.js)</strong>
+                    <br>&rarr; Inference, Prompts &amp; Hardware Detection
                     <br>&rarr; Transformers.js (WebGPU / WASM)
-                    <br>&rarr; dayjs (Timezone & Date Logic)
-                    <br><br><strong>Storage & Rendering</strong>
+                    <br>&rarr; dayjs (Timezone &amp; Date Logic)
+                    <br><br><strong>Storage &amp; Rendering</strong>
                     <br>&rarr; chat-db.js (IndexedDB via `idb`)
-                    <br>&rarr; message-renderer.js (Markdown via `marked` & `highlight.js`)
+                    <br>&rarr; message-renderer.js (Markdown via `marked` &amp; `highlight.js`)
                 </div>
                 <p>The application is modularized for efficiency: the worker layer (split into multiple specialized <code>worker-*.js</code> modules) owns inference, fast heuristic handlers (like Smalltalk), date/time logic (via <code>dayjs</code>), and robust cross-platform hardware detection. The main thread owns the UI, the Web Audio API sound engine, the smart Desktop Notifications engine, the modular tool routing system, rendering (enhanced by <code>highlight.js</code>), and unified storage (powered by <code>idb</code>). All dependencies are imported directly in the browser via ESM CDNs, removing the need for a complex build step. The frontend architecture is 100% Vanilla JS, optimized for performance without framework overhead.
                 </p>
@@ -747,42 +983,48 @@ move: 5,2 to 4,3  &lt;!-- Checkers row,col --&gt;</pre>
                 <h2>Privacy Model</h2>
                 <p>JAMES is designed so no conversation data leaves your browser unless you explicitly request external
                     information via tools.</p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Where it lives</th>
-                            <th>Network exposure</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Conversation messages</td>
-                            <td>IndexedDB</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td>Session metadata</td>
-                            <td>IndexedDB</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td>Model weights</td>
-                            <td>Browser cache</td>
-                            <td>One-time download</td>
-                        </tr>
-                        <tr>
-                            <td>Static assets</td>
-                            <td>Service Worker cache</td>
-                            <td>One-time download</td>
-                        </tr>
-                        <tr>
-                            <td>Inference compute</td>
-                            <td>Web Worker</td>
-                            <td>None</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="doc-visual">
+                    <img src="../assets/privacy-shield.jpg" alt="JAMES 100% Client-Side Privacy Shield Architecture" class="doc-image">
+                    <p class="caption">// FIG 2.0: 100% AIR-GAPPED ISOLATION &amp; ZERO-LEAK TELEMETRY GUARANTEE</p>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Where it lives</th>
+                                <th>Network exposure</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Conversation messages</td>
+                                <td>IndexedDB</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td>Session metadata</td>
+                                <td>IndexedDB</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td>Model weights</td>
+                                <td>Browser cache</td>
+                                <td>One-time download</td>
+                            </tr>
+                            <tr>
+                                <td>Static assets</td>
+                                <td>Service Worker cache</td>
+                                <td>One-time download</td>
+                            </tr>
+                            <tr>
+                                <td>Inference compute</td>
+                                <td>Web Worker</td>
+                                <td>None</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
                 <div class="callout"><strong>Delete your data:</strong> clear site data to remove stored threads and
                     cached weights.</div>
             </section>
@@ -800,9 +1042,11 @@ move: 5,2 to 4,3  &lt;!-- Checkers row,col --&gt;</pre>
         </main>
     </div>
     <footer class="page-footer">
-        <span>JAMES // Genesis</span>
-        <span>By <a href="https://github.com/tripping-alien" target="_blank" rel="noopener">Andrey Lopukhov</a></span>
-        <span><a href="./about.html">About</a> · <a href="../index.html">Terminal</a> · MIT License</span>
+        <div class="footer-inner">
+            <span>JAMES // Genesis</span>
+            <span>By <a href="https://github.com/tripping-alien" target="_blank" rel="noopener">Andrey Lopukhov</a></span>
+            <span><a href="./about.html">About</a> · <a href="../index.html">Terminal</a> · MIT License</span>
+        </div>
     </footer>
     <script>
         const sections = document.querySelectorAll('.doc-section');
