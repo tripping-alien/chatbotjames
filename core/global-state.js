@@ -8,6 +8,7 @@ class GlobalState {
         this.deviceRamGB = 4;
         this.cannedGenId = 0;
         this.pwaDeferredPrompt = null;
+        this.wasmCaps = null;
     }
 }
 

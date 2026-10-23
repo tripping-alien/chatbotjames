@@ -578,6 +578,7 @@
                 <a class="sidebar-link active" href="#overview">Overview</a>
                 <a class="sidebar-link" href="#loading">Model Loading</a>
                 <a class="sidebar-link" href="#backends">Backends</a>
+                <a class="sidebar-link" href="#hardware">Hardware &amp; WASM</a>
             </div>
             <div class="sidebar-section">
                 <p class="sidebar-section-label">Using JAMES</p>
@@ -660,6 +661,21 @@
   SmolLM2 1.7B   &mdash; ~950 MB</pre>
                 <div class="callout">You can manually pick any model via the <strong>&#9881;&#65039; Model
                         Settings</strong> panel at the top-right of the terminal.</div>
+            </section>
+            <section class="doc-section" id="hardware">
+                <h2>Hardware &amp; WASM Diagnostics</h2>
+                <p>JAMES automatically audits your device capabilities during initialization to pick optimal execution presets and prevent memory crashes:</p>
+                <ul>
+                    <li><strong>WebAssembly Memory64 Detection:</strong> Probes runtime support for 64-bit linear memory addresses (Wasm memory64). When present, JAMES expands the CPU WASM memory budget from 40% to 60% of device RAM, enabling larger context windows and smoother CPU inference.</li>
+                    <li><strong>SIMD &amp; Multithreading:</strong> Probes fixed-width 128-bit SIMD, SharedArrayBuffer threads, bulk memory, multi-value returns, native exceptions, and Wasm GC.</li>
+                    <li><strong>Cross-Browser GPU Normalization:</strong>
+                        <ul>
+                            <li><strong>Edge &amp; Chrome:</strong> ANGLE abstraction layers frequently report vendor strings as <code>Google Inc. (ANGLE ...)</code>. JAMES parses adapter device and architecture fields to isolate the underlying discrete or integrated silicon (NVIDIA, AMD, Intel, Apple).</li>
+                            <li><strong>Firefox:</strong> Privacy protections often mask GPU vendor and architecture strings. JAMES probes WebGL renderer information and adapter limits (<code>maxBufferSize</code> and <code>maxStorageBufferBindingSize</code>) to determine device class without compromising fingerprinting resistance.</li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="callout">You can inspect your system's live capabilities anytime by opening <strong>&#9881;&#65039; Model Settings</strong> and expanding <strong>&#128269; Hardware &amp; WebAssembly Diagnostics</strong>.</div>
             </section>
             <section class="doc-section" id="threads">
                 <h2>Threads</h2>

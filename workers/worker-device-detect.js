@@ -128,7 +128,7 @@ export async function detectGpu() {
 
     let normalizedVendor = vendor;
     const vendorLower = vendor.toLowerCase();
-    if (vendorLower === 'google' || vendorLower.includes('angle') || vendorLower === '') {
+    if (vendorLower.includes('google') || vendorLower.includes('angle') || vendorLower === '') {
         const combined = (description + ' ' + device + ' ' + architecture).toLowerCase();
         if (combined.includes('nvidia')) normalizedVendor = 'nvidia';
         else if (combined.includes('amd') || combined.includes('radeon')) normalizedVendor = 'amd';

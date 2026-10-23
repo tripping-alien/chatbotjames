@@ -1101,7 +1101,116 @@ a:hover {
     color: #f87171;
     background: rgba(239, 68, 68, 0.15);
 }
- 
+
+/* ─── Hardware Diagnostics Details ─────────────────────────────────────────── */
+.hw-details {
+    margin: 4px 24px 12px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: border-color var(--transition-fast);
+}
+
+.hw-details[open] {
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.hw-summary {
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    outline: none;
+    transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.hw-summary:hover {
+    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.hw-summary::-webkit-details-marker {
+    display: none;
+}
+
+.hw-body {
+    padding: 6px 14px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hw-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.hw-caps-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.hw-cap {
+    font-size: 0.72rem;
+    font-family: var(--font-mono, monospace);
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+}
+
+.hw-cap.hw-cap-ok {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #34d399;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);
+}
+
+.hw-kv-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hw-kv {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    padding: 2px 0;
+}
+
+.hw-k {
+    color: var(--text-secondary);
+}
+
+.hw-v {
+    font-family: var(--font-mono, monospace);
+    font-weight: 600;
+    color: var(--text-color);
+    max-width: 60%;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .model-panel-section-title {
     font-size: 0.8rem;
     font-weight: 700;

@@ -1,6 +1,7 @@
 // ─── Model Selection Panel ────────────────────────────────────────────────────
 
 let _gpuInfo = null;
+let _wasmCaps = null;
 let _presets = [];
 let _activePresetId = null;
 let _selectedPresetId = null;
@@ -52,6 +53,7 @@ export function closeModelPanel() {
 
 export function updateModelInfo(data) {
     if (data.gpuInfo !== undefined) _gpuInfo = data.gpuInfo;
+    if (data.wasmCaps !== undefined) _wasmCaps = data.wasmCaps;
     if (data.presets !== undefined) _presets = data.presets;
     if (data.ramGB !== undefined) _deviceRamGB = data.ramGB;
     if (data.activePresetId !== undefined) _activePresetId = data.activePresetId;
@@ -96,6 +98,8 @@ export function renderModelPanel() {
         const ramStr = `Device RAM: ~${_deviceRamGB} GB`;
         if (detail) detail.textContent = `${reason}\n${vendorStr}${bufStr} · ${ramStr}`;
     }
+
+    renderHardwareDetails();
 
     const list = document.getElementById('modelPresetList');
     if (!list || !_presets.length) return;
@@ -180,5 +184,50 @@ export function selectPreset(id) {
 export function refreshPresetCards() {
     if (document.getElementById('modelPresetList')?.children.length > 0) {
         renderModelPanel();
+    }
+}
+
+export function renderHardwareDetails() {
+    const hwDetails = document.getElementById('hwDetails');
+    if (!hwDetails) return;
+
+    if (_wasmCaps) {
+        const capMap = {
+            capMem64: _wasmCaps.memory64,
+            capSimd: _wasmCaps.simd,
+            capThreads: _wasmCaps.threads,
+            capBulk: _wasmCaps.bulkMemory,
+            capMulti: _wasmCaps.multiValue,
+            capExceptions: _wasmCaps.exceptions,
+            capGc: _wasmCaps.gc
+        };
+        for (const [id, ok] of Object.entries(capMap)) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.toggle('hw-cap-ok', !!ok);
+                el.setAttribute('aria-label', `${el.textContent}: ${ok ? 'Supported' : 'Not supported'}`);
+            }
+        }
+    }
+
+    if (_gpuInfo) {
+        const vEl = document.getElementById('hwGpuVendor');
+        const aEl = document.getElementById('hwGpuArch');
+        const dEl = document.getElementById('hwGpuDevice');
+        const bEl = document.getElementById('hwGpuBuffer');
+        const sEl = document.getElementById('hwGpuStorage');
+
+        if (vEl) vEl.textContent = _gpuInfo.vendor || (_gpuInfo.hasGpu ? 'Generic / Hidden' : 'None');
+        if (aEl) aEl.textContent = _gpuInfo.architecture || '—';
+        const devOrDesc = _gpuInfo.device || _gpuInfo.description;
+        if (dEl) dEl.textContent = devOrDesc || '—';
+        if (bEl) bEl.textContent = _gpuInfo.maxBufferMB ? `${_gpuInfo.maxBufferMB.toFixed(0)} MB` : '—';
+        if (sEl) sEl.textContent = _gpuInfo.maxStorageMB ? `${_gpuInfo.maxStorageMB.toFixed(0)} MB` : '—';
+
+        const b = _gpuInfo.browserInfo;
+        const hwB = document.getElementById('hwBrowser');
+        const hwE = document.getElementById('hwEngine');
+        if (hwB && b) hwB.textContent = b.browser !== 'Unknown' ? `${b.browser} ${b.version}`.trim() : '—';
+        if (hwE && b) hwE.textContent = b.engine !== 'Unknown' ? b.engine : '—';
     }
 }

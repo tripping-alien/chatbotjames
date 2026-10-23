@@ -298,12 +298,14 @@ workerController.onModelInfo = (data) => {
     globalState.gpuInfo = data.gpuInfo;
     globalState.presets = data.presets;
     globalState.deviceRamGB = data.ramGB ?? 4;
+    globalState.wasmCaps = data.wasmCaps ?? null;
     updateModelInfo({
         gpuInfo: globalState.gpuInfo,
         presets: globalState.presets,
         ramGB: globalState.deviceRamGB,
         activePresetId: globalState.activePresetId,
-        selectedPresetId: globalState.selectedPresetId
+        selectedPresetId: globalState.selectedPresetId,
+        wasmCaps: globalState.wasmCaps
     });
 };
 

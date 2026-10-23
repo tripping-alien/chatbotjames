@@ -15,6 +15,7 @@ const testSuites = [
     { name: 'Chat History Persistence & Reload', file: 'tests/test-chat-history-persistence.js' },
     { name: 'Stop Generation & Thinking Bubble Cleanup', file: 'tests/test-stop-thinking-bubble.js' },
     { name: 'Comprehensive Tool Execution & Aliases', file: 'tests/test-all-tools.js' },
+    { name: 'Hardware & WebAssembly Detection', file: 'tests/test-hardware-detect.js' },
 ];
 
 async function runSuite(suite) {

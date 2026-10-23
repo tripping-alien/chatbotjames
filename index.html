@@ -350,6 +350,37 @@
             <div class="gpu-status-badge" id="gpuStatusBadge">—</div>
         </div>
 
+        <details id="hwDetails" class="hw-details">
+            <summary class="hw-summary">🔍 Hardware &amp; WebAssembly Diagnostics</summary>
+            <div class="hw-body">
+                <div class="hw-section-title">WebAssembly Capabilities</div>
+                <div class="hw-caps-grid" id="wasmCapsGrid">
+                    <span class="hw-cap" id="capMem64" title="Memory64 (64-bit address space)">Memory64</span>
+                    <span class="hw-cap" id="capSimd" title="Fixed-width 128-bit SIMD">SIMD</span>
+                    <span class="hw-cap" id="capThreads" title="Threads / SharedArrayBuffer">Threads</span>
+                    <span class="hw-cap" id="capBulk" title="Bulk memory operations">Bulk Memory</span>
+                    <span class="hw-cap" id="capMulti" title="Multi-value returns">Multi-Value</span>
+                    <span class="hw-cap" id="capExceptions" title="Native exception handling">Exceptions</span>
+                    <span class="hw-cap" id="capGc" title="Wasm Garbage Collection">GC</span>
+                </div>
+
+                <div class="hw-section-title">GPU &amp; Adapter</div>
+                <div class="hw-kv-list" id="gpuDetailsList">
+                    <div class="hw-kv"><span class="hw-k">Vendor</span><span class="hw-v" id="hwGpuVendor">—</span></div>
+                    <div class="hw-kv"><span class="hw-k">Architecture</span><span class="hw-v" id="hwGpuArch">—</span></div>
+                    <div class="hw-kv"><span class="hw-k">Device</span><span class="hw-v" id="hwGpuDevice">—</span></div>
+                    <div class="hw-kv"><span class="hw-k">Max Buffer</span><span class="hw-v" id="hwGpuBuffer">—</span></div>
+                    <div class="hw-kv"><span class="hw-k">Max Storage</span><span class="hw-v" id="hwGpuStorage">—</span></div>
+                </div>
+
+                <div class="hw-section-title">Browser &amp; Engine</div>
+                <div class="hw-kv-list" id="browserDetailsList">
+                    <div class="hw-kv"><span class="hw-k">Browser</span><span class="hw-v" id="hwBrowser">—</span></div>
+                    <div class="hw-kv"><span class="hw-k">Engine</span><span class="hw-v" id="hwEngine">—</span></div>
+                </div>
+            </div>
+        </details>
+
         <div class="model-panel-section-title">🤖 Available Models</div>
         <div id="modelPresetList" class="model-preset-list">
             <div class="preset-placeholder">Loading presets…</div>
