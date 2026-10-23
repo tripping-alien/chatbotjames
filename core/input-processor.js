@@ -175,6 +175,11 @@ export class UserInputProcessor {
             return match;
         });
 
+        // ── Restore masked idioms before sentence capitalization ──────────────
+        if (preservedIdioms.length > 0) {
+            p = p.replace(/__PRESERVED_IDIOM_(\d+)__/g, (_, idx) => preservedIdioms[Number(idx)]);
+        }
+
         // ── Pass 7: Unit canonicalisation ─────────────────────────────────────
         // Ensures "10km" becomes "10 km" so tool routers can parse it cleanly
         p = p.replace(/(\d)(km|mi|m|cm|mm|kg|g|lb|oz|mph|kph|ms|s|min|hr|h|°C|°F|°K|GHz|MHz|kHz|Hz|GB|MB|KB|TB|px|rem|em|vw|vh)\b/gi,
@@ -188,11 +193,6 @@ export class UserInputProcessor {
 
         // ── Pass 9: Trailing ellipsis trim ────────────────────────────────────
         p = p.replace(/\.{3,}$/, '').trim();
-
-        // ── Restore masked idioms ─────────────────────────────────────────────
-        if (preservedIdioms.length > 0) {
-            p = p.replace(/__PRESERVED_IDIOM_(\d+)__/g, (_, idx) => preservedIdioms[Number(idx)]);
-        }
 
         // ── Restore masked code blocks & URLs ─────────────────────────────────
         if (preservedBlocks.length > 0) {
