@@ -23,6 +23,12 @@ const rendererContent = fs.readFileSync(rendererPath, 'utf8');
 check('message-renderer.js renders google 3-dots thinking indicator',
     /google-dots/.test(rendererContent) && /google-dot/.test(rendererContent));
 
+check('appendUserMessage delegates to createMessageElement for immediate copy button support',
+    /function\s+appendUserMessage\s*\([^)]*\)\s*\{[\s\S]*?createMessageElement\s*\(/.test(rendererContent));
+
+check('createMessageElement attaches copy-msg-btn to user-msg-container',
+    /user-msg-container[\s\S]*?container\.appendChild\(copyBtn\)/.test(rendererContent));
+
 const cssPath = path.resolve('style.css');
 const cssContent = fs.readFileSync(cssPath, 'utf8');
 check('style.css defines google-dot animation keyframes and classes',

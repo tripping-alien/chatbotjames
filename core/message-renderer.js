@@ -165,27 +165,7 @@ export function formatAssistantMessage(text) {
 export function appendUserMessage(text, historyIdx = -1) {
     const chatLog = document.getElementById('chatLog');
     if (!chatLog) return;
-    const messageWrap = document.createElement('div');
-    messageWrap.className = 'message-wrap user-msg';
-
-    const messageContent = document.createElement('div');
-    messageContent.className = 'message-content';
-    messageContent.textContent = text;
-
-    const editBtn = document.createElement('button');
-    editBtn.type = 'button';
-    editBtn.className = 'edit-msg-btn';
-    editBtn.innerHTML = '✏️';
-    editBtn.title = 'Edit this message';
-    editBtn.setAttribute('aria-label', 'Edit this message');
-    editBtn.onclick = () => window.editUserMessage(historyIdx);
-
-    const container = document.createElement('div');
-    container.className = 'user-msg-container';
-    container.appendChild(editBtn);
-    container.appendChild(messageContent);
-
-    messageWrap.appendChild(container);
+    const messageWrap = createMessageElement({ role: 'user', content: text, displayContent: text }, historyIdx);
     const gameBoardWrap = chatLog.querySelector('.game-board-wrap');
     if (gameBoardWrap) {
         chatLog.insertBefore(messageWrap, gameBoardWrap);
