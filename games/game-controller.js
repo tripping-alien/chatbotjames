@@ -58,7 +58,7 @@ class GameController {
         if (addSystemMessageCallback) {
             addSystemMessageCallback('[Game Closed]');
         }
-        if (window.renderChatLog) {
+        if (typeof window !== 'undefined' && window.renderChatLog) {
             window.renderChatLog();
         } else {
             this.refreshGameBoardUI();
@@ -66,6 +66,7 @@ class GameController {
     }
 
     refreshGameBoardUI() {
+        if (typeof document === 'undefined') return;
         const boardWrapper = document.getElementById('liveGameView');
         if (!boardWrapper) return;
 
@@ -75,7 +76,7 @@ class GameController {
             boardWrapper.style.justifyContent = 'center';
             this.activeGameUI = renderGameBoard(this.activeGame, boardWrapper, (moveResult) => {
                 // When user clicks to make a move, populate the input and send it
-                if (moveResult && moveResult.notation && window.uiManager && window.uiManager.cmdInput && window.sendMessage) {
+                if (typeof window !== 'undefined' && moveResult && moveResult.notation && window.uiManager && window.uiManager.cmdInput && window.sendMessage) {
                     window.uiManager.cmdInput.value = moveResult.notation;
                     window.sendMessage(moveResult);
                 }
@@ -157,7 +158,7 @@ class GameController {
             addSystemMessageCallback(`[System]: ${gameType} started. Current ${boardName}: ${this.activeGame.getFen()}. You are Black. User is White. It is White's turn. Wait for the user to make their move.`);
         }
         
-        if (window.renderChatLog) {
+        if (typeof window !== 'undefined' && window.renderChatLog) {
             window.renderChatLog();
         } else {
             this.refreshGameBoardUI();

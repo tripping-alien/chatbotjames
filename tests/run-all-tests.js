@@ -17,6 +17,8 @@ const testSuites = [
     { name: 'Comprehensive Tool Execution & Aliases', file: 'tests/test-all-tools.js' },
     { name: 'Hardware & WebAssembly Detection', file: 'tests/test-hardware-detect.js' },
     { name: 'Pages Layout, Readability & Scroll', file: 'tests/test-pages-layout.js' },
+    { name: 'Games (Chess, Checkers & Logic)', file: 'tests/test-games.js' },
+    { name: 'Python Features & Environment', file: 'tests/test-python-features.js' },
 ];
 
 async function runSuite(suite) {

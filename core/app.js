@@ -1174,7 +1174,9 @@ async function handleToolCalls(message, targetId, originChatId) {
                         throw new Error('Python environment is still loading — please wait a moment and try again.');
                     }
                     let pkgs = [];
-                    if (typeof params === 'string') {
+                    if (Array.isArray(params)) {
+                        pkgs = params.map(s => String(s).trim()).filter(Boolean);
+                    } else if (typeof params === 'string') {
                         pkgs = params.split(',').map(s => s.trim()).filter(Boolean);
                     } else if (params) {
                         if (params.packages) {

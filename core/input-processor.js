@@ -103,7 +103,7 @@ export class UserInputProcessor {
         if (isGameMove) return trimmed;
 
         // ── Preserve pure code snippets (e.g. Python functions/scripts) ───────
-        const isPureCode = /^(?:def\s+\w+|import\s+\w+|from\s+\w+\s+import|class\s+\w+|for\s+\w+\s+in|while\s+|print\(|return\s+|try:|except(?:\s+\w+)?:|if\s+__name__\s*==)/m.test(trimmed);
+        const isPureCode = /^(?:def\s+\w+|import\s+\w+|from\s+\w+\s+import|class\s+\w+|for\s+\w+\s+in|while\s+|print\(|return\s+|try:|except(?:\s+\w+)?:|if\s+__name__\s*==)/.test(trimmed);
         if (isPureCode) {
             return text.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
         }
