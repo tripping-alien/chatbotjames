@@ -14,6 +14,7 @@ const testSuites = [
     { name: 'Last Model Persistence & Reload', file: 'tests/test-last-preset.js' },
     { name: 'Chat History Persistence & Reload', file: 'tests/test-chat-history-persistence.js' },
     { name: 'Stop Generation & Thinking Bubble Cleanup', file: 'tests/test-stop-thinking-bubble.js' },
+    { name: 'Comprehensive Tool Execution & Aliases', file: 'tests/test-all-tools.js' },
 ];
 
 async function runSuite(suite) {
