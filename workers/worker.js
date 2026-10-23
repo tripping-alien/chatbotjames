@@ -1,7 +1,7 @@
 import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1';
 import { CONFIG } from '../core/config.js';
 import { setupDownloadManager } from './worker-downloader.js';
-import { getPromptTier, buildSystemPrompt } from './worker-prompt-tiers.js';
+import { getPromptTier, buildSystemPrompt, isGameActive } from './worker-prompt-tiers.js';
 import { isMobileDevice, isTVDevice, detectWasmCapabilities, detectGpu, getDeviceRamGB } from './worker-device-detect.js';
 import { MODEL_PRESETS, rankAutoPresets } from './worker-presets.js';
 
@@ -255,6 +255,13 @@ self.onmessage = async (e) => {
             let maxTokens   = _tierCfg.genTokens;
             let temp        = _tierCfg.temperature;
             const CONTEXT_LIMIT = _tierCfg.contextLimit;
+
+            // If an active game turn is detected, enforce focused, low-entropy decoding.
+            const isGame = isGameActive(activeMessages);
+            if (isGame && CONFIG.games) {
+                if (typeof CONFIG.games.temperature === 'number') temp = CONFIG.games.temperature;
+                if (typeof CONFIG.games.maxTokens === 'number') maxTokens = Math.min(maxTokens, CONFIG.games.maxTokens);
+            }
 
             // Safety guard: if the prompt alone nearly fills the context, shrink
             // maxTokens to leave at least 256 tokens free, or surface a friendly

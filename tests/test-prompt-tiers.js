@@ -105,6 +105,27 @@ const gameHistory = [
     { role: 'user', content: 'e5' },
 ];
 check('active game keeps game tools for bare "e5"', names('', gameHistory).includes('start_game'));
+check('active game bare move "e5" does NOT trigger calculator', !names('', gameHistory).includes('calculator'));
+check('active chess FEN message does NOT trigger calculator', !names('', activeGameMsgs).includes('calculator'));
+check('active chess FEN message selects start_game', names('', activeGameMsgs).includes('start_game'));
+
+const checkersHistory = [
+    { role: 'user', content: "let's play checkers" },
+    { role: 'assistant', content: '```tool:run\n{"tool":"start_game","params":{"game":"checkers","ai_color":"black"}}\n```' },
+    { role: 'system', content: '[Tool Result: start_game] started' },
+    { role: 'user', content: '11-15' },
+];
+check('checkers move "11-15" does NOT trigger calculator', !names('', checkersHistory).includes('calculator'));
+check('checkers move selects start_game', names('', checkersHistory).includes('start_game'));
+
+const mathInGame = [
+    ...gameHistory,
+    { role: 'user', content: 'calculate 25 * 43' },
+];
+check('explicit math during active game triggers calculator', names('', mathInGame).includes('calculator'));
+
+const activeGameCompact = buildSystemPrompt('compact', activeGameMsgs);
+check('compact prompt during active game provides make_move example', activeGameCompact.includes('make_move'));
 
 // physics triggers and stickiness
 check('physics triggers on physics calcs', names("Do some tools physics calcs, let's try them").includes('physics'));

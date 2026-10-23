@@ -626,6 +626,7 @@ function _isGameActive(messages = []) {
         if (/\[Game Closed\]/i.test(c)) return false;
         if (
             /\[Game State\]/i.test(c) ||
+            /\[Active Game State\]/i.test(c) ||
             /\[System\]:.*started/i.test(c) ||
             /\[Tool Result:\s*(start_game|make_move)\]/i.test(c) ||
             /"tool":\s*"(start_game|make_move)"/i.test(c)
@@ -712,6 +713,43 @@ function getMessagesWindow(messages) {
     if (chatManager.userNotes && chatManager.userNotes.length > 0) {
         const notesText = chatManager.userNotes.map(n => `- ${n.text}`).join('\n');
         prefixParts.unshift(`[System Memory: These are notes about the user that you have previously saved. Use them to answer questions.]\n${notesText}`);
+    }
+
+    // ── Active game state in background context ─────────────────────────────
+    let activeGameStateStr = '';
+    const activeGame = (typeof gameController !== 'undefined' && gameController?.activeGame)
+        ? gameController.activeGame
+        : null;
+
+    if (activeGame) {
+        const gameType = activeGame.type || 'chess';
+        const boardLabel = gameType === 'chess' ? 'FEN' : 'Checkers Board';
+        const turnColor = activeGame.getTurn() === 'w' ? 'White' : 'Black';
+        const aiColor = activeGame.aiColor === 'w' ? 'White' : 'Black';
+        const userColor = activeGame.aiColor === 'w' ? 'Black' : 'White';
+        const history = activeGame.getHistory ? activeGame.getHistory() : (activeGame.moveHistory || []);
+        const historyStr = history && history.length > 0 ? `\nMove History: ${history.join(' ')}` : '';
+        const formatRule = gameType === 'chess'
+            ? 'Format moves using Standard Algebraic Notation (SAN, e.g. "e5", "Nf3", "O-O", "Bxc6"). Do NOT use coordinate notation like "c6 to c5".'
+            : 'Format moves using Standard Checkers Notation (1-32, e.g. "11-15", or "11x18x25").';
+        const isAiTurn = activeGame.getTurn() === activeGame.aiColor;
+        const turnInstruction = isAiTurn
+            ? `It is currently YOUR TURN (${aiColor}). You MUST use the make_move tool immediately to make your move. Do NOT ask the user for their move.`
+            : `It is currently the user's turn (${userColor}). Wait for the user to make their move.`;
+
+        activeGameStateStr = `[Active Game State]\nGame: ${gameType}\nCurrent ${boardLabel}: ${activeGame.getFen()}${historyStr}\nAI Color: ${aiColor} | User Color: ${userColor}\nCurrent Turn: ${turnColor}\n${turnInstruction}\n${formatRule}`;
+        prefixParts.push(activeGameStateStr);
+    } else if (Array.isArray(messages)) {
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const c = String(messages[i]?.content || '');
+            if (/\[Game Closed\]/i.test(c)) break;
+            const match = c.match(/\[(?:Active )?Game State\]([\s\S]*?)(?:\n\n|$)/i);
+            if (match) {
+                activeGameStateStr = `[Active Game State]${match[1].trim()}`;
+                prefixParts.push(activeGameStateStr);
+                break;
+            }
+        }
     }
     const prefixContent = prefixParts.join('\n\n');
 

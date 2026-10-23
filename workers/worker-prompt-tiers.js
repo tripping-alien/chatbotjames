@@ -244,6 +244,7 @@ export function isGameActive(messages = []) {
         if (/\[Game Closed\]/i.test(c)) return false;
         if (
             /\[Game State\]/i.test(c) ||
+            /\[Active Game State\]/i.test(c) ||
             /\[System\]:.*started/i.test(c) ||
             /\[Tool Result:\s*(start_game|make_move)\]/i.test(c) ||
             /"tool":\s*"(start_game|make_move)"/i.test(c)
@@ -267,16 +268,31 @@ export function selectTools(messages = [], max = MAX_TOOLS) {
     for (let i = messages.length - 1; i >= 0; i--) {
         if (messages[i]?.role === 'user') { lastUser = String(messages[i].content || ''); break; }
     }
-    // app.js appends attached file contents after this marker; never match tools against them.
-    lastUser = lastUser.split('[Attached Files Content]')[0].slice(0, LAST_USER_SCAN_CHARS);
+    // app.js appends attached file contents and game state metadata; never match tools against them.
+    lastUser = lastUser
+        .split('[Attached Files Content]')[0]
+        .split('[Game State]')[0]
+        .split('[Active Game State]')[0]
+        .slice(0, LAST_USER_SCAN_CHARS);
     const recent = messages.slice(-RECENT_MESSAGES).map(m => String(m?.content || '')).join('\n');
+    const gameOn = isGameActive(messages);
 
     const picked = [];
     for (const entry of CATALOG) {
         if (picked.length >= max) break;
         const wasRecentlyUsed = new RegExp(`\\[Tool Result: ${entry.name}\\]|"tool":\\s*"${entry.name}"`, 'i').test(recent);
-        const isGame = entry.name === 'start_game' && isGameActive(messages);
-        if (entry.re.test(lastUser) || (entry.sticky && entry.sticky.test(recent)) || wasRecentlyUsed || isGame) {
+        const isGame = entry.name === 'start_game' && gameOn;
+
+        let matchesRe = false;
+        if (entry.name === 'calculator' && gameOn) {
+            // During an active game, bare math operators (like '-' in checkers move 11-15, '/' in FEN, or 'x' in 11x18)
+            // must NOT trigger the calculator tool unless explicit math calculation keywords are used.
+            matchesRe = /\b(calculate|calc|compute|sqrt|square root|percent(age)? of)\b/i.test(lastUser);
+        } else {
+            matchesRe = entry.re.test(lastUser);
+        }
+
+        if (matchesRe || (entry.sticky && entry.sticky.test(recent)) || wasRecentlyUsed || isGame) {
             picked.push(entry);
         }
     }
@@ -287,9 +303,18 @@ export function buildCompactPrompt(messages = []) {
     const tools = selectTools(messages);
     if (tools.length === 0) return COMPACT_BASE;
 
+    const gameActive = isGameActive(messages);
     const toolLines = tools.flatMap(t => t.lines).join('\n');
     const examples = tools
-        .map(t => `User: "${t.ex[0]}"\n-> ${call(t.ex[1], t.ex[2])}`)
+        .map(t => {
+            if (t.name === 'start_game') {
+                if (gameActive) {
+                    return `User: "Let's play chess"\n-> ${call('start_game', { game: 'chess', ai_color: 'black' })}\n\nUser: "e4"\n-> ${call('make_move', { move: 'e5' })}`;
+                }
+                return `User: "${t.ex[0]}"\n-> ${call(t.ex[1], t.ex[2])}`;
+            }
+            return `User: "${t.ex[0]}"\n-> ${call(t.ex[1], t.ex[2])}`;
+        })
         .join('\n\n');
 
     return [
