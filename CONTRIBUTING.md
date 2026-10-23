@@ -10,20 +10,27 @@ If you've noticed a bug or have a feature request, make sure to check our [Issue
 
 If this is something you think you can fix, then fork JAMES and create a branch with a descriptive name.
 
-## Get the test suite running
+## Running the local server & test suite
 
-Since JAMES is a client-side web application, you can simply serve the directory locally using any basic HTTP server (e.g., `npx serve .` or `python -m http.server`). Make sure your changes work in modern browsers (Chrome/Edge recommended for WebGPU features) and that no existing tools break.
+Since JAMES is a client-side web application, you can serve the directory locally using any basic HTTP server (e.g., `npx serve .` or `python -m http.server`).
+
+To run the automated unit test suite from the command line:
+```bash
+node tests/run-all-tests.js
+```
+You can also open `pages/tests.html` in your browser to run the tests in a live browser environment. Make sure your changes work in modern browsers (Chrome/Edge recommended for WebGPU features) and that all test suites pass.
 
 ## Implement your fix or feature
 
 At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first. 
 
 If you are adding a new Tool:
-1. Make sure it is completely client-side (no new backend server dependencies).
-2. Add the tool implementation in `tools/` and bridge it in `workers/worker.js`.
-3. Add the natural language routing rules and parameter parsing in `tools/router.js`.
-4. Document the tool's existence in the system prompt inside `workers/worker.js`.
+1. Make sure it is completely client-side (no backend server dependencies).
+2. Add the tool implementation in `workers/tools-worker.js` (for worker-isolated tools), `workers/python-worker.js` (for Python features), `tools/tools-bridge.js` (for main-thread browser APIs), or `games/` (for interactive games).
+3. Add the natural language trigger patterns and parameter parsing in `tools/rules.js` (or `tools/rules-part1.js` / `tools/rules-part2.js`), and run `node tools/build-bundle.js` to compile `tools/tool-router-bundle.js`.
+4. Document the tool in `workers/worker-system-prompt.js` (full desktop prompt) and add an entry to the `CATALOG` in `workers/worker-prompt-tiers.js` (dynamic compact/mobile prompt tier).
 5. Update the tool reference in `pages/docs.html`.
+6. Add unit test coverage in `tests/test-all-tools.js` or `tests/test-tool-triggers.js`, and verify that `node tests/run-all-tests.js` passes cleanly.
 
 ## Make a Pull Request
 

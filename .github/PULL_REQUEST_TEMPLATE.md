@@ -22,4 +22,5 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation (e.g., `pages/docs.html`, `pages/about.html`)
+- [ ] All automated unit tests pass (`node tests/run-all-tests.js`)
 - [ ] My changes generate no new warnings or console errors

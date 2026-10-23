@@ -27,6 +27,7 @@ JAMES is a fully local, browser-native AI assistant designed with privacy as the
 * **Premium Glassmorphic UI:** Features rich CSS-only gradients, sleek slide-up modal animations, and a polished retro-terminal aesthetic.
 * **Algorithmic Audio Engine:** Zero-dependency Web Audio API provides satisfying, dynamic sound cues for sending, receiving, and model-load events.
 * **Smart Desktop Notifications:** Intelligently alerts you when long-running local generations finish, but only if you've minimized the window or switched tabs.
+* **Adaptive Context & Prompt Tiering:** Dynamically tailors system prompts and tool catalogs across device tiers (mobile, TV, integrated GPU, desktop) to optimize token efficiency and prevent context exhaustion during games and extended sessions.
 
 ## Genesis AI & Living Memory
 
@@ -46,8 +47,8 @@ The most significant feature of JAMES is the **Persistent Personal Memory** syst
 * **Compute:** WebGPU for accelerated local model execution via Transformers.js
 * **Runtime Environments:** ONNX Runtime Web & Pyodide (WASM)
 * **Storage:** Unified IndexedDB (via `idb`) for fully asynchronous, blocking-free storage of encrypted chat history, memory, and application configuration.
-* **Utilities:** `dayjs` for robust timezone and time-math operations
-* **Testing:** Custom zero-dependency automated unit test runner (`tests/run-all-tests.js` & `pages/tests.html`)
+* **Utilities:** Native browser `Intl` APIs (`Intl.DateTimeFormat`, `Intl.RelativeTimeFormat`) for zero-dependency locale-aware datetime formatting and calculations.
+* **Testing:** Custom zero-dependency automated unit test runner (`tests/run-all-tests.js` & `pages/tests.html`) with 16 comprehensive test suites.
 
 ## Getting Started
 
