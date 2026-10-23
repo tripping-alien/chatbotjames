@@ -8,7 +8,7 @@
   <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
 </p>
 
-![JAMES AI Preview](assets/preview.png)
+![JAMES AI Preview](assets/preview-banner.jpg)
 
 JAMES is a fully local, browser-native AI assistant designed with privacy as the foundational principle. By leveraging WebAssembly and WebGPU, JAMES runs entirely client-side, ensuring your data never leaves your device. No cloud, no API calls, no accounts—just your machine.
 
@@ -29,6 +29,10 @@ JAMES is a fully local, browser-native AI assistant designed with privacy as the
 * **Smart Desktop Notifications:** Intelligently alerts you when long-running local generations finish, but only if you've minimized the window or switched tabs.
 
 ## Genesis AI & Living Memory
+
+<p align="center">
+  <img src="assets/privacy-shield.jpg" alt="JAMES 100% Client-Side Privacy Architecture" width="850">
+</p>
 
 The most significant feature of JAMES is the **Persistent Personal Memory** system. While traditional local LLMs wipe their context the moment you close the tab, JAMES is designed to remember you across sessions without compromising your privacy.
 

@@ -58,7 +58,10 @@ const NETWORK_FIRST = [
     '/assets/icon-192.png',
     '/assets/icon-512.png',
     '/assets/apple-touch-icon.png',
-    '/assets/preview.png'
+    '/assets/preview.png',
+    '/assets/preview-banner.jpg',
+    '/assets/james-logo.jpg',
+    '/assets/privacy-shield.jpg'
 ];
 
 // Install: pre-cache static assets and app files for offline compliance
