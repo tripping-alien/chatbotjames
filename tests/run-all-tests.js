@@ -16,6 +16,7 @@ const testSuites = [
     { name: 'Stop Generation & Thinking Bubble Cleanup', file: 'tests/test-stop-thinking-bubble.js' },
     { name: 'Comprehensive Tool Execution & Aliases', file: 'tests/test-all-tools.js' },
     { name: 'Hardware & WebAssembly Detection', file: 'tests/test-hardware-detect.js' },
+    { name: 'Pages Layout, Readability & Scroll', file: 'tests/test-pages-layout.js' },
 ];
 
 async function runSuite(suite) {
