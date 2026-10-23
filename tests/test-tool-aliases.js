@@ -29,6 +29,12 @@ check('read_page alias is registered', /read_page\s*:\s*fetchPageTool/.test(hand
 check('web_fetch alias is registered', /web_fetch\s*:\s*fetchPageTool/.test(handlersBlock));
 check('websearch alias is registered', /websearch\s*:\s*getWebSearch/.test(handlersBlock));
 check('web_search alias is registered', /web_search\s*:\s*getWebSearch/.test(handlersBlock));
+check('duckduckgo alias is registered', /duckduckgo\s*:\s*getWebSearch/.test(handlersBlock));
+check('duckduckgo_search alias is registered', /duckduckgo_search\s*:\s*getWebSearch/.test(handlersBlock));
+check('ddg alias is registered', /ddg\s*:\s*getWebSearch/.test(handlersBlock));
+check('ddg_search alias is registered', /ddg_search\s*:\s*getWebSearch/.test(handlersBlock));
+check('search_web alias is registered', /search_web\s*:\s*getWebSearch/.test(handlersBlock));
+check('google alias is registered', /google\s*:\s*getWebSearch/.test(handlersBlock));
 check('physics alias is registered', /\bphysics\s*:/.test(handlersBlock));
 check('particle_physics alias is registered', /\bparticle_physics\s*:/.test(handlersBlock));
 check('particlephysics alias is registered', /\bparticlephysics\s*:/.test(handlersBlock));
@@ -41,7 +47,7 @@ check('dice alias is registered', /\bdice\s*:\s*randomTool/.test(handlersBlock))
 check('coin alias is registered', /\bcoin\s*:\s*randomTool/.test(handlersBlock));
 check('differential_equations alias is registered', /\bdifferential_equations\s*:/.test(handlersBlock));
 
-// 2. Verify fetchPageTool parameter extraction handles flexible shapes
+// 2. Verify fetchPageTool and getWebSearch parameter extraction handles flexible shapes
 const parseUrl = (params) => typeof params === 'string'
     ? params
     : (params?.url || params?.link || params?.target || params?.href || null);
@@ -53,6 +59,17 @@ check('extracts url from { href }', parseUrl({ href: 'https://example.com' }) ==
 check('extracts url from direct string', parseUrl('https://example.com') === 'https://example.com');
 check('returns null for empty object', parseUrl({}) === null);
 check('returns null for null params', parseUrl(null) === null);
+
+const parseQuery = (params) => typeof params === 'string'
+    ? params
+    : (params?.query || params?.q || params?.search || params?.term || params?.input || params?.text || null);
+
+check('extracts query from { query }', parseQuery({ query: 'quantum physics' }) === 'quantum physics');
+check('extracts query from { q }', parseQuery({ q: 'quantum physics' }) === 'quantum physics');
+check('extracts query from { search }', parseQuery({ search: 'quantum physics' }) === 'quantum physics');
+check('extracts query from direct string', parseQuery('quantum physics') === 'quantum physics');
+check('returns null for empty object query', parseQuery({}) === null);
+check('returns null for null query params', parseQuery(null) === null);
 
 // 3. Verify TOOL_CALL_PATTERN covers multiple formats
 import { TOOL_CALL_PATTERN, hasToolCalls } from '../core/worker-controller.js';

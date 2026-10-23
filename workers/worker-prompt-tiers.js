@@ -229,7 +229,8 @@ const CATALOG = [
     },
     {
         name: 'web_search',
-        re: /\b(news|latest|headlines?|search (the )?(web|online|for)|look ?up|google|price of|who won|score of|current (events|price|president|ceo))\b|\bwhat'?s (happening|going on)\b/i,
+        re: /\b(news|latest|headlines?|search (the )?(web|online|for)|look ?up|google|duckduckgo|ddg|bing|price of|who won|score of|current (events|price|president|ceo))\b|\bwhat'?s (happening|going on)\b/i,
+        sticky: /\b(web_search|websearch|duckduckgo|ddg)\b/,
         lines: ['- web_search(query): current events, news and live facts.'],
         ex: ['Search the web for news', 'web_search', { query: 'news' }],
     },
