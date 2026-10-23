@@ -3,7 +3,7 @@ let oramaModule = null;
 async function getOrama() {
     if (oramaModule) return oramaModule;
     try {
-        oramaModule = await import('https://cdn.jsdelivr.net/npm/@orama/orama@2.0.24/dist/index.js');
+        oramaModule = await import('https://cdn.jsdelivr.net/npm/@orama/orama@3.1.18/dist/browser/index.js');
         return oramaModule;
     } catch (_) {
         return {

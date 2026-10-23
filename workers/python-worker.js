@@ -23,7 +23,7 @@
  *   { status: 'stdout',   execId, text }       ← streamed during install
  */
 
-importScripts('https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js');
+importScripts('https://cdn.jsdelivr.net/pyodide/v0.27.8/full/pyodide.js');
 
 // ─── State ────────────────────────────────────────────────────────────────────
 

@@ -3,7 +3,7 @@
 // Callers see plain JS objects; encryption/decryption is fully transparent.
 
 import { initEncryption, encryptObject, decryptObject } from './crypto-utils.js';
-import { openDB } from 'https://esm.sh/idb@8.0.0';
+import { openDB } from 'https://esm.sh/idb@8.0.4';
 const _configCache = new Map();
 
 export const safeLocalStorage = {

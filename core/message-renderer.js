@@ -1,7 +1,7 @@
 import { CONFIG } from './config.js';
-import { marked } from 'https://esm.sh/marked@11.1.0';
-import DOMPurify from 'https://esm.sh/dompurify@3.0.8';
-import hljs from 'https://esm.sh/highlight.js@11.9.0';
+import { marked } from 'https://esm.sh/marked@18.1.1';
+import DOMPurify from 'https://esm.sh/dompurify@3.2.4';
+import hljs from 'https://esm.sh/highlight.js@11.11.1';
 
 /**
  * Cross-browser clipboard write with a document.execCommand fallback.
@@ -27,13 +27,18 @@ function _execCommandCopy(text) {
     } catch (_) { /* silent fail */ }
 }
 
-// Configure marked to use GitHub Flavored Markdown and breaks
-marked.setOptions({
+// Configure marked to use GitHub Flavored Markdown, breaks, and custom code highlighting
+marked.use({
     gfm: true,
     breaks: true,
-    highlight: function(code, lang) {
-        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-        return hljs.highlight(code, { language }).value;
+    renderer: {
+        code(token, maybeLang) {
+            const code = (typeof token === 'object' && token !== null) ? token.text : token;
+            const lang = (typeof token === 'object' && token !== null) ? token.lang : maybeLang;
+            const language = (lang && hljs.getLanguage && hljs.getLanguage(lang)) ? lang : 'plaintext';
+            const highlighted = (hljs.highlight ? hljs.highlight(code, { language }).value : escapeHTML(code));
+            return `<pre><code class="hljs language-${escapeHTML(language)}">${highlighted}</code></pre>`;
+        }
     }
 });
 
