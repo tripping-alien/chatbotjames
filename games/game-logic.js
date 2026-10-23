@@ -13,7 +13,11 @@ export class ChessGame {
 
     loadFen(fen) {
         if (!fen) return;
-        this.game = new Chess(fen);
+        try {
+            this.game = new Chess(fen);
+        } catch (e) {
+            console.error('Failed to load FEN:', fen, e);
+        }
     }
 
     getState() {
@@ -37,6 +41,13 @@ export class ChessGame {
     }
 
     move(source, target, promotion = 'q') {
+        if (typeof source === 'object' && source !== null) {
+            try {
+                return this.game.move(source);
+            } catch (e) {
+                return null;
+            }
+        }
         if (typeof source === 'string' && target === undefined) {
             const parsed = this.makeSanMove(source);
             if (parsed && parsed.length > 0) {
@@ -57,13 +68,23 @@ export class ChessGame {
     }
 
     makeSanMove(san) {
+        if (!san || typeof san !== 'string') return null;
+        const cleaned = san.trim().replace(/[.,!?;]+$/, '');
         try {
-            const move = this.game.move(san.trim());
+            const move = this.game.move(cleaned);
             return move ? [move] : null;
         } catch (e) {
+            // Check for coordinate move "e2 to e4" or "e2-e4"
+            const sqMatch = cleaned.match(/\b([a-h][1-8])\s*(?:to|->|-|→)\s*([a-h][1-8])\b/i);
+            if (sqMatch) {
+                try {
+                    const m = this.game.move({ from: sqMatch[1].toLowerCase(), to: sqMatch[2].toLowerCase(), promotion: 'q' });
+                    if (m) return [m];
+                } catch (_) {}
+            }
             // Fallback: search for strict SAN intent
             const intentRegex = /(?:i (?:will )?(?:play|move)|my move is|move:|playing|^)\s*([NQKBR]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NQKBR])?[+#]?|O-O(?:-O)?)\b/i;
-            const match = san.match(intentRegex);
+            const match = cleaned.match(intentRegex);
             if (match && match[1]) {
                 try {
                     const m = this.game.move(match[1]);
@@ -447,7 +468,7 @@ export class CheckersGame {
 }
 
 export function parseUserMove(text, game) {
-    if (!game) return null;
+    if (!game || !text) return null;
     
     if (game.type === 'chess') {
         // e2 to e4, e2-e4, e2e4
@@ -455,6 +476,42 @@ export function parseUserMove(text, game) {
         if (sqMatch) {
             const m = game.move(sqMatch[1].toLowerCase(), sqMatch[2].toLowerCase());
             if (m) return { notation: m.san, move: m };
+        }
+
+        // Piece natural language phrases: "knight to f3", "bishop c4", "castle kingside"
+        if (/\b(?:castle\s+kingside|kingside\s+castle|short\s+castle|castle\s+short)\b/i.test(text)) {
+            try {
+                const m = game.game.move('O-O');
+                if (m) return { notation: m.san, move: m };
+            } catch (_) {}
+        }
+        if (/\b(?:castle\s+queenside|queenside\s+castle|long\s+castle|castle\s+long)\b/i.test(text)) {
+            try {
+                const m = game.game.move('O-O-O');
+                if (m) return { notation: m.san, move: m };
+            } catch (_) {}
+        }
+
+        const pieceWordMatch = text.match(/\b(knight|horse|bishop|rook|castle|queen|king)\s+(?:to\s+|->|-|→)?([a-h][1-8])\b/i);
+        if (pieceWordMatch) {
+            const pName = pieceWordMatch[1].toLowerCase();
+            const targetSq = pieceWordMatch[2].toLowerCase();
+            const symbol = pName === 'knight' || pName === 'horse' ? 'N' :
+                           pName === 'bishop' ? 'B' :
+                           pName === 'rook' || pName === 'castle' ? 'R' :
+                           pName === 'queen' ? 'Q' : 'K';
+            try {
+                const m = game.game.move(symbol + targetSq);
+                if (m) return { notation: m.san, move: m };
+            } catch (_) {}
+            try {
+                const moves = game.game.moves({ verbose: true });
+                const cand = moves.find(m => m.piece.toUpperCase() === symbol && m.to === targetSq);
+                if (cand) {
+                    const m = game.game.move(cand);
+                    if (m) return { notation: m.san, move: m };
+                }
+            } catch (_) {}
         }
 
         // Standard SAN (e4, Nf3, O-O, etc.)
@@ -499,10 +556,11 @@ export function parseUserMove(text, game) {
             if (m) return { notation: m.san, move: m };
         }
     } else if (game.type === 'checkers') {
-        const match = text.match(/(\d+)\s*[-xX\s→>]+\s*(\d+)/i);
+        const match = text.match(/(\d+)\s*[-xX\s→>]+\s*(\d+(?:\s*[-xX\s→>]+\s*\d+)*)/i);
         if (match) {
+            const cleanNotation = match[0].replace(/\s*(?:to|->|→)\s*/gi, '-').replace(/\s+/g, '-').trim();
             const m = game.makeSanMove(text);
-            if (m && m.length > 0) return { notation: text, move: m[0] };
+            if (m && m.length > 0) return { notation: cleanNotation || text, move: m[0] };
         }
     }
 
@@ -510,19 +568,24 @@ export function parseUserMove(text, game) {
 }
 
 export function extractAIMove(text, game) {
-    if (!game) return null;
+    if (!game || !text) return null;
     if (game.type === 'chess') {
+        // Check for coordinate move "e7 to e5" or "e7-e5" or "e7e5" first
+        const coordMatch = text.match(/\b([a-h][1-8])\s*(?:to|->|-|→)\s*([a-h][1-8])\b/i);
+        if (coordMatch) {
+            return `${coordMatch[1]}-${coordMatch[2]}`;
+        }
         const intentRegex = /(?:i (?:will )?(?:play|move)|my move is|move:|playing|^)\s*([NQKBR]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NQKBR])?[+#]?|O-O(?:-O)?)\b/i;
         const match = text.match(intentRegex);
-        if (match && match[1]) return match[1];
+        if (match && match[1]) return match[1].replace(/[.,!?;]+$/, '');
     } else if (game.type === 'checkers') {
-        const intentRegex = /(?:i (?:will )?(?:play|move)|my move is|here'?s my move[:]?|move:|playing|^)\s*((\d+)\s*[-xX\s→>]+\s*(\d+(?:\s*[-xX\s→>]+\s*\d+)*))/i;
+        const intentRegex = /(?:i (?:will )?(?:play|move|jump|take)|my move is|here'?s my move[:]?|move:|playing|^)\s*((\d+)\s*[-xX\s→>]+\s*(\d+(?:\s*[-xX\s→>]+\s*\d+)*))/i;
         let match = text.match(intentRegex);
-        if (match && match[1]) return match[1];
+        if (match && match[1]) return match[1].replace(/[.,!?;]+$/, '').trim();
         
         // Fallback for just move at end of string
         match = text.match(/(?:^|\n)\s*(\d+)\s*[-xX\s→>]+\s*(\d+)\s*$/i);
-        if (match) return match[0];
+        if (match) return (match[1] + '-' + match[2]).trim();
         
         // Catch hallucinated chess notation (e.g. "e7 to e5") to trigger an error for the LLM
         match = text.match(/\b([a-h][1-8])\s*(?:to|->|-|→|\s+)?\s*([a-h][1-8])\b/i);
