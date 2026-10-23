@@ -231,8 +231,12 @@ export function updateLiveBubble(text, targetId, force = false) {
 
     if (text === '...') {
         bubble.innerHTML =
-            '<div class="typing-indicator">' +
-            '<div class="thinking-sandclock" aria-label="Thinking" role="status"></div>' +
+            '<div class="typing-indicator google-typing-indicator" aria-label="Thinking" role="status">' +
+            '<div class="google-dots thinking-sandclock" aria-hidden="true">' +
+            '<span class="google-dot dot-1"></span>' +
+            '<span class="google-dot dot-2"></span>' +
+            '<span class="google-dot dot-3"></span>' +
+            '</div>' +
             '<span class="thinking-label">Thinking…</span>' +
             '</div>';
         chatLog.scrollTop = chatLog.scrollHeight;
@@ -311,14 +315,16 @@ export function updateLiveBubbleAppend(newChars, targetId) {
 export function setThinkingBubblePhase(targetId, phase, label) {
     const bubble = document.getElementById(`bubble-${targetId}`);
     if (!bubble) return;
-    const spinner = bubble.querySelector('.thinking-sandclock');
+    const dots = bubble.querySelector('.google-dots') || bubble.querySelector('.thinking-sandclock');
     const labelEl = bubble.querySelector('.thinking-label');
-    if (!spinner) return;
+    if (!dots && !labelEl) return;
     if (phase === 'tool') {
-        spinner.classList.add('thinking-sandclock--tool');
+        dots?.classList.add('google-dots--tool');
+        dots?.classList.add('thinking-sandclock--tool');
         if (labelEl) labelEl.textContent = label || 'Running tool…';
     } else {
-        spinner.classList.remove('thinking-sandclock--tool');
+        dots?.classList.remove('google-dots--tool');
+        dots?.classList.remove('thinking-sandclock--tool');
         if (labelEl) labelEl.textContent = label || 'Thinking…';
     }
 }

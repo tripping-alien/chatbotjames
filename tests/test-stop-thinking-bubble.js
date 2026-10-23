@@ -20,13 +20,13 @@ const appContent = fs.readFileSync(appPath, 'utf8');
 
 const rendererPath = path.resolve('core/message-renderer.js');
 const rendererContent = fs.readFileSync(rendererPath, 'utf8');
-check('message-renderer.js renders thinking-sandclock emoji',
-    /thinking-sandclock/.test(rendererContent) && /⏳/.test(rendererContent));
+check('message-renderer.js renders google 3-dots thinking indicator',
+    /google-dots/.test(rendererContent) && /google-dot/.test(rendererContent));
 
 const cssPath = path.resolve('style.css');
 const cssContent = fs.readFileSync(cssPath, 'utf8');
-check('style.css defines sandclock-spin keyframes and thinking-sandclock class',
-    /\.thinking-sandclock/.test(cssContent) && /@keyframes\s+sandclock-spin/.test(cssContent));
+check('style.css defines google-dot animation keyframes and classes',
+    /\.google-dot/.test(cssContent) && /@keyframes\s+google-dot-bounce/.test(cssContent));
 
 check('app.js imports removeThinkingBubble',
     /import\s*\{[^}]*removeThinkingBubble[^}]*\}\s*from\s*['"]\.\/message-renderer\.js['"]/.test(appContent));

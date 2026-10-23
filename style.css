@@ -2217,39 +2217,117 @@ body.tv-mode .game-board-message {
    which prevents the awkward "all dots start together" flash on mobile.
    will-change: transform offloads to the GPU compositor so the animation
    is not dropped on the main thread on iOS Safari / Android Chrome.
-*/
+/* ─── Google 3-Dots Animated Thinking Bubble ───
+   Google Gemini / Assistant style animated 3-dot thinking indicator bubble.
+   Three GPU-composited dots pulsing with Google signature colors (Blue, Red, Green)
+   using negative animation delays for instant wave motion without startup lag. */
 .typing-indicator {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 8px;
-    padding: 6px 12px;
+    gap: 10px;
+    padding: 4px 6px;
     min-height: 28px;
 }
 
-/* ── Pure-CSS ring spinner — works identically on every platform ────────────
-   No emoji, no SVG file. A single div with a transparent border except for
-   one coloured arc; animation is GPU-composited (transform only).
-   The .thinking-sandclock class is kept for backwards-compat with any
-   existing DOM nodes, but the visual is now driven entirely by CSS. */
-.thinking-sandclock {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 2.5px solid rgba(139, 92, 246, 0.25);   /* faint full ring */
-    border-top-color: rgba(139, 92, 246, 0.9);       /* bright arc */
-    will-change: transform;
-    animation: thinking-spin 0.8s linear infinite;
-    flex-shrink: 0;
+.assistant-msg .message-content:has(.typing-indicator) {
+    width: fit-content;
+    padding: 8px 16px;
+    border-radius: 18px;
+    border-left-width: 1px;
 }
 
-/* Tool-execution phase: amber arc + gentle pulse so the user knows
-   the AI is waiting on a live result, not just thinking. */
-.thinking-sandclock.thinking-sandclock--tool {
-    border-color: rgba(245, 158, 11, 0.25);
-    border-top-color: rgba(245, 158, 11, 0.9);
-    animation: thinking-spin 1.1s linear infinite, thinking-tool-pulse 2s ease-in-out infinite;
+.assistant-msg .message-content:has(.typing-indicator)::before {
+    display: none;
+}
+
+/* 3-dots container */
+.google-dots {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+/* Individual Google dots */
+.google-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    will-change: transform, opacity;
+    animation: google-dot-bounce 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite both;
+}
+
+/* Google signature 3-dot colors with vibrant soft glows */
+.google-dot.dot-1 {
+    background-color: #4285F4; /* Google Blue */
+    box-shadow: 0 0 6px rgba(66, 133, 244, 0.55);
+    animation-delay: -0.32s;
+}
+
+.google-dot.dot-2 {
+    background-color: #EA4335; /* Google Red */
+    box-shadow: 0 0 6px rgba(234, 67, 53, 0.55);
+    animation-delay: -0.16s;
+}
+
+.google-dot.dot-3 {
+    background-color: #34A853; /* Google Green */
+    box-shadow: 0 0 6px rgba(52, 168, 83, 0.55);
+    animation-delay: 0s;
+}
+
+/* Tool execution phase: warm amber tones */
+.google-dots--tool .google-dot.dot-1,
+.thinking-sandclock--tool .google-dot.dot-1 {
+    background-color: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+}
+
+.google-dots--tool .google-dot.dot-2,
+.thinking-sandclock--tool .google-dot.dot-2 {
+    background-color: #fbbf24;
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
+}
+
+.google-dots--tool .google-dot.dot-3,
+.thinking-sandclock--tool .google-dot.dot-3 {
+    background-color: #f97316;
+    box-shadow: 0 0 6px rgba(249, 115, 22, 0.6);
+}
+
+/* Google-style wave bounce animation */
+@keyframes google-dot-bounce {
+    0%, 80%, 100% {
+        transform: translateY(0) scale(0.82);
+        opacity: 0.55;
+    }
+    40% {
+        transform: translateY(-6px) scale(1.15);
+        opacity: 1;
+    }
+}
+
+/* Label shown next to the 3 dots (e.g. "Thinking…" / "Running tool…") */
+.thinking-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #94a3b8);
+    letter-spacing: 0.02em;
+    user-select: none;
+    font-weight: 500;
+}
+
+/* Legacy support / fallback selectors */
+.thinking-sandclock {
+    display: inline-flex;
+}
+
+@keyframes sandclock-spin {
+    to { transform: rotate(360deg); }
 }
 
 @keyframes thinking-spin {
@@ -2261,45 +2339,37 @@ body.tv-mode .game-board-message {
     50%       { opacity: 0.55; }
 }
 
-/* Label shown next to the spinner (e.g. "Thinking…" / "Running tool…") */
-.thinking-label {
-    font-size: 0.82rem;
-    color: var(--text-secondary, #94a3b8);
-    letter-spacing: 0.02em;
-    user-select: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
+    .google-dot,
     .thinking-sandclock {
         animation: none;
-        opacity: 0.6;
+        opacity: 0.8;
+        transform: none;
     }
 }
 
-.typing-indicator span:not(.thinking-sandclock) {
-    display: inline-block; /* required on some mobile browsers */
-    width: 7px;
-    height: 7px;
+.typing-indicator span:not(.google-dot):not(.thinking-label) {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
     background-color: var(--text-secondary, #94a3b8);
     border-radius: 50%;
     flex-shrink: 0;
-    /* GPU-composited: keeps animation alive even when the main thread is busy */
     will-change: transform, opacity;
     animation: typing-bounce 1.4s infinite ease-in-out both;
 }
 
-/* Negative delays: dots are already mid-animation on first paint — no startup lag */
-.typing-indicator span:not(.thinking-sandclock):nth-child(1) { animation-delay: -0.32s; }
-.typing-indicator span:not(.thinking-sandclock):nth-child(2) { animation-delay: -0.16s; }
-.typing-indicator span:not(.thinking-sandclock):nth-child(3) { animation-delay:    0s;  }
+.typing-indicator span:not(.google-dot):not(.thinking-label):nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:not(.google-dot):not(.thinking-label):nth-child(2) { animation-delay: -0.16s; }
+.typing-indicator span:not(.google-dot):not(.thinking-label):nth-child(3) { animation-delay:    0s;  }
 
 @keyframes typing-bounce {
     0%, 80%, 100% {
-        transform: scale(0.3);
-        opacity: 0.4;
+        transform: scale(0.8);
+        opacity: 0.5;
     }
     40% {
-        transform: scale(1);
+        transform: scale(1.15);
         opacity: 1;
     }
 }
