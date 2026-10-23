@@ -224,8 +224,8 @@ self.onmessage = async (e) => {
             // Small models (1B-1.5B) strictly reject consecutive system roles.
             // The worker prepends its own system prompt, and getMessagesWindow
             // also sends a system prefix, so we defensively collapse them here.
-            // Tiered system prompt: lite (<0.5B) / compact (small models, phone, TV) / full (3B+ desktop).
-            const promptTier = getPromptTier(activePreset, deviceFlags);
+            // Tiered system prompt: lite (<0.5B) / compact (small models, phone, TV, or during games) / full (3B+ desktop).
+            const promptTier = getPromptTier(activePreset, deviceFlags, activeMessages);
             const basePrompt = buildSystemPrompt(promptTier, activeMessages);
             const allMessages = [{ role: 'system', content: basePrompt }, ...activeMessages];
             const chatContext = [];
@@ -250,7 +250,7 @@ self.onmessage = async (e) => {
             // ── Tier-aware generation budget ───────────────────────────────────────────────
             // All budget constants live in CONFIG.tiers (single source of truth
             // shared with app.js getMessagesWindow), so we only define them once.
-            const _tierKey  = _workerTierKey(activePreset?.params);
+            const _tierKey  = (promptTier === 'compact' || promptTier === 'lite') ? promptTier : _workerTierKey(activePreset?.params);
             const _tierCfg  = CONFIG.tiers[_tierKey] || CONFIG.tiers['compact'];
             let maxTokens   = _tierCfg.genTokens;
             let temp        = _tierCfg.temperature;

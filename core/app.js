@@ -618,6 +618,31 @@ function _presetTierKey(params) {
     return '4b';
 }
 
+function _isGameActive(messages = []) {
+    if (typeof gameController !== 'undefined' && gameController?.activeGame) return true;
+    if (!Array.isArray(messages) || messages.length === 0) return false;
+    for (let i = messages.length - 1; i >= 0; i--) {
+        const c = String(messages[i]?.content || '');
+        if (/\[Game Closed\]/i.test(c)) return false;
+        if (
+            /\[Game State\]/i.test(c) ||
+            /\[System\]:.*started/i.test(c) ||
+            /\[Tool Result:\s*(start_game|make_move)\]/i.test(c) ||
+            /"tool":\s*"(start_game|make_move)"/i.test(c)
+        ) {
+            return true;
+        }
+    }
+    let lastUser = '';
+    for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i]?.role === 'user') {
+            lastUser = String(messages[i].content || '').split('[Attached Files Content]')[0];
+            break;
+        }
+    }
+    return /\b(chess|checkers|draughts|play a game|let'?s play)\b/i.test(lastUser);
+}
+
 function getMessagesWindow(messages) {
     // Single pass: partition background vs regular simultaneously.
     const background = [], regular = [];
@@ -626,8 +651,10 @@ function getMessagesWindow(messages) {
     // ── Tier-aware maxHistory ────────────────────────────────────────────────
     // Use the active preset to pick the right history cap instead of the global
     // CONFIG.ui.maxHistory (which is a worst-case ceiling, not a per-model cap).
+    // During chess or other active games, switch to the mobile/compact tier to conserve context.
     const _activePreset = globalState.presets?.find(p => p.id === globalState.activePresetId);
-    const _tierKey      = _presetTierKey(_activePreset?.params);
+    const _isGame       = _isGameActive(messages);
+    const _tierKey      = _isGame ? 'compact' : _presetTierKey(_activePreset?.params);
     const _tierCfg      = CONFIG.tiers[_tierKey] || CONFIG.tiers['compact'];
     const _maxHistory   = _tierCfg.maxHistory;
 

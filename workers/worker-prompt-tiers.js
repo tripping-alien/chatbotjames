@@ -36,8 +36,8 @@ const call = (tool, params) => `${FENCE}tool:run\n${JSON.stringify({ tool, param
 const CATALOG = [
     {
         name: 'start_game',
-        re: /\b(chess|checkers|draughts|play a game|let'?s play)\b/i,
-        sticky: /\b(start_game|make_move)\b/,
+        re: /\b(chess|checkers|draughts|play a game|let'?s play|game state)\b/i,
+        sticky: /\b(start_game|make_move|game state)\b/i,
         lines: [
             '- start_game(game, ai_color): game is "chess" or "checkers". Call it immediately when the user wants to play. Player always goes first (White); AI is always 2nd (Black).',
             '- make_move(move): your move during an active game. SAN ("e4") for chess, numeric ("11-15") for checkers. Never ask the user for your move.',
@@ -236,6 +236,31 @@ const CATALOG = [
     },
 ];
 
+/** Check if a conversation turn is part of an active game (chess, checkers, etc.). */
+export function isGameActive(messages = []) {
+    if (!Array.isArray(messages) || messages.length === 0) return false;
+    for (let i = messages.length - 1; i >= 0; i--) {
+        const c = String(messages[i]?.content || '');
+        if (/\[Game Closed\]/i.test(c)) return false;
+        if (
+            /\[Game State\]/i.test(c) ||
+            /\[System\]:.*started/i.test(c) ||
+            /\[Tool Result:\s*(start_game|make_move)\]/i.test(c) ||
+            /"tool":\s*"(start_game|make_move)"/i.test(c)
+        ) {
+            return true;
+        }
+    }
+    let lastUser = '';
+    for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i]?.role === 'user') {
+            lastUser = String(messages[i].content || '').split('[Attached Files Content]')[0];
+            break;
+        }
+    }
+    return /\b(chess|checkers|draughts|play a game|let'?s play)\b/i.test(lastUser);
+}
+
 /** Which catalog entries could the latest user message need? (max MAX_TOOLS) */
 export function selectTools(messages = [], max = MAX_TOOLS) {
     let lastUser = '';
@@ -250,7 +275,8 @@ export function selectTools(messages = [], max = MAX_TOOLS) {
     for (const entry of CATALOG) {
         if (picked.length >= max) break;
         const wasRecentlyUsed = new RegExp(`\\[Tool Result: ${entry.name}\\]|"tool":\\s*"${entry.name}"`, 'i').test(recent);
-        if (entry.re.test(lastUser) || (entry.sticky && entry.sticky.test(recent)) || wasRecentlyUsed) {
+        const isGame = entry.name === 'start_game' && isGameActive(messages);
+        if (entry.re.test(lastUser) || (entry.sticky && entry.sticky.test(recent)) || wasRecentlyUsed || isGame) {
             picked.push(entry);
         }
     }
@@ -275,12 +301,15 @@ export function buildCompactPrompt(messages = []) {
     ].join('\n\n');
 }
 
-/** Pick a tier from the loaded preset and the device class. */
-export function getPromptTier(preset, { isMobile = false, isTV = false, isIntegrated = false } = {}) {
+/** Pick a tier from the loaded preset, device class, and message context (e.g. active game). */
+export function getPromptTier(preset, { isMobile = false, isTV = false, isIntegrated = false } = {}, messagesOrHasGame = false) {
     if (!preset) return 'compact'; // unknown model: be safe
     const params = typeof preset.params === 'number' ? preset.params : 1;
     if (String(preset.id || '').startsWith('lite-') || params < 0.5) return 'lite';
-    if (isMobile || isTV || isIntegrated || params < 3.0) return 'compact';
+    const hasGame = typeof messagesOrHasGame === 'boolean'
+        ? messagesOrHasGame
+        : isGameActive(messagesOrHasGame);
+    if (isMobile || isTV || isIntegrated || params < 3.0 || hasGame) return 'compact';
     return 'full';
 }
 

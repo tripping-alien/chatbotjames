@@ -1,7 +1,7 @@
 // Run with: node tests/test-prompt-tiers.js
 import { MODEL_PRESETS, rankAutoPresets } from '../workers/worker-presets.js';
 import { systemPrompt as FULL } from '../workers/worker-system-prompt.js';
-import { getPromptTier, buildSystemPrompt, selectTools, LITE_PROMPT } from '../workers/worker-prompt-tiers.js';
+import { getPromptTier, buildSystemPrompt, selectTools, isGameActive, LITE_PROMPT } from '../workers/worker-prompt-tiers.js';
 
 let failed = 0;
 const check = (name, cond, extra = '') => {
@@ -28,6 +28,33 @@ check('3B on integrated GPU -> compact', getPromptTier(byId('gpu-llama32-3b-q4f1
 check('3B on phone -> compact', getPromptTier(byId('gpu-llama32-3b-q4f16'), phone) === 'compact');
 check('3B on TV -> compact', getPromptTier(byId('gpu-llama32-3b-q4f16'), tv) === 'compact');
 check('no preset -> compact', getPromptTier(null, desktop) === 'compact');
+
+// During chess or other active games, 3B+ models on desktop use compact (the mobile tier) to prevent context exhaustion
+const chessStartMsgs = [{ role: 'user', content: "let's play chess" }];
+check('3B desktop during chess request -> compact', getPromptTier(byId('gpu-llama32-3b-q4f16'), desktop, chessStartMsgs) === 'compact');
+check('Gemma 3 4B desktop during chess request -> compact', getPromptTier(byId('gpu-gemma3-4b-q4f16'), desktop, chessStartMsgs) === 'compact');
+
+const activeGameMsgs = [
+    { role: 'user', content: "let's play chess" },
+    { role: 'assistant', content: '```tool:run\n{"tool":"start_game","params":{"game":"chess","ai_color":"black"}}\n```' },
+    { role: 'system', content: '[System]: chess started. Current FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1. You are Black. User is White.' },
+    { role: 'user', content: 'e4\n\n[Game State] Current FEN: rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1. Move history: e4. You are playing Black. It is NOW YOUR TURN. You MUST use the make_move tool immediately to play your move.' },
+];
+check('3B desktop during active game move -> compact', getPromptTier(byId('gpu-llama32-3b-q4f16'), desktop, activeGameMsgs) === 'compact');
+check('Gemma 3 4B desktop during active game move -> compact', getPromptTier(byId('gpu-gemma3-4b-q4f16'), desktop, activeGameMsgs) === 'compact');
+
+const checkersMsgs = [{ role: 'user', content: "let's play checkers" }];
+check('3B desktop during checkers -> compact', getPromptTier(byId('gpu-llama32-3b-q4f16'), desktop, checkersMsgs) === 'compact');
+
+const closedGameMsgs = [
+    ...activeGameMsgs,
+    { role: 'system', content: '[Game Closed]' },
+    { role: 'user', content: 'What is quantum mechanics?' }
+];
+check('3B desktop after game closed -> full', getPromptTier(byId('gpu-llama32-3b-q4f16'), desktop, closedGameMsgs) === 'full');
+check('isGameActive detects active game move', isGameActive(activeGameMsgs) === true);
+check('isGameActive detects closed game', isGameActive(closedGameMsgs) === false);
+check('isGameActive false on normal chat', isGameActive([{ role: 'user', content: 'hello' }]) === false);
 
 // The model auto-selected on phone/TV must NOT get the full prompt.
 const autoOnPhone = rankAutoPresets({ hasGpu: false }, 4, true, null)[0];
