@@ -25,12 +25,11 @@ const wordToNum = {
     hundred: 100, thousand: 1000, million: 1000000
 };
 
-// Common texting abbreviations safe to expand in any context
+// Common texting abbreviations safe to expand in conversational context
 const ABBREVS = {
     "u": "you",
     "ur": "your",
     "r": "are",
-    "y": "why",
     "b4": "before",
     "bc": "because",
     "bcz": "because",
@@ -50,13 +49,10 @@ const ABBREVS = {
     "ofc": "of course",
     "omg": "oh my god",
     "smh": "shaking my head",
-    "imo": "in my opinion",
     "lol": "laughing out loud",
     "lmao": "laughing my ass off",
     "gr8": "great",
     "gr8t": "great",
-    "2": "to",
-    "4": "for",
     "pls": "please",
     "plz": "please",
     "thx": "thanks",
@@ -82,6 +78,9 @@ const _abbrevRegex = new RegExp(
     'gi'
 );
 
+// Non-numeric idioms using "one" that should NOT be converted to the digit "1"
+const IDIOM_ONE_REGEX = /\b(?:no|which|each|any|some|the|this|that|every)\s+one\b|\bone\s+(?:of|by\s+one|day)\b/gi;
+
 export class UserInputProcessor {
     /**
      * Run every post-processing pass on the raw user input.
@@ -91,6 +90,10 @@ export class UserInputProcessor {
      */
     static process(text) {
         if (!text || typeof text !== 'string') return text;
+        if (text.length > 50000) return text; // ReDoS and memory safety guardrail
+
+        // Normalize unicode diacritics and strip invisible zero-width characters
+        text = text.normalize('NFC').replace(/[\u200B-\u200D\uFEFF]/g, '');
 
         const trimmed = text.trim();
 
@@ -108,11 +111,18 @@ export class UserInputProcessor {
             return text.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
         }
 
-        // ── Mask code blocks so inline/fenced code is never corrupted ──────────
-        const codeBlocks = [];
-        let p = text.replace(/(```[\s\S]*?```|`[^`\n]+`)/g, (match) => {
-            codeBlocks.push(match);
-            return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+        // ── Mask code blocks & URLs so they are never corrupted ──────────────
+        const preservedBlocks = [];
+        let p = text.replace(/(```[\s\S]*?```|`[^`\n]+`|https?:\/\/[^\s<>"]+)/g, (match) => {
+            preservedBlocks.push(match);
+            return `__PRESERVED_BLOCK_${preservedBlocks.length - 1}__`;
+        });
+
+        // ── Mask common idioms with "one" (e.g. "no one", "which one") ────────
+        const preservedIdioms = [];
+        p = p.replace(IDIOM_ONE_REGEX, (match) => {
+            preservedIdioms.push(match);
+            return `__PRESERVED_IDIOM_${preservedIdioms.length - 1}__`;
         });
 
         // ── Pass 1: Smart-quote normalisation ─────────────────────────────────
@@ -135,8 +145,16 @@ export class UserInputProcessor {
         // Only expand if the message is mostly ASCII (avoids mangling non-English text)
         const asciiRatio = (p.match(/[\x00-\x7F]/g) || []).length / p.length;
         if (asciiRatio > 0.85) {
-            p = p.replace(_abbrevRegex, (match) => {
-                const expanded = ABBREVS[match.toLowerCase()];
+            p = p.replace(_abbrevRegex, (match, offset, fullStr) => {
+                const lower = match.toLowerCase();
+                // Special guard for "r": only replace with "are" if not part of a math equation/formula
+                if (lower === 'r') {
+                    const before = fullStr.slice(Math.max(0, offset - 5), offset);
+                    const after = fullStr.slice(offset + 1, offset + 6);
+                    if (/[=^+\-*/%]/.test(before) || /[=^+\-*/%]/.test(after)) return match;
+                }
+
+                const expanded = ABBREVS[lower];
                 if (!expanded) return match;
                 // Preserve leading capital if original was capitalised
                 return match[0] === match[0].toUpperCase() && match[0] !== match[0].toLowerCase()
@@ -171,9 +189,14 @@ export class UserInputProcessor {
         // ── Pass 9: Trailing ellipsis trim ────────────────────────────────────
         p = p.replace(/\.{3,}$/, '').trim();
 
-        // ── Restore masked code blocks ────────────────────────────────────────
-        if (codeBlocks.length > 0) {
-            p = p.replace(/__CODE_BLOCK_(\d+)__/g, (_, idx) => codeBlocks[Number(idx)]);
+        // ── Restore masked idioms ─────────────────────────────────────────────
+        if (preservedIdioms.length > 0) {
+            p = p.replace(/__PRESERVED_IDIOM_(\d+)__/g, (_, idx) => preservedIdioms[Number(idx)]);
+        }
+
+        // ── Restore masked code blocks & URLs ─────────────────────────────────
+        if (preservedBlocks.length > 0) {
+            p = p.replace(/__PRESERVED_BLOCK_(\d+)__/g, (_, idx) => preservedBlocks[Number(idx)]);
         }
 
         return p;

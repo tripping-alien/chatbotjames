@@ -104,7 +104,45 @@ check(
     'Thinking about this'
 );
 
-// 9. Null and empty handling
+// 9. Preserves math numbers & units (never converts 2 -> to, 4 -> for)
+check(
+    'math numbers preserved',
+    UserInputProcessor.process('calculate 2 + 4 * 2'),
+    'Calculate 2 + 4 * 2'
+);
+check(
+    'unit conversion numbers preserved',
+    UserInputProcessor.process('convert 2 km to miles'),
+    'Convert 2 km to miles'
+);
+
+// 10. Preserves non-numeric idioms with "one"
+check(
+    'idiom no one preserved',
+    UserInputProcessor.process('no one knows'),
+    'No one knows'
+);
+check(
+    'idiom which one preserved',
+    UserInputProcessor.process('which one is better?'),
+    'Which one is better?'
+);
+
+// 11. Preserves URLs and file paths
+check(
+    'URLs preserved without abbreviation collision',
+    UserInputProcessor.process('visit https://reddit.com/r/technology/u/admin'),
+    'Visit https://reddit.com/r/technology/u/admin'
+);
+
+// 12. Strips invisible zero-width characters
+check(
+    'zero-width characters stripped',
+    UserInputProcessor.process('hello\u200Bworld\uFEFF'),
+    'Helloworld'
+);
+
+// 13. Null, empty, and large input handling
 check('null input', UserInputProcessor.process(null), null);
 check('empty input', UserInputProcessor.process(''), '');
 check('non-string input', UserInputProcessor.process(42), 42);
