@@ -776,7 +776,7 @@ function sendMessage(preExecutedMove = null) {
         }
     }
 
-    const displayMessage = processedText + (attachmentManager.attachedFiles.length > 0 ? ` [Attached: ${attachmentManager.attachedFiles.map(f => f.name).join(', ')}]` : '');
+    const displayMessage = (text || processedText) + (attachmentManager.attachedFiles.length > 0 ? ` [Attached: ${attachmentManager.attachedFiles.map(f => f.name).join(', ')}]` : '');
 
     chatManager.chatHistory.push({ role: 'user', content: fullPrompt, displayContent: displayMessage });
     appendUserMessage(displayMessage, chatManager.chatHistory.length - 1);
