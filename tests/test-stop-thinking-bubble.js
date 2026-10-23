@@ -74,6 +74,9 @@ check('stream-manager.js exports cancelStream',
 check('stream-manager.js cancelStream clears timeouts and deletes queue',
     /clearTimeout\(state\.timeoutId\)[\s\S]*?streamQueues\.delete\(targetId\)/.test(streamManagerContent));
 
+check('stream-manager.js resumeStreamForTarget guards against finished streams and inactive chats',
+    /export\s+function\s+resumeStreamForTarget[\s\S]*?_finished\.has\(targetId\)[\s\S]*?activeTarget\s*!==\s*targetId/.test(streamManagerContent));
+
 // 3. Functional tests for stream-manager cancelStream
 const streamManagerCode = fs.readFileSync(path.resolve('core/stream-manager.js'), 'utf8')
     .replace(/import\s*\{[^}]*\}\s*from\s*['"]\.\/message-renderer\.js['"];?/, 'const updateLiveBubble = () => {}, updateLiveBubbleAppend = () => {};')
