@@ -24,7 +24,7 @@ import { smallTalk } from '../nlp/smalltalk.js?v=4';
 import { CONFIG } from './config.js';
 import { safeLocalStorage, dbSaveNote, dbDeleteNote, dbClearNotes, initConfigCache } from './chat-db.js';
 import { playSendSound, playDoneSound, playReceiveSound } from './audio-wakelock.js';
-import { getNextTargetId } from './stream-manager.js';
+import { getNextTargetId, pauseStreamsExcept, resumeStreamForTarget, cancelStream, flushStreamQueue, queueStreamText } from './stream-manager.js';
 import {
     setupMessageRenderer,
     updateStatusLight,
@@ -78,19 +78,21 @@ function renderChatLog() {
         }
     });
 
-    // Restore thinking / streaming bubble for this thread if generation is still in progress.
+    // Restore thinking / streaming bubble for this thread ONLY if generation is truly active.
     // renderChatLog wipes the DOM (innerHTML = ''), so without this the bubble is lost on
     // thread switch and never comes back until a new worker event arrives.
     const targetId = workerController.activeGenerations.get(chatManager.currentChatId);
-    if (targetId != null) {
-        import('./stream-manager.js').then(sm => {
-            // Pause every other stream so background animations cannot inject ghost bubbles
-            sm.pauseStreamsExcept(targetId);
-            sm.resumeStreamForTarget(targetId);
-        });
+    if (targetId != null && globalState.isGeneratingUI) {
+        // Pause every other stream so background animations cannot inject ghost bubbles
+        pauseStreamsExcept(targetId);
+        resumeStreamForTarget(targetId);
     } else {
-        // No active gen on this chat — pause all streams' DOM updates
-        import('./stream-manager.js').then(sm => sm.pauseStreamsExcept(null));
+        // No active generation on this chat — delete any stale target, pause all streams and sweep thinking bubbles
+        if (targetId != null) {
+            workerController.activeGenerations.delete(chatManager.currentChatId);
+        }
+        pauseStreamsExcept(null);
+        removeThinkingBubble();
     }
 }
 

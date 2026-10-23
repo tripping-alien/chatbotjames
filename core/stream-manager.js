@@ -149,17 +149,34 @@ export function pauseStreamsExcept(keepTargetId) {
  * switching back to its chat. Creates / refreshes the live bubble.
  */
 export function resumeStreamForTarget(targetId) {
+    if (targetId == null || _finished.has(targetId)) {
+        if (window.workerController && window.chatManager) {
+            window.workerController.activeGenerations.delete(window.chatManager.currentChatId);
+        }
+        return;
+    }
+
+    const currentChatId = window.chatManager?.currentChatId;
+    const activeTarget = window.workerController?.activeGenerations?.get(currentChatId);
+    if (activeTarget !== targetId) return;
+
     const state = streamQueues.get(targetId);
     if (!state) {
-        // Still in pure "thinking" phase — no tokens yet
-        updateLiveBubble('...', targetId);
+        // Only show thinking bubble if the system is actively generating for this visible chat
+        if (window.globalState?.isGeneratingUI) {
+            updateLiveBubble('...', targetId);
+        } else {
+            if (window.workerController && currentChatId != null) {
+                window.workerController.activeGenerations.delete(currentChatId);
+            }
+        }
         return;
     }
     state.updateDom = true;
     const text = state.displayed || state.pending || '';
     if (text) {
         updateLiveBubble(text, targetId);
-    } else {
+    } else if (window.globalState?.isGeneratingUI) {
         updateLiveBubble('...', targetId);
     }
     if (!state.running && state.displayed.length < state.pending.length) {
