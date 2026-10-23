@@ -85,7 +85,9 @@ async function getWeather(params) {
 
 // ── Web Search — delegates to tools-search.js (SearXNG + Wikipedia + Jina) ──
 async function getWebSearch(params) {
-    const { query } = params;
+    const query = typeof params === 'string'
+        ? params
+        : (params?.query || params?.q || params?.search || params?.term || params?.input || params?.text || null);
     if (!query) throw new Error('web_search requires a query parameter');
     return performWebSearch(query);
 }
@@ -874,6 +876,15 @@ export const TOOL_HANDLERS = {
     weather: getWeather,
     websearch: getWebSearch,
     web_search: getWebSearch,
+    duckduckgo: getWebSearch,
+    duckduckgo_search: getWebSearch,
+    ddg: getWebSearch,
+    ddg_search: getWebSearch,
+    search_web: getWebSearch,
+    google: getWebSearch,
+    google_search: getWebSearch,
+    bing: getWebSearch,
+    bing_search: getWebSearch,
     wikipedia: getWikipedia,
     currency: getCurrency,
     time: getTime,
