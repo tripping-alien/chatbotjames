@@ -61,7 +61,10 @@ const NETWORK_FIRST = [
     '/assets/preview.png',
     '/assets/preview-banner.jpg',
     '/assets/james-logo.jpg',
-    '/assets/privacy-shield.jpg'
+    '/assets/privacy-shield.jpg',
+    '/assets/docs-architecture.jpg',
+    '/assets/faq-orb.jpg',
+    '/assets/share-network.jpg'
 ];
 
 // Install: pre-cache static assets and app files for offline compliance
