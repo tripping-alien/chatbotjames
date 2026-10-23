@@ -41,7 +41,7 @@ class AttachmentManager {
         Array.from(files).forEach(file => {
             if (file.type.startsWith('image/')) {
                 if (appendErrorToChatCallback) {
-                    appendErrorToChatCallback(`⚠️ "${file.name}" is an image. James does not support image analysis yet. Please attach text files.`);
+                    appendErrorToChatCallback(`⚠️ "${file.name}" is an image. JAMES does not support image analysis yet. Please attach text files.`);
                 }
                 return;
             }
