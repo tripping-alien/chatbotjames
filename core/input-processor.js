@@ -92,7 +92,28 @@ export class UserInputProcessor {
     static process(text) {
         if (!text || typeof text !== 'string') return text;
 
-        let p = text;
+        const trimmed = text.trim();
+
+        // ── Preserve game moves (e.g. b4, e2 to e4, 22-18) untouched ─────────
+        const isGameMove = /^[a-h][1-8]$/i.test(trimmed) ||
+                           /^[a-h][1-8]\s*(?:to|->|-|→)\s*[a-h][1-8]$/i.test(trimmed) ||
+                           /^[NQKBR][a-h1-8]?x?[a-h][1-8](?:=[NQKBR])?[+#]?$/i.test(trimmed) ||
+                           /^O-O(?:-O)?$/i.test(trimmed) ||
+                           /^\d+\s*[-xX→>]\s*\d+(?:\s*[-xX→>]\s*\d+)*$/i.test(trimmed);
+        if (isGameMove) return trimmed;
+
+        // ── Preserve pure code snippets (e.g. Python functions/scripts) ───────
+        const isPureCode = /^(?:def\s+\w+|import\s+\w+|from\s+\w+\s+import|class\s+\w+|for\s+\w+\s+in|while\s+|print\(|return\s+|try:|except(?:\s+\w+)?:|if\s+__name__\s*==)/m.test(trimmed);
+        if (isPureCode) {
+            return text.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+        }
+
+        // ── Mask code blocks so inline/fenced code is never corrupted ──────────
+        const codeBlocks = [];
+        let p = text.replace(/(```[\s\S]*?```|`[^`\n]+`)/g, (match) => {
+            codeBlocks.push(match);
+            return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+        });
 
         // ── Pass 1: Smart-quote normalisation ─────────────────────────────────
         p = p
@@ -149,6 +170,11 @@ export class UserInputProcessor {
 
         // ── Pass 9: Trailing ellipsis trim ────────────────────────────────────
         p = p.replace(/\.{3,}$/, '').trim();
+
+        // ── Restore masked code blocks ────────────────────────────────────────
+        if (codeBlocks.length > 0) {
+            p = p.replace(/__CODE_BLOCK_(\d+)__/g, (_, idx) => codeBlocks[Number(idx)]);
+        }
 
         return p;
     }
