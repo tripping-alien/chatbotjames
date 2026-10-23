@@ -392,11 +392,21 @@ export function renderGameBoard(game, container, onMove) {
                                 onMove({ ...moveResult, notation: notationStr });
                             }
                         } else {
-                            // Invalid move → try to select the clicked square instead
-                            if (game.type === 'chess') {
-                                selectedSquare = boardState[r][c] ? algebraic : null;
+                            // Invalid move → try to select the clicked square instead (only own piece on user's turn)
+                            const aiColor = game.aiColor || 'b';
+                            const currentTurn = game.type === 'chess' ? game.getTurn() : game.turn;
+                            const isUserTurn = currentTurn !== aiColor;
+                            if (isUserTurn) {
+                                if (game.type === 'chess') {
+                                    const p = boardState[r][c];
+                                    selectedSquare = (p && p.color === currentTurn) ? algebraic : null;
+                                } else {
+                                    const p = boardState[r][c];
+                                    const isOwn = p !== 0 && ((currentTurn === 'w' && p > 0) || (currentTurn === 'b' && p < 0));
+                                    selectedSquare = isOwn ? { r, c } : null;
+                                }
                             } else {
-                                selectedSquare = boardState[r][c] !== 0 ? { r, c } : null;
+                                selectedSquare = null;
                             }
                             render();
                             scrollChat();
