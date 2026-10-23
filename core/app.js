@@ -843,75 +843,7 @@ function handleStopGeneration() {
     }
 }
 
-window.simulateCannedResponse = function (text) {
-    globalState.cannedGenId++;
-    const currentGenId = globalState.cannedGenId;
-
-    // Lock: prevents worker 'done'/'complete' messages from calling setIdleState(true)
-    // and interrupting this animation. Cleared in every exit path below.
-    _cannedGenActive = true;
-
-    uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
-    updateStatusLight('thinking');
-    uiManager.updateStatusText('THINKING...');
-
-    const targetId = getNextTargetId();
-    workerController.activeGenerations.set(chatManager.currentChatId, targetId);
-    updateLiveBubble('', targetId);
-
-    // Brief "thinking" pause before streaming starts, then typewriter character-by-character
-    setTimeout(() => {
-        // If a newer canned response superseded this one, or generating was externally cleared,
-        // exit — but only clear _cannedGenActive if we are still the current gen.
-        if (!globalState.isGeneratingUI || globalState.cannedGenId !== currentGenId) {
-            if (globalState.cannedGenId === currentGenId) _cannedGenActive = false;
-            removeThinkingBubble(targetId);
-            return;
-        }
-        uiManager.updateStatusText('RESPONDING...');
-
-        let chars = 0;
-
-        function streamNextChar() {
-            if (!globalState.isGeneratingUI || globalState.cannedGenId !== currentGenId) {
-                // Superseded by a newer canned gen — don't clear the flag if a newer gen is live.
-                if (globalState.cannedGenId === currentGenId) _cannedGenActive = false;
-                workerController.activeGenerations.delete(chatManager.currentChatId);
-                removeThinkingBubble(targetId);
-                return;
-            }
-
-            chars++;
-            if (chars >= text.length) {
-                // Final character — commit and finish
-                try {
-                    updateLiveBubble(text, targetId, true);
-                    chatManager.chatHistory.push({ role: 'assistant', content: text });
-                    chatManager.persistCurrentChat(() => gameController.getGameState());
-                    renderChatLog();
-                    playReceiveSound();
-                } finally {
-                    // We are the latest gen — safe to unconditionally clear the lock.
-                    _cannedGenActive = false;
-                    uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
-                    updateStatusLight('idle');
-                    uiManager.updateStatusText('READY');
-                    workerController.activeGenerations.delete(chatManager.currentChatId);
-                }
-                return;
-            }
-
-            updateLiveBubble(text.substring(0, chars), targetId);
-
-            // Natural typing speed: pause slightly longer after punctuation
-            const ch = text[chars - 1];
-            const delay = /[.!?,;:\n]/.test(ch) ? 60 + Math.random() * 40 : 18 + Math.random() * 14;
-            setTimeout(streamNextChar, delay);
-        }
-
-        streamNextChar();
-    }, 180);
-};
+window.simulateCannedResponse = simulateCannedResponse;
 
 // ── Bug #2 guard: strictly serialize tool executions per chat to prevent concurrent
 // executions from pushing duplicate history messages if the worker double-fires 'complete'.
