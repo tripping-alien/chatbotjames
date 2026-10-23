@@ -16,7 +16,7 @@
     
     <style>
         body {
-            background-color: var(--bg-color, #0d1117);
+            background-color: var(--bg-color, #060913);
             color: var(--text-color, #c9d1d9);
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
@@ -24,27 +24,80 @@
             line-height: 1.6;
         }
 
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(6, 9, 19, 0.88);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            color: var(--primary-purple);
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary-blue);
+        }
+
         .share-container {
-            max-width: 800px;
+            max-width: 860px;
             margin: 40px auto;
-            padding: 20px;
+            padding: 0 20px 40px;
         }
 
         .share-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             border-bottom: 1px solid var(--border-color, #30363d);
             padding-bottom: 20px;
         }
         
         .share-header h1 {
-            color: var(--accent-color, #58a6ff);
+            color: var(--primary-purple, #a855f7);
             font-size: 2.5rem;
             margin-bottom: 10px;
         }
 
+        .share-visual {
+            margin-bottom: 25px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border, #30363d);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+        }
+
+        .share-visual img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         .share-content {
-            background-color: rgba(22, 27, 34, 0.8);
+            background-color: var(--assistant-bubble, rgba(22, 27, 34, 0.8));
             border: 1px solid var(--border-color, #30363d);
             border-radius: 8px;
             padding: 30px;
@@ -58,8 +111,9 @@
         }
 
         .share-content p {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             margin-bottom: 20px;
+            line-height: 1.75;
         }
 
         .share-buttons {
@@ -74,7 +128,7 @@
             width: 100%;
             padding: 15px;
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: bold;
             font-family: inherit;
             border: none;
@@ -92,7 +146,7 @@
             transform: scale(0.98);
         }
 
-        .btn-native { background: #2ea44f; color: white; font-size: 1.4rem; padding: 20px; box-shadow: 0 0 15px rgba(46, 164, 79, 0.4); }
+        .btn-native { background: #2ea44f; color: white; font-size: 1.3rem; padding: 18px; box-shadow: 0 0 15px rgba(46, 164, 79, 0.4); }
         .btn-twitter { background: #1DA1F2; color: white; }
         .btn-reddit { background: #FF4500; color: white; }
         .btn-hn { background: #FF6600; color: white; }
@@ -111,14 +165,35 @@
         .back-nav a:hover {
             text-decoration: underline;
         }
+
+        @media (max-width: 620px) {
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <nav>
+        <a class="nav-brand" href="../index.html">JAMES</a>
+        <div class="nav-links">
+            <a href="../index.html">Terminal</a>
+            <a href="./about.html">About</a>
+            <a href="./docs.html">Docs</a>
+            <a href="./faq.html">FAQ</a>
+        </div>
+    </nav>
 
     <div class="share-container">
         <div class="share-header">
             <h1>🚀 Spread the Word</h1>
             <p>Help keep JAMES AI alive and growing.</p>
+        </div>
+
+        <div class="share-visual">
+            <img src="../assets/share-network.jpg" alt="Decentralized P2P AI Network">
         </div>
 
         <div class="share-content">
