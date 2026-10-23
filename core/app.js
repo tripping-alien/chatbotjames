@@ -1129,7 +1129,16 @@ async function handleToolCalls(message, targetId, originChatId) {
                     if (chatManager.onNotesLoaded) chatManager.onNotesLoaded(updatedNotes);
                     toolResult = "Note saved silently.";
                 } else if (toolName === 'eval_python' || toolName === 'python') {
-                    const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'run', code: params.code }, 60000);
+                    if (!workerController.pythonWorker) {
+                        throw new Error('Python environment is not available on this platform.');
+                    }
+                    const pyCode = typeof params === 'string'
+                        ? params
+                        : (params?.code || params?.script || params?.expression || params?.python || '');
+                    if (!pyCode.trim()) {
+                        throw new Error('No Python code provided to execute.');
+                    }
+                    const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'run', code: pyCode }, 60000);
                     // Combine stdout + expression result so the AI sees everything
                     const parts = [];
                     if (pyResp.stdout && pyResp.stdout.trim()) parts.push(pyResp.stdout.trim());
@@ -1158,17 +1167,30 @@ async function handleToolCalls(message, targetId, originChatId) {
                     }
                 } else if (toolName === 'pip_install') {
                     // Install one or more packages into the live Pyodide session via micropip
+                    if (!workerController.pythonWorker) {
+                        throw new Error('Python environment is not available on this platform.');
+                    }
                     if (workerController._pyodideState !== 'ready') {
                         throw new Error('Python environment is still loading — please wait a moment and try again.');
                     }
-                    const pkgs = params.packages
-                        ? (Array.isArray(params.packages) ? params.packages : String(params.packages).split(',').map(s => s.trim()).filter(Boolean))
-                        : (params.package ? [params.package] : []);
+                    let pkgs = [];
+                    if (typeof params === 'string') {
+                        pkgs = params.split(',').map(s => s.trim()).filter(Boolean);
+                    } else if (params) {
+                        if (params.packages) {
+                            pkgs = Array.isArray(params.packages) ? params.packages : String(params.packages).split(',').map(s => s.trim()).filter(Boolean);
+                        } else if (params.package) {
+                            pkgs = [String(params.package).trim()];
+                        }
+                    }
                     if (pkgs.length === 0) throw new Error('pip_install requires a packages parameter');
                     await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'install', packages: pkgs }, 120000);
                     toolResult = `Installed: ${pkgs.join(', ')}. You can now import them.`;
                 } else if (toolName === 'python_reset') {
                     // Wipe all user-defined variables / imports from the Pyodide namespace
+                    if (!workerController.pythonWorker) {
+                        throw new Error('Python environment is not available on this platform.');
+                    }
                     if (workerController._pyodideState !== 'ready') {
                         throw new Error('Python environment is still loading — please wait a moment and try again.');
                     }

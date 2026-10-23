@@ -78,8 +78,15 @@ def _capture_figures():
         return '[]'
 
 def _reset_streams():
-    sys.stdout.seek(0); sys.stdout.truncate(0)
-    sys.stderr.seek(0); sys.stderr.truncate(0)
+    global sys
+    if not hasattr(sys.stdout, 'getvalue') or not hasattr(sys.stdout, 'seek'):
+        sys.stdout = _CaptureStream()
+    else:
+        sys.stdout.seek(0); sys.stdout.truncate(0)
+    if not hasattr(sys.stderr, 'getvalue') or not hasattr(sys.stderr, 'seek'):
+        sys.stderr = _CaptureStream()
+    else:
+        sys.stderr.seek(0); sys.stderr.truncate(0)
 `);
 
         // Tell Matplotlib to use the non-interactive Agg backend from the
