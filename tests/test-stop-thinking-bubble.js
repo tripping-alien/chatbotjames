@@ -58,6 +58,12 @@ check('app.js onWorkerStatus cleans up thinking bubble on error',
 check('app.js setupModelPanel abort removes thinking bubble',
     /setupModelPanel[\s\S]*?workerController\.worker\.postMessage[\s\S]*?removeThinkingBubble/.test(appContent));
 
+check('app.js renderChatLog checks isGeneratingUI and calls removeThinkingBubble on inactive threads',
+    /renderChatLog[\s\S]*?activeGenerations\.get[\s\S]*?globalState\.isGeneratingUI[\s\S]*?removeThinkingBubble\(\)/.test(appContent));
+
+check('app.js simulateCannedResponse cleans up activeGenerations on completion',
+    /simulateCannedResponse[\s\S]*?activeGenerations\.delete\(chatId\)/.test(appContent));
+
 // 2. Static checks for core/stream-manager.js
 const streamManagerPath = path.resolve('core/stream-manager.js');
 const streamManagerContent = fs.readFileSync(streamManagerPath, 'utf8');
