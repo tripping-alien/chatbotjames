@@ -126,8 +126,16 @@
         .nav-links a:hover, .nav-links a.active { color: var(--primary-blue); }
         .page-content { max-width: 1080px; margin: 0 auto; padding: 3rem 2rem 4rem; }
         .hero { padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); }
-        .eyebrow { display: inline-block; margin-bottom: 1rem; font-size: 0.78rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--text-secondary); }
-        .hero-title { font-size: clamp(2.6rem, 5vw, 4.4rem); line-height: 1; margin-bottom: 1rem; color: var(--primary-purple); }
+        .eyebrow { display: inline-block; margin-bottom: 0.75rem; font-size: 0.78rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--text-secondary); }
+        .hero-title {
+            font-size: clamp(2.4rem, 5vw, 3.8rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1.25rem;
+            color: var(--primary-purple);
+            letter-spacing: -0.01em;
+            text-shadow: 0 0 18px rgba(0, 243, 255, 0.3);
+        }
         .hero-copy { max-width: 760px; line-height: 1.85; color: var(--text-primary); margin-bottom: 1.75rem; }
         .hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; }
         .hero-visual { margin: 2rem 0 1.5rem; }
@@ -174,13 +182,7 @@
         <main class="page-content">
             <section class="hero">
                 <span class="eyebrow">Project / About</span>
-                <pre class="ascii-art" style="border:none; background:transparent; padding:0; margin-bottom: 1.5rem; color: #00f3ff; font-weight: bold; font-size: clamp(0.7rem, 2vw, 1.2rem); line-height: 1.2; text-shadow: 0 0 5px rgba(0, 243, 255, 0.8), 0 0 10px rgba(0, 243, 255, 0.5);">
-    ___   __ 
-   /   | / /_  ____  __  __  __
-  / /| |/ __ \/ __ \/ / / / / /
- / ___ / /_/ / /_/ / /_/ / / /_
-/_/  |_\____/\____/\____/  \__/
-                </pre>
+                <h1 class="hero-title">About JAMES AI</h1>
                 <p class="hero-copy">A free, local-first AI assistant that runs entirely in your browser &mdash; no account, no server, and no data ever sent anywhere. JAMES combines browser-native inference, streaming responses, and a tool-aware architecture so your conversations stay private while still being powerful.</p>                <div class="hero-visual">
                     <img src="../assets/preview-banner.jpg" alt="JAMES preview" class="hero-preview">
                 </div>                <div class="hero-actions">
