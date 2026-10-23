@@ -5,9 +5,24 @@
 import { executeSearch } from './tools-search.js';
 
 export async function handleToolCall(toolName, args) {
-    switch (toolName) {
+    const norm = (toolName || '').toLowerCase().trim();
+    switch (norm) {
         case 'web_search':
-            return await executeSearch(args.query);
+        case 'websearch':
+        case 'duckduckgo':
+        case 'duckduckgo_search':
+        case 'ddg':
+        case 'ddg_search':
+        case 'search_web':
+        case 'google':
+        case 'google_search':
+        case 'bing':
+        case 'bing_search': {
+            const query = typeof args === 'string'
+                ? args
+                : (args?.query || args?.q || args?.search || args?.term || args?.input || '');
+            return await executeSearch(query);
+        }
         default:
             return {
                 success: false,
