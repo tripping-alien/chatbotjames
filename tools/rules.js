@@ -70,9 +70,9 @@ export const RULES = [
     {
         tool: 'websearch',
         description: 'Searches the web (DuckDuckGo fallback).',
-        examples: ['search for TypeScript tutorials', 'look up climate change', 'google best pizza NYC', 'search the web for artificial intelligence'],
+        examples: ['search for TypeScript tutorials', 'look up climate change', 'google best pizza NYC', 'duckduckgo latest news', 'search the web for artificial intelligence'],
         patterns: [
-            /^(?:search(?: the web| web)?(?: for)?|look up|google|bing|find updates on|search on google for)\s+(.+)/i,
+            /^(?:search(?: the web| web)?(?: for)?|look up|google|bing|duckduckgo|ddg|find updates on|search on (?:google|duckduckgo|bing) for)\s+(.+)/i,
         ],
         params: m => ({ query: cleanTail(m[1]) }),
     },
