@@ -19,8 +19,8 @@ export const extraPatterns = [
     {
         triggers: ['who made you', 'who created you', 'who built you', 'who is your creator', 'who programmed you', 'who is ur creator', 'who made u', 'who built u', 'who programmed u'],
         responses: [
-            "I was developed by Andrey Lopukhov as a completely private, browser-based AI experiment.",
-            "Andrey Lopukhov built me! He designed me to run locally and keep your data private.",
+            "I was developed by SmallTalk Apps as a completely private, browser-based AI experiment.",
+            "SmallTalk Apps built me! Designed to run locally and keep your data private.",
         ]
     },
     

@@ -543,10 +543,10 @@ export class SmallTalkHandler {
                     'who invented you', 'your creator', 'your developer',
                 ],
                 responses: [
-                    "I was developed by Andrey Lopukhov.",
-                    "Andrey Lopukhov created me to be a fast, private, browser-based AI.",
-                    "I'm a project created by Andrey Lopukhov. Nice to meet you!",
-                    "Built by Andrey Lopukhov — designed for local, private use in your browser.",
+                    "I was developed by SmallTalk Apps.",
+                    "SmallTalk Apps created me to be a fast, private, browser-based AI.",
+                    "I'm a project created by SmallTalk Apps. Nice to meet you!",
+                    "Built by SmallTalk Apps – designed for local, private use in your browser.",
                 ],
             },
 

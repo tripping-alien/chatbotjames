@@ -57,4 +57,4 @@ Try it live at: [chatbotjames.onrender.com](https://chatbotjames.onrender.com)
 *(Note: Because the model runs entirely locally, initial load times may vary based on your hardware and network speed as the browser caches the required WebAssembly files and model weights).*
 
 ---
-**Author:** Andrey Lopukhov
+**Author:** SmallTalk Apps
