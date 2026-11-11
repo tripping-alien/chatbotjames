@@ -3,7 +3,7 @@
 **Studio**: SmallTalk Apps (Est. 2014)  
 **Package Name**: `net.smalltalkapps.chatbotjames`  
 **Target Canonical URL**: [https://chatbotjames.onrender.com](https://chatbotjames.onrender.com)  
-**Privacy Policy**: [https://smalltalkapps.net/privacy.html](https://smalltalkapps.net/privacy.html)  
+**Privacy Policy**: [https://smalltalkapps.art/privacy-policy/](https://smalltalkapps.art/privacy-policy/)  
 
 ---
 
@@ -48,8 +48,8 @@ PRIVACY & DATA SAFETY:
 ABOUT SMALLTALK APPS:
 Founded in 2014, SmallTalk Apps is an independent software studio dedicated to creating clean, high-performance, and privacy-respecting tools and retro games for mobile platforms.
 
-Website: https://smalltalkapps.net
-Support & Feedback: support@smalltalkapps.net
+Website: https://smalltalkapps.art
+Support & Feedback: smalltalkappsandrey@gmail.com
 ```
 
 ---

@@ -1,5 +1,8 @@
 # JAMES (Just A Machine, Engineered for Speech)
 
+[![Studio](https://img.shields.io/badge/Studio-smalltalkapps.art-FFBE3B.svg)](https://smalltalkapps.art)
+
+
 <p align="left">
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg">
   <img alt="Platform: WebGPU/WASM" src="https://img.shields.io/badge/Platform-WebGPU%20%7C%20WASM-orange.svg">
