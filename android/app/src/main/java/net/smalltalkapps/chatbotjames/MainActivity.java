@@ -1,4 +1,4 @@
-package com.smalltalkapps.chatbotjames;
+package net.smalltalkapps.chatbotjames;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;

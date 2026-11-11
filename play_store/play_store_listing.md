@@ -1,7 +1,7 @@
 # Google Play Store Listing // Chatbot James - In-Browser AI
 
 **Studio**: SmallTalk Apps (Est. 2014)  
-**Package Name**: `com.smalltalkapps.chatbotjames`  
+**Package Name**: `net.smalltalkapps.chatbotjames`  
 **Target Canonical URL**: [https://chatbotjames.onrender.com](https://chatbotjames.onrender.com)  
 **Privacy Policy**: [https://smalltalkapps.net/privacy.html](https://smalltalkapps.net/privacy.html)  
 

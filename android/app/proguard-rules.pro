@@ -2,5 +2,5 @@
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
--keep class com.smalltalkapps.** { *; }
+-keep class net.smalltalkapps.** { *; }
 -dontwarn android.webkit.**

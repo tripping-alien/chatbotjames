@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.smalltalkapps.chatbotjames'
+    namespace 'net.smalltalkapps.chatbotjames'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.smalltalkapps.chatbotjames"
+        applicationId "net.smalltalkapps.chatbotjames"
         minSdk 24
         targetSdk 35
         versionCode 1
