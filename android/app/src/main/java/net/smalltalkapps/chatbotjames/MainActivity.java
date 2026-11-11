@@ -19,7 +19,6 @@ import android.widget.ProgressBar;
 import android.widget.LinearLayout;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView mWebView;
     private ProgressBar mProgressBar;
-    private SwipeRefreshLayout mSwipeRefresh;
     private LinearLayout mOfflineLayout;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -39,22 +37,8 @@ public class MainActivity extends AppCompatActivity {
 
         mWebView = findViewById(R.id.webview);
         mProgressBar = findViewById(R.id.progressBar);
-        mSwipeRefresh = findViewById(R.id.swipeRefresh);
         mOfflineLayout = findViewById(R.id.offlineLayout);
         Button retryButton = findViewById(R.id.retryButton);
-
-        // Configure SwipeRefresh
-        mSwipeRefresh.setColorSchemeColors(android.graphics.Color.parseColor("#f59e0b"));
-        mSwipeRefresh.setOnRefreshListener(() -> {
-            if (isNetworkAvailable()) {
-                mOfflineLayout.setVisibility(View.GONE);
-                mWebView.setVisibility(View.VISIBLE);
-                mWebView.reload();
-            } else {
-                mSwipeRefresh.setRefreshing(false);
-                showOfflineScreen();
-            }
-        });
 
         // Retry Button
         retryButton.setOnClickListener(v -> {
@@ -77,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
+        // Prevent pull-to-refresh & overscroll bounce completely
+        mWebView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        mWebView.setVerticalScrollBarEnabled(true);
+
         // WebChromeClient for Progress
         mWebView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -86,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
                     mProgressBar.setProgress(newProgress);
                 } else {
                     mProgressBar.setVisibility(View.GONE);
-                    mSwipeRefresh.setRefreshing(false);
                 }
             }
         });
@@ -148,6 +135,5 @@ public class MainActivity extends AppCompatActivity {
     private void showOfflineScreen() {
         mWebView.setVisibility(View.GONE);
         mOfflineLayout.setVisibility(View.VISIBLE);
-        mSwipeRefresh.setRefreshing(false);
     }
 }

@@ -177,6 +177,10 @@
     padding: 0;
 }
  
+html, body {
+    overscroll-behavior-y: none;
+}
+
 body {
     font-family: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
     background-color: var(--bg-main);
