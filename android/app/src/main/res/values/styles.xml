@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.SmallTalkApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#f59e0b</item>
+        <item name="colorPrimaryVariant">#fbbf24</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="android:windowBackground">#120e06</item>
+        <item name="android:statusBarColor">#120e06</item>
+        <item name="android:navigationBarColor">#120e06</item>
+    </style>
+</resources>
