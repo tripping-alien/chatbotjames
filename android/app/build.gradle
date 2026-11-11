@@ -16,10 +16,20 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        release {
+            storeFile file('../key/SmallTalkKey.jks')
+            storePassword 'weliketodrinkcoffee'
+            keyAlias 'smalltalk'
+            keyPassword 'weliketodrinkcoffee'
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {

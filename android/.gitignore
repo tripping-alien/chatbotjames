@@ -1,0 +1,6 @@
+# Android Gradle & Build caches
+.gradle/
+build/
+app/build/
+local.properties
+*.hprof
