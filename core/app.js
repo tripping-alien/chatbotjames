@@ -258,7 +258,11 @@ workerController.onWorkerStatus = (status, message, e) => {
         if (!_cannedGenActive && !isToolCall) {
             uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
             updateStatusLight('idle');
-            uiManager.updateStatusText('READY');
+            if (status === 'error' && !e.data?.chatId) {
+                uiManager.updateStatusText('LOAD FAILED');
+            } else {
+                uiManager.updateStatusText('READY');
+            }
         }
         if (status === 'aborted' && e.data.chatId) workerController.activeGenerations.delete(e.data.chatId);
         if (status === 'complete' && e.data.chatId) workerController.activeGenerations.delete(e.data.chatId);
@@ -297,8 +301,12 @@ workerController.onWorkerStatus = (status, message, e) => {
                 if (bgChat) {
                     import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
                 }
-            } else {
+            } else if (errChatId) {
                 appendErrorToChat(errText);
+            } else {
+                // Model initialization failure (no active chatId)
+                uiManager.updateStatusText('LOAD FAILED');
+                appendErrorToChat(`⚠️ Model failed to load: ${errText}. Please check your internet connection or choose another model in Settings.`);
             }
         }
     } else {

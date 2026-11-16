@@ -8,6 +8,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -50,10 +51,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Setup WebSettings
+        WebView.setWebContentsDebuggingEnabled(true);
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setDatabaseEnabled(true);
+        webSettings.setAllowFileAccess(true);
+        webSettings.setAllowContentAccess(true);
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setBuiltInZoomControls(true);
@@ -65,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         mWebView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         mWebView.setVerticalScrollBarEnabled(true);
 
-        // WebChromeClient for Progress
+        // WebChromeClient for Progress and Console logging
         mWebView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
@@ -75,6 +80,14 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     mProgressBar.setVisibility(View.GONE);
                 }
+            }
+
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                android.util.Log.d("ChatBotJamesWeb", consoleMessage.message() + " -- From line "
+                        + consoleMessage.lineNumber() + " of "
+                        + consoleMessage.sourceId());
+                return true;
             }
         });
 

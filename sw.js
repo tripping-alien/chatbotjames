@@ -1,4 +1,4 @@
-const CACHE_NAME = 'JAMES-v5.21';
+const CACHE_NAME = 'JAMES-v5.22';
 
 // Only cache truly static assets - NOT app logic files
 const STATIC_ASSETS = [
@@ -102,8 +102,16 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     const filename = url.pathname.split('/').pop();
 
-    // Always bypass SW for model weight files
-    if (url.pathname.includes('.onnx') || url.pathname.includes('.bin')) {
+    // Always bypass SW for model weight files and Hugging Face assets
+    if (
+        url.hostname.includes('huggingface.co') ||
+        url.hostname.includes('hf.co') ||
+        url.pathname.includes('.onnx') ||
+        url.pathname.includes('.bin') ||
+        url.pathname.includes('.safetensors') ||
+        url.pathname.includes('.onnx_data') ||
+        url.pathname.includes('.wasm')
+    ) {
         return; 
     }
 

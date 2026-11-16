@@ -32,7 +32,17 @@ export const MODEL_PRESETS = [
 
 export function rankAutoPresets(gpuInfo, ramGB, isConstrained, wasmCaps = null) {
     if (isConstrained) {
-        return MODEL_PRESETS.filter(p => p.id === 'lite-smollm-135m-q4');
+        const { hasGpu = false } = gpuInfo || {};
+        const constrainedOrder = [
+            ...(hasGpu ? ['gpu-qwen25-05b-q4f16'] : []),
+            'lite-smollm-135m-q4',
+            'lite-smollm-135m-q8',
+            'lite-smollm-360m-q4',
+            'cpu-qwen25-05b-q4'
+        ];
+        return constrainedOrder
+            .map(id => MODEL_PRESETS.find(p => p.id === id))
+            .filter(Boolean);
     }
 
     const { hasGpu = false, isIntegrated = false } = gpuInfo || {};

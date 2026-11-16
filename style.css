@@ -374,6 +374,7 @@ a:hover {
     display: flex;
     flex-direction: column;
     padding: 16px;
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
     z-index: 50;
@@ -623,6 +624,7 @@ a:hover {
  
 .terminal-header {
     padding: 14px 24px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
     display: flex;
     justify-content: space-between;
     align-items: center;

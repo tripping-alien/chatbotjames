@@ -44,16 +44,30 @@ export function setupDownloadManager(env, selfRef) {
     }
 
     async function cacheMatch(url) {
-        const cache = await caches.open(DOWNLOAD_CACHE);
-        return cache.match(getCacheRequest(url), { ignoreSearch: true, ignoreVary: true, ignoreMethod: true });
+        if (typeof caches === 'undefined') return null;
+        try {
+            const cache = await caches.open(DOWNLOAD_CACHE);
+            return await cache.match(getCacheRequest(url), { ignoreSearch: true, ignoreVary: true, ignoreMethod: true });
+        } catch (e) {
+            console.warn(`[downloader] Cache match failed for ${url}:`, e);
+            return null;
+        }
     }
 
     async function cachePut(url, response) {
+        if (typeof caches === 'undefined') return response;
         try {
             const cache = await caches.open(DOWNLOAD_CACHE);
-            await cache.put(getCacheRequest(url), response.clone());
+            let clone;
+            try {
+                clone = response.clone();
+            } catch (cloneErr) {
+                console.warn(`[downloader] Failed to clone response for cache:`, cloneErr);
+                return response;
+            }
+            await cache.put(getCacheRequest(url), clone);
         } catch (e) {
-            console.warn(`Cache put failed for ${url}:`, e);
+            console.warn(`[downloader] Cache put failed for ${url}:`, e);
         }
         return response;
     }
@@ -126,6 +140,14 @@ export function setupDownloadManager(env, selfRef) {
     async function downloadAndCache(url, signal) {
         const cached = await cacheMatch(url);
         if (cached) return cached;
+
+        // On mobile devices, bypass chunked buffering.
+        // Chunked buffering holds dozens of ArrayBuffers + Blob + cloned Response concurrently in V8 heap,
+        // exceeding Android WebView heap limit and causing OOM. Stream sequentially with fetchWithProgress instead.
+        const isMobile = selfRef.isMobile || (typeof navigator !== 'undefined' && /android|iphone|ipad|ipod/i.test(navigator.userAgent));
+        if (isMobile) {
+            return fetchWithProgress(url, 0, signal);
+        }
 
         let head;
         try {
@@ -217,12 +239,21 @@ export function setupDownloadManager(env, selfRef) {
 
         const cached = await cacheMatch(request.url);
         if (cached) {
-            console.log(`[Cache Hit] ${request.url}`);
-            const size = Number(cached.headers.get('content-length')) || 0;
-            if (size > 1024 * 1024) {
-                reportProgress(size, size, request.url);
+            const cl = cached.headers.get('content-length');
+            if (cl === '0' && (request.url.endsWith('.onnx') || request.url.endsWith('.bin') || request.url.endsWith('.safetensors'))) {
+                console.warn(`[Cache Corrupt] 0-length cached file for ${request.url}, clearing...`);
+                try {
+                    const cache = await caches.open(DOWNLOAD_CACHE);
+                    await cache.delete(getCacheRequest(request.url));
+                } catch (_) {}
+            } else {
+                console.log(`[Cache Hit] ${request.url}`);
+                const size = Number(cl) || 0;
+                if (size > 1024 * 1024) {
+                    reportProgress(size, size, request.url);
+                }
+                return cached;
             }
-            return cached;
         }
 
         const signal = selfRef.getDownloadSignal ? selfRef.getDownloadSignal() : undefined;

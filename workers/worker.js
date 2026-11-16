@@ -16,6 +16,13 @@ function _workerTierKey(params) {
 // --- CONFIGURATION ---
 env.allowLocalModels = false;
 env.useBrowserCache = true;
+if (env.backends?.onnx?.wasm) {
+    if (!self.crossOriginIsolated || isMobileDevice()) {
+        env.backends.onnx.wasm.numThreads = 1;
+        env.backends.onnx.wasm.proxy = false;
+    }
+}
+self.isMobile = isMobileDevice();
 setupDownloadManager(env, self);
 
 let chatbot = null;
@@ -176,6 +183,13 @@ self.onmessage = async (e) => {
                 const mobile = isMobileDevice({ screenWidth: e.data.screenWidth, maxTouchPoints: e.data.maxTouchPoints });
                 const tv = isTVDevice();
                 deviceFlags = { isMobile: mobile, isTV: tv, isIntegrated: !!gpuInfo?.isIntegrated };
+                self.isMobile = mobile;
+                if (mobile || !self.crossOriginIsolated) {
+                    if (env.backends?.onnx?.wasm) {
+                        env.backends.onnx.wasm.numThreads = 1;
+                        env.backends.onnx.wasm.proxy = false;
+                    }
+                }
                 await tryInitializeModels(
                     gpuInfo, mobile, tv,
                     presetId,
