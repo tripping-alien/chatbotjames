@@ -17,12 +17,12 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topToolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="36dp"
+            android:minHeight="36dp"
             android:background="#1e293b"
             app:title="@string/app_name"
-            app:titleTextColor="#FFFFFF"
-            app:subtitle="AI Conversational Assistant"
-            app:subtitleTextColor="#38bdf8" />
+            app:titleCentered="true"
+            app:titleTextColor="#FFFFFF" />
 
         <ProgressBar
             android:id="@+id/progressBar"
