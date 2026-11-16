@@ -1,29 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#120e06">
+    android:background="#0f172a"
+    android:fitsSystemWindows="true">
 
-    <FrameLayout
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:background="#1e293b"
+        app:elevation="4dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#1e293b"
+            app:title="@string/app_name"
+            app:titleTextColor="#FFFFFF"
+            app:subtitle="AI Conversational Assistant"
+            app:subtitleTextColor="#38bdf8" />
 
         <ProgressBar
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="4dp"
+            android:layout_height="3dp"
             android:indeterminate="false"
             android:max="100"
-            android:progressTint="#f59e0b"
+            android:progressTint="#38bdf8"
             android:visibility="gone" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <WebView
             android:id="@+id/webview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:overScrollMode="never" />
+            android:layout_height="match_parent" />
 
         <LinearLayout
             android:id="@+id/offlineLayout"
@@ -56,9 +77,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:backgroundTint="#f59e0b"
+                android:backgroundTint="#38bdf8"
                 android:text="Retry Connection"
-                android:textColor="#FFFFFF" />
+                android:textColor="#0f172a" />
         </LinearLayout>
     </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
