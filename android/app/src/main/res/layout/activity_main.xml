@@ -11,18 +11,8 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1e293b"
-        app:elevation="4dp">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/topToolbar"
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
-            android:minHeight="36dp"
-            android:background="#1e293b"
-            app:title="@string/app_name"
-            app:titleCentered="true"
-            app:titleTextColor="#FFFFFF" />
+        android:background="#0f172a"
+        app:elevation="0dp">
 
         <ProgressBar
             android:id="@+id/progressBar"

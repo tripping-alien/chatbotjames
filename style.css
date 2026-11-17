@@ -623,8 +623,8 @@ a:hover {
 }
  
 .terminal-header {
-    padding: 14px 24px;
-    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    padding: 10px 18px;
+    padding-top: max(10px, env(safe-area-inset-top, 0px));
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -880,10 +880,10 @@ a:hover {
  
 /* ═════ INPUT AREA ═════ */
 .input-area {
-    padding: 0 16px 24px 16px;
+    padding: 0 16px 8px 16px;
     /* iOS notch / home-bar safe area — ensures the input is never hidden
        behind the device chrome on iPhone X+ and Android with gesture nav */
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
     background: linear-gradient(180deg, transparent, var(--bg-main) 20%);
     display: flex;
     justify-content: center;
@@ -984,8 +984,10 @@ a:hover {
  
 .input-footer-text {
     text-align: center;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
  
 /* ═════ MODEL PANEL MODAL ═════ */
@@ -1493,6 +1495,22 @@ a:hover {
  
     .input-wrapper {
         border-radius: var(--radius-lg);
+    }
+
+    .terminal-header {
+        padding: 8px 12px;
+        padding-top: max(8px, env(safe-area-inset-top, 0px));
+    }
+
+    .input-area {
+        padding: 0 10px 6px 10px;
+        padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+    }
+
+    .input-footer-text {
+        font-size: 0.68rem;
+        margin-top: 2px;
+        margin-bottom: 2px;
     }
 }
  
