@@ -5,12 +5,9 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     
-    <!-- Android XR Spatial Computing & Wear OS / Watch Compatibility -->
+    <!-- Android XR Spatial Computing Compatibility -->
     <uses-feature
         android:name="android.software.xr.api.spatial"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.type.watch"
         android:required="false" />
     <application
         android:allowBackup="true"
