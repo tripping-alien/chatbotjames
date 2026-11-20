@@ -24,7 +24,8 @@ const testSuites = [
 async function runSuite(suite) {
     return new Promise((resolve) => {
         const start = performance.now();
-        const proc = spawn(process.execPath, [suite.file], { stdio: 'pipe' });
+        const testDir = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '..');
+        const proc = spawn(process.execPath, [suite.file], { cwd: testDir, stdio: 'pipe' });
         let stdout = '';
         let stderr = '';
 
