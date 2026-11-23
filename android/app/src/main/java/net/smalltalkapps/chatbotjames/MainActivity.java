@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        new RateHelper(this).notifyAppLaunch();
         setContentView(R.layout.activity_main);
 
         mWebView = findViewById(R.id.webview);
