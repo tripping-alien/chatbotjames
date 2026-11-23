@@ -16,6 +16,8 @@
 
         <ProgressBar
             android:id="@+id/progressBar"
+            android:contentDescription="Loading progress"
+            android:importantForAccessibility="yes"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="3dp"
@@ -49,6 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="📡 No Network Connection"
+                android:accessibilityHeading="true"
                 android:textColor="#FFFFFF"
                 android:textSize="22sp"
                 android:textStyle="bold" />
@@ -64,6 +67,10 @@
 
             <Button
                 android:id="@+id/retryButton"
+                android:contentDescription="Retry Connection"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:importantForAccessibility="yes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
