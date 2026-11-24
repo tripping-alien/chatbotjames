@@ -1,5 +1,21 @@
 import { CONFIG } from '../core/config.js';
 
+export async function clearModelFromCache(modelIdOrUrl) {
+    if (typeof caches === 'undefined' || !modelIdOrUrl) return;
+    try {
+        const cache = await caches.open('JAMES-model-cache-v3');
+        const keys = await cache.keys();
+        for (const req of keys) {
+            if (req.url.includes(modelIdOrUrl)) {
+                console.log(`[downloader] Purging corrupt/failed cached file: ${req.url}`);
+                await cache.delete(req);
+            }
+        }
+    } catch (e) {
+        console.warn(`[downloader] Failed to purge cache for ${modelIdOrUrl}:`, e);
+    }
+}
+
 export function setupDownloadManager(env, selfRef) {
     const DOWNLOAD_CACHE = 'JAMES-model-cache-v3';
     const CHUNK_SIZE = CONFIG.worker.chunkSizeMb * 1024 * 1024;
@@ -240,7 +256,8 @@ export function setupDownloadManager(env, selfRef) {
         const cached = await cacheMatch(request.url);
         if (cached) {
             const cl = cached.headers.get('content-length');
-            if (cl === '0' && (request.url.endsWith('.onnx') || request.url.endsWith('.bin') || request.url.endsWith('.safetensors'))) {
+            const isModelFile = request.url.endsWith('.onnx') || request.url.endsWith('.onnx_data') || request.url.endsWith('.bin') || request.url.endsWith('.safetensors');
+            if (cl === '0' && isModelFile) {
                 console.warn(`[Cache Corrupt] 0-length cached file for ${request.url}, clearing...`);
                 try {
                     const cache = await caches.open(DOWNLOAD_CACHE);

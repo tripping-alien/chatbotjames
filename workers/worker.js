@@ -1,6 +1,6 @@
 import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1';
 import { CONFIG } from '../core/config.js';
-import { setupDownloadManager } from './worker-downloader.js';
+import { setupDownloadManager, clearModelFromCache } from './worker-downloader.js';
 import { getPromptTier, buildSystemPrompt, isGameActive } from './worker-prompt-tiers.js';
 import { isMobileDevice, isTVDevice, detectWasmCapabilities, detectGpu, getDeviceRamGB } from './worker-device-detect.js';
 import { MODEL_PRESETS, rankAutoPresets, getSmallestPreset, getSmallestFirstPresets } from './worker-presets.js';
@@ -101,6 +101,7 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
             return;
         } catch (err) {
             console.warn(`[worker] Prioritized model ${forcePresetId} failed to load:`, err);
+            clearModelFromCache(targetPreset.model);
             if (newChatbot) {
                 try { newChatbot.dispose(); } catch (_) {}
             }
@@ -209,6 +210,7 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
             } catch (err) {
                 console.warn('[worker] Last preset failed to initialize on reload, clearing cache and falling back:', err);
                 self.postMessage({ status: 'clear-last-preset' });
+                clearModelFromCache(last.model);
                 lastError = err;
             }
         }
