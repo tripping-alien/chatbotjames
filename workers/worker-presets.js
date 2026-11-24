@@ -72,3 +72,29 @@ export function rankAutoPresets(gpuInfo, ramGB, isConstrained, wasmCaps = null) 
     return candidates;
 }
 
+export const SMALLEST_PRESET_ID = 'lite-smollm-135m-q4';
+
+export function getSmallestPreset() {
+    return MODEL_PRESETS.find(p => p.id === SMALLEST_PRESET_ID)
+        || MODEL_PRESETS.find(p => p.id === 'lite-smollm-135m-q8')
+        || MODEL_PRESETS[MODEL_PRESETS.length - 1];
+}
+
+// Always orders from smallest model to largest for cold-start initialization
+export function getSmallestFirstPresets(gpuInfo, ramGB, isConstrained, wasmCaps = null) {
+    const smallest = getSmallestPreset();
+    const litePresets = MODEL_PRESETS
+        .filter(p => p.id.startsWith('lite-'))
+        .sort((a, b) => (a.sizeMB || 0) - (b.sizeMB || 0));
+    const autoCandidates = rankAutoPresets(gpuInfo, ramGB, isConstrained, wasmCaps);
+    const seen = new Set();
+    const result = [];
+    for (const p of [smallest, ...litePresets, ...autoCandidates]) {
+        if (p && !seen.has(p.id)) {
+            seen.add(p.id);
+            result.push(p);
+        }
+    }
+    return result;
+}
+

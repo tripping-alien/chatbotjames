@@ -3,7 +3,7 @@ import { CONFIG } from '../core/config.js';
 import { setupDownloadManager } from './worker-downloader.js';
 import { getPromptTier, buildSystemPrompt, isGameActive } from './worker-prompt-tiers.js';
 import { isMobileDevice, isTVDevice, detectWasmCapabilities, detectGpu, getDeviceRamGB } from './worker-device-detect.js';
-import { MODEL_PRESETS, rankAutoPresets } from './worker-presets.js';
+import { MODEL_PRESETS, rankAutoPresets, getSmallestPreset, getSmallestFirstPresets } from './worker-presets.js';
 
 // Resolve a preset's param count to the CONFIG.tiers key (mirrors app.js _presetTierKey).
 function _workerTierKey(params) {
@@ -27,6 +27,8 @@ setupDownloadManager(env, self);
 
 let chatbot = null;
 let activePreset = null;
+// Last successfully loaded (not merely downloaded) model is the smallest one by default
+let lastSuccessfulPreset = getSmallestPreset();
 let deviceFlags = { isMobile: false, isTV: false }; // set on init, used to pick the prompt tier
 let isGenerating = false;
 let isAborted = false;
@@ -76,18 +78,118 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
     let lastError = null;
 
     if (forcePresetId) {
-        const preset = MODEL_PRESETS.find(p => p.id === forcePresetId);
-        if (!preset) throw new Error(`Unknown preset id: ${forcePresetId}`);
-        self.postMessage({ status: 'warm-start', preset: preset });
-        // Dispose the old pipeline before loading a new one to free GPU/WASM memory.
-        if (chatbot) {
-            try { chatbot.dispose(); } catch (_) {}
-            chatbot = null;
+        const targetPreset = MODEL_PRESETS.find(p => p.id === forcePresetId);
+        if (!targetPreset) throw new Error(`Unknown preset id: ${forcePresetId}`);
+        self.postMessage({ status: 'warm-start', preset: targetPreset });
+
+        // Keep reference to previous active chatbot and last successful load
+        const previousChatbot = chatbot;
+        const previousPreset = activePreset || lastSuccessfulPreset || getSmallestPreset();
+
+        let newChatbot = null;
+        try {
+            newChatbot = await initializeModel(targetPreset.backend, targetPreset.dtype, targetPreset.model);
+
+            // Successfully loaded (not merely downloaded)!
+            if (previousChatbot && previousChatbot !== newChatbot) {
+                try { previousChatbot.dispose(); } catch (_) {}
+            }
+            chatbot = newChatbot;
+            activePreset = targetPreset;
+            lastSuccessfulPreset = targetPreset; // Remember the new successfully loaded model
+            self.postMessage({ status: 'done', presetId: targetPreset.id, preset: targetPreset, backend: targetPreset.backend, dtype: targetPreset.dtype, model: targetPreset.model, isMobile, isTV });
+            return;
+        } catch (err) {
+            console.warn(`[worker] Prioritized model ${forcePresetId} failed to load:`, err);
+            if (newChatbot) {
+                try { newChatbot.dispose(); } catch (_) {}
+            }
+
+            // Next loading failed: remember and fall back to the last successful load (smallest one by default)
+            const fallbackPreset = lastSuccessfulPreset || previousPreset || getSmallestPreset();
+            console.log(`[worker] Reverting to last successful load: ${fallbackPreset.id}`);
+
+            self.postMessage({
+                status: 'model-fallback',
+                failedPresetId: forcePresetId,
+                failedPreset: targetPreset,
+                fallbackPresetId: fallbackPreset.id,
+                fallbackPreset: fallbackPreset,
+                error: normalizeError(err)
+            });
+
+            // If the previous chatbot is still in memory and matches the fallback preset, reuse it immediately
+            if (previousChatbot && previousPreset && previousPreset.id === fallbackPreset.id) {
+                chatbot = previousChatbot;
+                activePreset = fallbackPreset;
+                self.postMessage({
+                    status: 'done',
+                    presetId: fallbackPreset.id,
+                    preset: fallbackPreset,
+                    backend: fallbackPreset.backend,
+                    dtype: fallbackPreset.dtype,
+                    model: fallbackPreset.model,
+                    isMobile,
+                    isTV,
+                    isFallback: true
+                });
+                return;
+            }
+
+            // Otherwise, re-initialize the last successful load
+            try {
+                if (chatbot) {
+                    try { chatbot.dispose(); } catch (_) {}
+                    chatbot = null;
+                }
+                self.postMessage({ status: 'warm-start', preset: fallbackPreset });
+                chatbot = await initializeModel(fallbackPreset.backend, fallbackPreset.dtype, fallbackPreset.model);
+                activePreset = fallbackPreset;
+                lastSuccessfulPreset = fallbackPreset;
+                self.postMessage({
+                    status: 'done',
+                    presetId: fallbackPreset.id,
+                    preset: fallbackPreset,
+                    backend: fallbackPreset.backend,
+                    dtype: fallbackPreset.dtype,
+                    model: fallbackPreset.model,
+                    isMobile,
+                    isTV,
+                    isFallback: true
+                });
+                return;
+            } catch (fallbackErr) {
+                console.error('[worker] Fallback to last successful load failed:', fallbackErr);
+                lastError = fallbackErr;
+            }
+
+            // If fallbackPreset itself failed and was not already the smallest preset, fall back to smallest preset
+            const smallestPreset = getSmallestPreset();
+            if (fallbackPreset.id !== smallestPreset.id) {
+                try {
+                    console.log(`[worker] Fallback to ${fallbackPreset.id} failed, trying default smallest model: ${smallestPreset.id}`);
+                    self.postMessage({ status: 'warm-start', preset: smallestPreset });
+                    chatbot = await initializeModel(smallestPreset.backend, smallestPreset.dtype, smallestPreset.model);
+                    activePreset = smallestPreset;
+                    lastSuccessfulPreset = smallestPreset;
+                    self.postMessage({
+                        status: 'done',
+                        presetId: smallestPreset.id,
+                        preset: smallestPreset,
+                        backend: smallestPreset.backend,
+                        dtype: smallestPreset.dtype,
+                        model: smallestPreset.model,
+                        isMobile,
+                        isTV,
+                        isFallback: true
+                    });
+                    return;
+                } catch (smallestErr) {
+                    console.error('[worker] Fallback to smallest preset failed:', smallestErr);
+                    lastError = smallestErr;
+                }
+            }
         }
-        chatbot = await initializeModel(preset.backend, preset.dtype, preset.model);
-        activePreset = preset;
-        self.postMessage({ status: 'done', presetId: preset.id, preset, backend: preset.backend, dtype: preset.dtype, model: preset.model, isMobile, isTV });
-        return;
     }
 
     if (lastPresetId) {
@@ -101,18 +203,20 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
             try {
                 chatbot = await initializeModel(last.backend, last.dtype, last.model);
                 activePreset = last;
+                lastSuccessfulPreset = last; // Set as last successfully loaded
                 self.postMessage({ status: 'done', presetId: last.id, preset: last, backend: last.backend, dtype: last.dtype, model: last.model, isMobile, isTV });
                 return;
             } catch (err) {
-                console.warn('[worker] Last preset failed to initialize on reload, clearing cache:', err);
+                console.warn('[worker] Last preset failed to initialize on reload, clearing cache and falling back:', err);
                 self.postMessage({ status: 'clear-last-preset' });
                 lastError = err;
             }
         }
     }
 
-    const ranked = rankAutoPresets(gpuInfo, ramGB, isConstrained, wasmCaps);
-    for (const preset of ranked) {
+    // Always load the smallest model at first!
+    const autoPresets = getSmallestFirstPresets(gpuInfo, ramGB, isConstrained, wasmCaps);
+    for (const preset of autoPresets) {
         try {
             self.postMessage({ status: 'warm-start', preset: preset });
             if (chatbot) {
@@ -121,26 +225,7 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
             }
             chatbot = await initializeModel(preset.backend, preset.dtype, preset.model);
             activePreset = preset;
-            self.postMessage({ status: 'done', presetId: preset.id, preset, backend: preset.backend, dtype: preset.dtype, model: preset.model, isMobile, isTV });
-            return;
-        } catch (err) {
-            lastError = err;
-        }
-    }
-
-    const litePresets = MODEL_PRESETS
-        .filter(p => p.id.startsWith('lite-'))
-        .sort((a, b) => (a.sizeMB || 0) - (b.sizeMB || 0));
-
-    for (const preset of litePresets) {
-        try {
-            self.postMessage({ status: 'warm-start', preset: preset });
-            if (chatbot) {
-                try { chatbot.dispose(); } catch (_) {}
-                chatbot = null;
-            }
-            chatbot = await initializeModel(preset.backend, preset.dtype, preset.model);
-            activePreset = preset;
+            lastSuccessfulPreset = preset; // Set as last successfully loaded
             self.postMessage({ status: 'done', presetId: preset.id, preset, backend: preset.backend, dtype: preset.dtype, model: preset.model, isMobile, isTV });
             return;
         } catch (err) {

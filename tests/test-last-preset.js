@@ -1,6 +1,7 @@
 // Run with: node tests/test-last-preset.js
 import fs from 'fs';
 import path from 'path';
+import { SMALLEST_PRESET_ID, getSmallestPreset, getSmallestFirstPresets } from '../workers/worker-presets.js';
 
 let failed = 0;
 const check = (name, cond, extra = '') => {
@@ -14,12 +15,33 @@ const check = (name, cond, extra = '') => {
 
 console.log('--- Last Successfully Loaded Model Persistence Tests ---');
 
+// 0. Verify worker-presets.js implementation
+check('worker-presets defines SMALLEST_PRESET_ID as lite-smollm-135m-q4',
+    SMALLEST_PRESET_ID === 'lite-smollm-135m-q4');
+
+const smallest = getSmallestPreset();
+check('worker-presets getSmallestPreset returns lite-smollm-135m-q4',
+    smallest && smallest.id === 'lite-smollm-135m-q4');
+
+const coldCandidates = getSmallestFirstPresets({ hasGpu: true }, 16, false, null);
+check('worker-presets getSmallestFirstPresets places smallest model first even on 16GB GPU desktop',
+    coldCandidates && coldCandidates.length > 0 && coldCandidates[0].id === 'lite-smollm-135m-q4');
+
 // 1. Verify worker.js implementation
 const workerPath = path.resolve('workers/worker.js');
 const workerContent = fs.readFileSync(workerPath, 'utf8');
 
 check('worker.js handles lastPresetId parameter in tryInitializeModels',
     /async function tryInitializeModels\([^)]*lastPresetId/.test(workerContent));
+
+check('worker.js defaults lastSuccessfulPreset to smallest preset',
+    /let lastSuccessfulPreset\s*=\s*getSmallestPreset\(\)/.test(workerContent));
+
+check('worker.js uses getSmallestFirstPresets on cold-start',
+    /getSmallestFirstPresets\(/.test(workerContent));
+
+check('worker.js posts model-fallback if prioritized model fails',
+    /status:\s*['"]model-fallback['"]/.test(workerContent));
 
 check('worker.js does NOT discard 3B+ saved presets on integrated GPU',
     !workerContent.includes('Saved preset was 3B+ on integrated GPU; clearing to prevent freeze'));
@@ -40,6 +62,12 @@ const controllerContent = fs.readFileSync(controllerPath, 'utf8');
 check('worker-controller defines onClearLastPreset callback',
     /this\.onClearLastPreset\s*=\s*null/.test(controllerContent));
 
+check('worker-controller defines onModelFallback callback',
+    /this\.onModelFallback\s*=\s*null/.test(controllerContent));
+
+check('worker-controller handles model-fallback message',
+    /case\s*['"]model-fallback['"]:\s*if\s*\(\s*this\.onModelFallback\s*\)\s*this\.onModelFallback\(e\.data\);/.test(controllerContent));
+
 check('worker-controller reads james-last-preset-id from safeLocalStorage on init',
     /safeLocalStorage\.getItem\(['"]james-last-preset-id['"]\)/.test(controllerContent));
 
@@ -58,6 +86,10 @@ const appContent = fs.readFileSync(appPath, 'utf8');
 
 check('app.js registers workerController.onClearLastPreset to remove james-last-preset-id',
     /workerController\.onClearLastPreset\s*=\s*\(\)\s*=>\s*\{?\s*safeLocalStorage\.removeItem\(['"]james-last-preset-id['"]\)/.test(appContent));
+
+check('app.js registers workerController.onModelFallback to update UI and safeLocalStorage',
+    /workerController\.onModelFallback\s*=\s*\(data\)\s*=>/.test(appContent) &&
+    appContent.includes("safeLocalStorage.setItem('james-last-preset-id', data.fallbackPresetId)"));
 
 check('app.js saves james-last-preset-id on worker completion',
     /safeLocalStorage\.setItem\(['"]james-last-preset-id['"],\s*runningPreset\.id\)/.test(appContent));
@@ -88,36 +120,61 @@ const mockLocalStorage = {
 let lastPresetOnStart = mockLocalStorage.getItem('james-last-preset-id');
 check('Phase 1: initial storage is null', lastPresetOnStart === null);
 
-// Model "gpu-llama32-3b-q4f16" finishes loading successfully
-const simulatedWorkerDoneData = {
-    status: 'done',
-    presetId: 'gpu-llama32-3b-q4f16',
-    backend: 'webgpu',
-    dtype: 'q4f16',
-    model: 'onnx-community/Llama-3.2-3B-Instruct'
-};
-mockLocalStorage.setItem('james-last-preset-id', simulatedWorkerDoneData.presetId);
-check('Phase 1: 3B preset ID persisted on completion',
-    mockLocalStorage.getItem('james-last-preset-id') === 'gpu-llama32-3b-q4f16');
+// Cold-start loads the smallest model by default
+const coldStartPresetId = getSmallestPreset().id;
+check('Phase 1: cold-start defaults to smallest model (lite-smollm-135m-q4)',
+    coldStartPresetId === 'lite-smollm-135m-q4');
+mockLocalStorage.setItem('james-last-preset-id', coldStartPresetId);
+check('Phase 1: smallest model persisted on successful cold load',
+    mockLocalStorage.getItem('james-last-preset-id') === 'lite-smollm-135m-q4');
 
-// Lifecycle Phase 2: App Reload
+// Lifecycle Phase 2: User prioritizes a model that fails to load -> fallback to last successful load
+let currentActivePresetId = mockLocalStorage.getItem('james-last-preset-id');
+const prioritizedFailedId = 'gpu-llama31-8b-q4f16';
+// Simulate worker fallback dispatch:
+const simulatedFallbackData = {
+    status: 'model-fallback',
+    failedPresetId: prioritizedFailedId,
+    fallbackPresetId: currentActivePresetId // remembers last successfully loaded model
+};
+mockLocalStorage.setItem('james-last-preset-id', simulatedFallbackData.fallbackPresetId);
+check('Phase 2: failed prioritized model reverts to last successful load (smallest preset)',
+    mockLocalStorage.getItem('james-last-preset-id') === 'lite-smollm-135m-q4');
+
+// Lifecycle Phase 3: User prioritizes a model that succeeds
+const prioritizedSuccessId = 'cpu-qwen25-05b-q4';
+mockLocalStorage.setItem('james-last-preset-id', prioritizedSuccessId);
+check('Phase 3: successfully loaded prioritized model becomes the remembered preset',
+    mockLocalStorage.getItem('james-last-preset-id') === 'cpu-qwen25-05b-q4');
+
+// Lifecycle Phase 4: Subsequent failure reverts to the new last successful load
+const nextFailedId = 'gpu-llama32-3b-q4f16';
+const simulatedFallbackData2 = {
+    status: 'model-fallback',
+    failedPresetId: nextFailedId,
+    fallbackPresetId: mockLocalStorage.getItem('james-last-preset-id')
+};
+mockLocalStorage.setItem('james-last-preset-id', simulatedFallbackData2.fallbackPresetId);
+check('Phase 4: next failed load remembers cpu-qwen25-05b-q4 as the fallback',
+    mockLocalStorage.getItem('james-last-preset-id') === 'cpu-qwen25-05b-q4');
+
+// Lifecycle Phase 5: App Reload
 const reloadedPresetId = mockLocalStorage.getItem('james-last-preset-id');
-check('Phase 2: subsequent app load retrieves saved preset',
-    reloadedPresetId === 'gpu-llama32-3b-q4f16');
+check('Phase 5: subsequent app reload retrieves last successful preset',
+    reloadedPresetId === 'cpu-qwen25-05b-q4');
 
 // Worker init message simulation
 const initMessage = {
     type: 'init',
     lastPresetId: reloadedPresetId
 };
-check('Phase 2: worker init packet contains lastPresetId',
-    initMessage.lastPresetId === 'gpu-llama32-3b-q4f16');
+check('Phase 5: worker init packet contains lastPresetId',
+    initMessage.lastPresetId === 'cpu-qwen25-05b-q4');
 
-// Lifecycle Phase 3: WebGPU Error / OOM on reload triggers cleanup
+// Lifecycle Phase 6: WebGPU Error / OOM on reload triggers cleanup
 const onClearLastPreset = () => mockLocalStorage.removeItem('james-last-preset-id');
-// Worker encounters error and sends 'clear-last-preset'
 onClearLastPreset();
-check('Phase 3: clear-last-preset purges invalidated preset from localStorage',
+check('Phase 6: clear-last-preset purges invalidated preset from localStorage',
     mockLocalStorage.getItem('james-last-preset-id') === null);
 
 console.log(failed === 0 ? '\nALL LAST-PRESET PERSISTENCE TESTS PASSED' : `\n${failed} FAILED`);

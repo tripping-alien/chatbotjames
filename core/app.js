@@ -350,6 +350,22 @@ workerController.onClearLastPreset = () => {
     safeLocalStorage.removeItem('james-last-preset-id');
 };
 
+workerController.onModelFallback = (data) => {
+    const failedLabel = data.failedPreset?.label || data.failedPresetId || 'Selected model';
+    const fallbackLabel = data.fallbackPreset?.label || data.fallbackPresetId || 'previous model';
+    console.warn(`[app] Model fallback triggered: failed to load ${failedLabel}, reverting to ${fallbackLabel}`, data.error);
+    uiManager.updateStatusMeta(`Failed to load ${failedLabel}. Reverted to ${fallbackLabel}.`);
+    uiManager.updateStatusText(`REVERTED TO ${fallbackLabel.toUpperCase()}`);
+    if (data.fallbackPresetId) {
+        globalState.activePresetId = data.fallbackPresetId;
+        globalState.selectedPresetId = data.fallbackPresetId;
+        safeLocalStorage.setItem('james-last-preset-id', data.fallbackPresetId);
+        updateModelInfo({ activePresetId: data.fallbackPresetId, selectedPresetId: data.fallbackPresetId });
+        refreshPresetCards();
+        uiManager.updateActiveModelLabel(data.fallbackPreset?.label || data.fallbackPresetId);
+    }
+};
+
 workerController.onDownloadProgress = (loaded, total, file) => {
     const percent = total ? (loaded / total * 100) : 0;
     uiManager.updateProgress(percent);
@@ -363,7 +379,8 @@ workerController.onWorkerDone = (data) => {
     if (data && data.backend) {
         const backend = data.backend === 'webgpu' ? 'WebGPU' : 'WASM (CPU)';
         const deviceTag = data.isTV ? ' · TV Mode' : data.isMobile ? ' · Lightweight Mode' : '';
-        uiManager.updateStatusMeta(`JAMES is online (${backend}${deviceTag})`);
+        const fallbackTag = data.isFallback ? ' (Reverted to last successful model)' : '';
+        uiManager.updateStatusMeta(`JAMES is online (${backend}${deviceTag})${fallbackTag}`);
         uiManager.updateProgress(100);
         uiManager.updateStatusText('READY');
         playDoneSound();
@@ -1560,6 +1577,9 @@ const _savedLastPresetId = safeLocalStorage.getItem('james-last-preset-id');
 if (_savedLastPresetId) {
     globalState.selectedPresetId = _savedLastPresetId;
     globalState.activePresetId = _savedLastPresetId;
+} else {
+    globalState.selectedPresetId = 'lite-smollm-135m-q4';
+    globalState.activePresetId = 'lite-smollm-135m-q4';
 }
 workerController.initWorkers(safeLocalStorage);
 uiManager.updateStatusText(_savedLastPresetId ? 'RESUMING LAST MODEL…' : 'INITIALIZING...');

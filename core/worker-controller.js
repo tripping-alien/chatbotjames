@@ -19,6 +19,7 @@ class WorkerController {
         this.onWorkerStatus = null; // (status, statusText, e)
         this.onModelInfo = null;
         this.onWarmStart = null;
+        this.onModelFallback = null;
         this.onDownloadProgress = null;
         this.onWorkerDone = null; // (e.data.backend)
         this.onClearLastPreset = null;
@@ -82,6 +83,9 @@ class WorkerController {
         switch (status) {
             case 'clear-last-preset':
                 if (this.onClearLastPreset) this.onClearLastPreset();
+                break;
+            case 'model-fallback':
+                if (this.onModelFallback) this.onModelFallback(e.data);
                 break;
             case 'model-info':
                 if (this.onModelInfo) this.onModelInfo(e.data);
