@@ -1502,9 +1502,23 @@ a:hover {
         padding-top: max(8px, env(safe-area-inset-top, 0px));
     }
 
+    .chat-log {
+        padding: 12px 10px 8px 10px;
+        gap: 14px;
+    }
+
     .input-area {
         padding: 0 10px 6px 10px;
         padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+    }
+
+    .input-container {
+        gap: 4px;
+    }
+
+    .input-wrapper {
+        border-radius: var(--radius-lg);
+        padding: 6px 8px 6px 14px;
     }
 
     .input-footer-text {

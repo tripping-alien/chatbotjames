@@ -47,6 +47,12 @@ systemProfiler.start();
 
 // ── Notification Engine ──
 function sendNotification(title, body) {
+    if (window.AndroidBridge && typeof window.AndroidBridge.postNotification === 'function') {
+        try {
+            window.AndroidBridge.postNotification(title, body);
+            return;
+        } catch (e) { }
+    }
     if (document.visibilityState === 'visible') return;
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
         try {
