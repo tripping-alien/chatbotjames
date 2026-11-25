@@ -193,5 +193,24 @@ check('Euler method solves dy/dx = 2x with y(2) approx 4', approxEq(euler.final_
 const diffEqInfer = diffEq({ f: 'y', x0: 0, y0: 1, x_end: 1, steps: 100 });
 check('diffEq mode auto-inference to RK4', approxEq(diffEqInfer.final_y, Math.E, 1e-4));
 
+let blockedInjection = false;
+try {
+    diffEq({ mode: 'rk4', f: '(() => { throw new Error("pwn"); })()', x0: 0, y0: 1, x_end: 1, steps: 10 });
+} catch (_) {
+    blockedInjection = true;
+}
+check('diffEq rejects arbitrary JS code in expression', blockedInjection);
+
+let blockedProto = false;
+try {
+    diffEq({ mode: 'rk4', f: 'constructor.constructor("return 1")()', x0: 0, y0: 1, x_end: 1, steps: 10 });
+} catch (_) {
+    blockedProto = true;
+}
+check('diffEq rejects prototype/constructor gadgets in expression', blockedProto);
+
+const rkTrig = diffEq({ mode: 'rk4', f: '-sin(x) + cos(0) - 0*y', x0: 0, y0: 0, x_end: 1, steps: 100 });
+check('diffEq safe parser evaluates trig & unary ops accurately', approxEq(rkTrig.final_y, Math.cos(1) - 1 + 1, 1e-3));
+
 console.log(failed === 0 ? '\nALL PHYSICS & MATH TESTS PASSED' : `\n${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);

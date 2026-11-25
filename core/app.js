@@ -1304,7 +1304,8 @@ async function handleToolCalls(message, targetId, originChatId) {
                     toolResult = { content, length: content.length };
                 } else if (toolName === 'timer') {
                     const toolsBridge = await import('../tools/tools-bridge.js');
-                    const s = Math.max(1, parseInt(params.seconds ?? 0));
+                    const parsedSec = parseInt(params.seconds ?? 0, 10);
+                    const s = Math.min(86400, Math.max(1, Number.isFinite(parsedSec) ? parsedSec : 60));
                     toolsBridge.showTimer(s, params.label, { DOM: { log: document.getElementById('chatLog') } });
                     toolResult = { seconds: s, label: params.label ?? 'Timer', note: 'Timer started.' };
                 } else {
@@ -1674,15 +1675,38 @@ function _updateNotesUI(notes) {
         return;
     }
 
-    notesList.innerHTML = notes.map(note => `
-        <div class="note-item" style="padding:0.75rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
-            <div style="flex:1;">
-                <div style="font-size:0.9rem;line-height:1.4;">${escapeHTML(note.text)}</div>
-                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;">Saved ${_fromNow(note.timestamp)}</div>
-            </div>
-            <button class="icon-btn" onclick="window._deleteNote('${note.id}')" title="Delete Note" style="padding:4px;color:var(--error-color);">🗑️</button>
-        </div>
-    `).join('');
+    notesList.replaceChildren();
+    for (const note of notes) {
+        const item = document.createElement('div');
+        item.className = 'note-item';
+        item.style.cssText = 'padding:0.75rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;';
+
+        const bodyWrap = document.createElement('div');
+        bodyWrap.style.flex = '1';
+
+        const noteTextEl = document.createElement('div');
+        noteTextEl.style.cssText = 'font-size:0.9rem;line-height:1.4;';
+        noteTextEl.textContent = String(note?.text ?? '');
+
+        const timeEl = document.createElement('div');
+        timeEl.style.cssText = 'font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;';
+        timeEl.textContent = `Saved ${_fromNow(note?.timestamp)}`;
+
+        bodyWrap.appendChild(noteTextEl);
+        bodyWrap.appendChild(timeEl);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'icon-btn';
+        delBtn.type = 'button';
+        delBtn.title = 'Delete Note';
+        delBtn.style.cssText = 'padding:4px;color:var(--error-color);';
+        delBtn.textContent = '🗑️';
+        delBtn.addEventListener('click', () => window._deleteNote(note?.id));
+
+        item.appendChild(bodyWrap);
+        item.appendChild(delBtn);
+        notesList.appendChild(item);
+    }
 }
 window._deleteNote = async (id) => {
     await dbDeleteNote(id);

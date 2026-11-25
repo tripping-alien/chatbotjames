@@ -190,7 +190,11 @@ export function showTimer(seconds, label, neuralLink) {
             div.append('⏱️ ', document.createElement('strong'), ' — ', done);
             div.querySelector('strong').textContent = timerLabel;
             import('../core/audio-wakelock.js').then(m => m.playDoneSound());
-            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            if (typeof window !== 'undefined' && window.AndroidBridge && typeof window.AndroidBridge.postNotification === 'function') {
+                try {
+                    window.AndroidBridge.postNotification('JAMES Timer', `${timerLabel} finished!`);
+                } catch (_) {}
+            } else if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                 new Notification('JAMES Timer', { body: `${timerLabel} finished!` });
             }
         } else {

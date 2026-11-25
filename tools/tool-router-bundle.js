@@ -190,13 +190,95 @@ function evalMath(expr) {
     if (typeof expr !== 'string' || expr.length === 0 || expr.length > 500) {
         throw new Error('Expression is empty or too long');
     }
-    const safe = expr
-        .replace(/\^/g, '**')
+    const src = expr
         .replace(/\bmod\b/gi, '%')
-        .replace(/\bx\b/gi, '*')
-        .replace(/[^0-9+\-*/%.() ]/g, '');
-    if (!safe.trim()) throw new Error('Invalid expression');
-    return Function(`"use strict"; return (${safe})`)();
+        .replace(/\bx\b/gi, '*');
+    const tokens = [];
+    let i = 0;
+    while (i < src.length) {
+        const ch = src[i];
+        if (ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r') { i++; continue; }
+        if ((ch >= '0' && ch <= '9') || (ch === '.' && i + 1 < src.length && src[i + 1] >= '0' && src[i + 1] <= '9')) {
+            const start = i;
+            let hasDot = false;
+            while (i < src.length && ((src[i] >= '0' && src[i] <= '9') || (src[i] === '.' && !hasDot))) {
+                if (src[i] === '.') hasDot = true;
+                i++;
+            }
+            const num = Number(src.slice(start, i));
+            if (!Number.isFinite(num)) throw new Error('Invalid number literal');
+            tokens.push({ type: 'num', value: num });
+            continue;
+        }
+        if (ch === '*' && src[i + 1] === '*') { tokens.push({ type: 'op', value: '**' }); i += 2; continue; }
+        if (ch === '^') { tokens.push({ type: 'op', value: '**' }); i++; continue; }
+        if (ch === '+' || ch === '-' || ch === '*' || ch === '/' || ch === '%' || ch === '(' || ch === ')') {
+            tokens.push({ type: ch === '(' || ch === ')' ? ch : 'op', value: ch });
+            i++;
+            continue;
+        }
+        throw new Error(`Disallowed character in expression: ${ch}`);
+    }
+    if (tokens.length === 0) throw new Error('Invalid expression');
+
+    let pos = 0;
+    let depth = 0;
+    const peek = () => tokens[pos] || null;
+    const parseAdd = () => {
+        let v = parseMul();
+        while (peek()?.type === 'op' && (peek().value === '+' || peek().value === '-')) {
+            const op = tokens[pos++].value;
+            const r = parseMul();
+            v = op === '+' ? v + r : v - r;
+        }
+        return v;
+    };
+    const parseMul = () => {
+        let v = parseUnary();
+        while (peek()?.type === 'op' && (peek().value === '*' || peek().value === '/' || peek().value === '%')) {
+            const op = tokens[pos++].value;
+            const r = parseUnary();
+            v = op === '*' ? v * r : op === '/' ? v / r : v % r;
+        }
+        return v;
+    };
+    const parseUnary = () => {
+        if (peek()?.type === 'op' && (peek().value === '+' || peek().value === '-')) {
+            const op = tokens[pos++].value;
+            const inner = parseUnary();
+            return op === '-' ? -inner : inner;
+        }
+        return parsePow();
+    };
+    const parsePow = () => {
+        const base = parseAtom();
+        if (peek()?.type === 'op' && peek().value === '**') {
+            pos++;
+            return Math.pow(base, parseUnary());
+        }
+        return base;
+    };
+    const parseAtom = () => {
+        if (++depth > 64) throw new Error('Expression nesting depth exceeded');
+        try {
+            const tok = peek();
+            if (!tok) throw new Error('Unexpected end of expression');
+            if (tok.type === 'num') { pos++; return tok.value; }
+            if (tok.type === '(') {
+                pos++;
+                const inner = parseAdd();
+                if (peek()?.type !== ')') throw new Error('Missing closing parenthesis');
+                pos++;
+                return inner;
+            }
+            throw new Error(`Unexpected token: ${tok.value}`);
+        } finally {
+            depth--;
+        }
+    };
+    const res = parseAdd();
+    if (pos !== tokens.length) throw new Error('Invalid expression');
+    return res;
 }
 
 

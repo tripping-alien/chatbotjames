@@ -1,5 +1,5 @@
 // Run with: node tests/test-maps-utils.js
-import { cleanTail, safeInt, evalMath } from '../tools/utils.js';
+import { cleanTail, safeInt, evalMath, validatePublicHttpUrl } from '../tools/utils.js';
 import { resolveCurrency, resolveTimezone, resolveUnit, CURRENCY_MAP, TIMEZONE_MAP } from '../tools/maps.js';
 
 let failed = 0;
@@ -48,6 +48,26 @@ try {
     evalMathSanitized = true;
 }
 check('evalMath sanitizes malicious code', evalMathSanitized);
+
+check('evalMath unary & trig', Math.abs(evalMath('-2^2 + sqrt(16)') - 0) < 1e-9);
+let blockedNesting = false;
+try {
+    evalMath('('.repeat(80) + '1' + ')'.repeat(80));
+} catch (_) {
+    blockedNesting = true;
+}
+check('evalMath blocks deep paren nesting DoS', blockedNesting);
+
+check('validatePublicHttpUrl allows https wikipedia', validatePublicHttpUrl('https://en.wikipedia.org/wiki/Physics') === 'https://en.wikipedia.org/wiki/Physics');
+for (const badUrl of ['javascript:alert(1)', 'file:///etc/passwd', 'http://127.0.0.1:8080', 'http://169.254.169.254/latest/meta-data', 'http://localhost:11434']) {
+    let rejected = false;
+    try {
+        validatePublicHttpUrl(badUrl);
+    } catch (_) {
+        rejected = true;
+    }
+    check(`validatePublicHttpUrl blocks ${badUrl}`, rejected);
+}
 
 console.log('\n--- Maps & Resolvers Tests ---');
 

@@ -1,6 +1,7 @@
 // Run all test suites: node tests/run-all-tests.js
 import { spawn } from 'child_process';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const testSuites = [
     { name: 'Prompt Tiers & Device Budgets', file: 'tests/test-prompt-tiers.js' },
@@ -24,7 +25,8 @@ const testSuites = [
 async function runSuite(suite) {
     return new Promise((resolve) => {
         const start = performance.now();
-        const testDir = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')), '..');
+        const __filename = fileURLToPath(import.meta.url);
+        const testDir = path.resolve(path.dirname(__filename), '..');
         const proc = spawn(process.execPath, [suite.file], { cwd: testDir, stdio: 'pipe' });
         let stdout = '';
         let stderr = '';

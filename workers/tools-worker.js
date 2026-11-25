@@ -1,6 +1,7 @@
 import { create as oramaCreate, insert as oramaInsert, search as oramaSearch } from '../core/orama.js';
 import { performWebSearch } from '../tools/tools-search.js';
 import { evalMath } from '../tools/tool-router.js';
+import { validatePublicHttpUrl } from '../tools/utils.js';
 import { particlePhysics, relativityCalc, linAlg, diffEq } from '../tools/tools-physics.js';
 import { generateSprite } from '../tools/tools-art.js';
 // dayjs removed — using native Intl.DateTimeFormat (zero-dependency, works in all Workers)
@@ -99,7 +100,8 @@ async function fetchPageTool(params) {
         : (params?.url || params?.link || params?.target || params?.href || null);
     if (!url) throw new Error('fetch requires a url parameter');
     try {
-        const res = await fetch(`https://r.jina.ai/${url}`, {
+        const safeUrl = validatePublicHttpUrl(url);
+        const res = await fetch(`https://r.jina.ai/${safeUrl}`, {
             headers: {
                 'Accept': 'text/plain',
                 'X-Max-Tokens': '2000'

@@ -156,13 +156,17 @@ export function formatAssistantMessage(text) {
     // ── Step 3: Sanitize the parsed HTML ─────────────────────────────────────
     html = DOMPurify.sanitize(html);
 
-    // ── Step 4: Restore tool blocks & think blocks ────────────────────────────
+    // ── Step 4: Restore tool blocks & think blocks using function replacers ─
+    // (function replacer avoids $-pattern injection; final DOMPurify pass prevents post-sanitize bypass)
     toolBoxes.forEach((box, i) => {
-        html = html.replace(`<p>${TOOL_PLACEHOLDER}${i}_END</p>`, box).replace(`${TOOL_PLACEHOLDER}${i}_END`, box);
+        const token = `${TOOL_PLACEHOLDER}${i}_END`;
+        html = html.replace(`<p>${token}</p>`, () => box).replace(token, () => box);
     });
     thinkBoxes.forEach((box, i) => {
-        html = html.replace(`<p>${THINK_PLACEHOLDER}${i}_END</p>`, box).replace(`${THINK_PLACEHOLDER}${i}_END`, box);
+        const token = `${THINK_PLACEHOLDER}${i}_END`;
+        html = html.replace(`<p>${token}</p>`, () => box).replace(token, () => box);
     });
+    html = DOMPurify.sanitize(html, { ADD_TAGS: ['details', 'summary'], ADD_ATTR: ['open'] });
 
     return html;
 }

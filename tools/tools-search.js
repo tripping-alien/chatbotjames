@@ -1,6 +1,8 @@
 // tools-search.js
 // Keyless search with strict memory/context guardrails to prevent browser OOM crashes
 
+import { validatePublicHttpUrl } from './utils.js';
+
 const SEARXNG_INSTANCES = [
     'https://searx.be',
     'https://cursus.space',
@@ -105,7 +107,7 @@ export async function performWebSearch(query) {
     for (const candidate of candidateResults) {
         try {
             const crawlRes = await fetchWithTimeout(
-                `https://r.jina.ai/${candidate.url}`,
+                `https://r.jina.ai/${validatePublicHttpUrl(candidate.url)}`,
                 {
                     headers: {
                         'Accept': 'text/plain',

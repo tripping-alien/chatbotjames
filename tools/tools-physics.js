@@ -5,6 +5,8 @@
  * Exports: particlePhysics, relativityCalc, linAlg, diffEq
  */
 
+import { compileMathExpr } from './utils.js';
+
 // ── Physical Constants ────────────────────────────────────────────────────────
 const C    = 299_792_458;           // m/s  — speed of light
 const H    = 6.626_070_015e-34;     // J·s  — Planck constant
@@ -630,11 +632,7 @@ export function linAlg(params = {}) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function _parseExpr(expr, args) {
-    const safe = expr
-        .replace(/\bpi\b/gi, 'Math.PI').replace(/\be\b(?!\w)/g, 'Math.E')
-        .replace(/\b(sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|sqrt|cbrt|abs|exp|log|log2|log10|pow|sign)\b/g, 'Math.$1')
-        .replace(/\bln\b/g, 'Math.log').replace(/\^/g, '**');
-    return new Function(...args, `"use strict"; return (${safe});`);
+    return compileMathExpr(expr, args);
 }
 
 function _rnd(x, s=6) { return _round(x, s); }

@@ -81,13 +81,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Setup WebSettings
-        WebView.setWebContentsDebuggingEnabled(true);
+        boolean isDebuggable = (getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        WebView.setWebContentsDebuggingEnabled(isDebuggable);
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setDatabaseEnabled(true);
-        webSettings.setAllowFileAccess(true);
-        webSettings.setAllowContentAccess(true);
+        webSettings.setAllowFileAccess(false);
+        webSettings.setAllowContentAccess(false);
         webSettings.setMediaPlaybackRequiresUserGesture(false);
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
@@ -126,15 +127,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
+                String scheme = uri.getScheme();
                 String host = uri.getHost();
-                if (host != null && (host.equals(HOST_DOMAIN) || host.endsWith("onrender.com") || host.endsWith("github.io"))) {
+                if ("https".equalsIgnoreCase(scheme) && HOST_DOMAIN.equalsIgnoreCase(host)) {
                     return false; // Stay in WebView
                 }
-                // Open external links (mailto, tel, other sites) in default browser
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    startActivity(intent);
-                } catch (Exception ignored) {}
+                // Open safe external links (https, http, mailto, tel) in default handler
+                if ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme)
+                        || "mailto".equalsIgnoreCase(scheme) || "tel".equalsIgnoreCase(scheme)) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(intent);
+                    } catch (Exception ignored) {}
+                }
                 return true;
             }
 
@@ -205,10 +210,26 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        private long lastNotificationAtMs = 0L;
+
+        private String sanitizeNotificationField(String raw, String fallback, int maxLen) {
+            if (raw == null) return fallback;
+            String cleaned = raw.replaceAll("[\\p{Cntrl}&&[^\n\t]]", "").trim();
+            if (cleaned.isEmpty()) return fallback;
+            return cleaned.length() > maxLen ? cleaned.substring(0, maxLen) : cleaned;
+        }
+
         @JavascriptInterface
         public void postNotification(String title, String body) {
             if (context == null) return;
+            long now = System.currentTimeMillis();
+            synchronized (this) {
+                if (now - lastNotificationAtMs < 500L) return;
+                lastNotificationAtMs = now;
+            }
             try {
+                String safeTitle = sanitizeNotificationField(title, "JAMES AI", 100);
+                String safeBody = sanitizeNotificationField(body, "", 300);
                 Intent intent = new Intent(context, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -218,8 +239,8 @@ public class MainActivity extends AppCompatActivity {
 
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentTitle(title != null ? title : "JAMES AI")
-                    .setContentText(body != null ? body : "")
+                    .setContentTitle(safeTitle)
+                    .setContentText(safeBody)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent);
