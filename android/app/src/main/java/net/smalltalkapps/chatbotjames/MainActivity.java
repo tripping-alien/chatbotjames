@@ -230,12 +230,46 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Load initial page
+        // Load initial page (supporting deep links safely within HOST_DOMAIN)
         if (isNetworkAvailable()) {
-            mWebView.loadUrl(TARGET_URL);
+            mWebView.loadUrl(resolveDeepLinkUrl(getIntent()));
         } else {
             showOfflineScreen();
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (mWebView != null && isNetworkAvailable()) {
+            mWebView.loadUrl(resolveDeepLinkUrl(intent));
+        }
+    }
+
+    private String resolveDeepLinkUrl(Intent intent) {
+        if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction()) || intent.getData() == null) {
+            return TARGET_URL;
+        }
+        Uri data = intent.getData();
+        String scheme = data.getScheme();
+        String host = data.getHost();
+        if ("https".equalsIgnoreCase(scheme) && HOST_DOMAIN.equalsIgnoreCase(host)) {
+            return data.toString();
+        }
+        if ("chatbotjames".equalsIgnoreCase(scheme) || ("smalltalk".equalsIgnoreCase(scheme) && "chatbotjames".equalsIgnoreCase(host))) {
+            String path = data.getEncodedPath();
+            String query = data.getEncodedQuery();
+            StringBuilder url = new StringBuilder(TARGET_URL);
+            if (path != null && !path.isEmpty() && !"/".equals(path)) {
+                url.append(path.startsWith("/") ? path : "/" + path);
+            }
+            if (query != null && !query.isEmpty()) {
+                url.append("?").append(query);
+            }
+            return url.toString();
+        }
+        return TARGET_URL;
     }
 
     private boolean isNetworkAvailable() {

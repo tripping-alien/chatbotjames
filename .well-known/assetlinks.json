@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "net.smalltalkapps.chatbotjames",
+      "sha256_cert_fingerprints": [
+        "E0:31:74:E2:5C:59:F9:9A:96:32:6E:0C:C6:47:AC:BE:56:EC:A8:5C:89:A5:64:53:60:F4:AB:81:0A:6A:A9:55"
+      ]
+    }
+  }
+]
