@@ -1488,7 +1488,7 @@ function bootstrapApp() {
     systemProfiler.markStart('dom-content-loaded');
 
     setupEventListeners();
-    attachmentManager.setupFileAttachment('attachButton', 'fileInput', 'chatWindow', appendErrorToChat);
+    attachmentManager.setupFileAttachment('attachButton', 'fileInput', 'chatLog', appendErrorToChat);
 
     const gpuWarningOverlay = document.getElementById('gpuWarningOverlay');
     const gpuWarningModal = document.getElementById('gpuWarningModal');
@@ -1497,8 +1497,8 @@ function bootstrapApp() {
 
     if (gpuWarningOverlay && gpuWarningModal) {
         const closeGpuWarning = () => {
-            gpuWarningModal.classList.remove('show');
-            gpuWarningOverlay.classList.remove('show');
+            gpuWarningModal.classList.remove('open');
+            gpuWarningOverlay.classList.remove('visible');
         };
         gpuWarningClose?.addEventListener('click', closeGpuWarning);
         gpuWarningOkBtn?.addEventListener('click', closeGpuWarning);
@@ -1507,8 +1507,8 @@ function bootstrapApp() {
         if ((isMobileDevice() || isTVDevice()) && !safeLocalStorage.getItem('james-gpu-warning-shown')) {
             safeLocalStorage.setItem('james-gpu-warning-shown', 'true');
             setTimeout(() => {
-                gpuWarningModal.classList.add('show');
-                gpuWarningOverlay.classList.add('show');
+                gpuWarningModal.classList.add('open');
+                gpuWarningOverlay.classList.add('visible');
             }, 500);
         }
     }

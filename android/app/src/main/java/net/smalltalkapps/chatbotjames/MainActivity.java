@@ -1,6 +1,8 @@
 package net.smalltalkapps.chatbotjames;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
@@ -9,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.ConsoleMessage;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -32,6 +35,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -42,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private WebView mWebView;
     private ProgressBar mProgressBar;
     private LinearLayout mOfflineLayout;
+    private ValueCallback<Uri[]> mFilePathCallback;
+    private ActivityResultLauncher<Intent> mFileChooserLauncher;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -49,6 +56,36 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         new RateHelper(this).notifyAppLaunch();
         setContentView(R.layout.activity_main);
+
+        if (Build.VERSION.SDK_INT >= 33
+                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{ android.Manifest.permission.POST_NOTIFICATIONS }, 1001);
+        }
+
+        mFileChooserLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (mFilePathCallback != null) {
+                        Uri[] results = null;
+                        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                            Intent data = result.getData();
+                            if (data.getClipData() != null) {
+                                int cnt = data.getClipData().getItemCount();
+                                results = new Uri[cnt];
+                                for (int i = 0; i < cnt; i++) {
+                                    results[i] = data.getClipData().getItemAt(i).getUri();
+                                }
+                            } else if (data.getData() != null) {
+                                results = new Uri[]{ data.getData() };
+                            }
+                        }
+                        mFilePathCallback.onReceiveValue(results);
+                        mFilePathCallback = null;
+                    }
+                }
+        );
 
         mWebView = findViewById(R.id.webview);
         mProgressBar = findViewById(R.id.progressBar);
@@ -120,6 +157,36 @@ public class MainActivity extends AppCompatActivity {
                         + consoleMessage.sourceId());
                 return true;
             }
+
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                if (mFilePathCallback != null) {
+                    mFilePathCallback.onReceiveValue(null);
+                    mFilePathCallback = null;
+                }
+                mFilePathCallback = filePathCallback;
+                Intent intent;
+                try {
+                    intent = fileChooserParams.createIntent();
+                } catch (Exception e) {
+                    intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("*/*");
+                }
+                if (fileChooserParams != null && fileChooserParams.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) {
+                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                }
+                try {
+                    mFileChooserLauncher.launch(intent);
+                    return true;
+                } catch (ActivityNotFoundException e) {
+                    if (mFilePathCallback != null) {
+                        mFilePathCallback.onReceiveValue(null);
+                        mFilePathCallback = null;
+                    }
+                    return false;
+                }
+            }
         });
 
         // WebViewClient
@@ -183,6 +250,27 @@ public class MainActivity extends AppCompatActivity {
     private void showOfflineScreen() {
         mWebView.setVisibility(View.GONE);
         mOfflineLayout.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onPause() {
+        if (mWebView != null) mWebView.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mWebView != null) mWebView.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mWebView != null) {
+            mWebView.destroy();
+            mWebView = null;
+        }
+        super.onDestroy();
     }
 
     /**

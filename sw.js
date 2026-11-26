@@ -1,13 +1,12 @@
 const CACHE_NAME = 'JAMES-v5.22';
 
-// Only cache truly static assets - NOT app logic files
-const STATIC_ASSETS = [
-    'https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css'
-];
+// Only cache truly static assets - NOT external CDNs that break offline installs
+const STATIC_ASSETS = [];
 
 // App files: network-first but cached for offline PWA compliance
 const NETWORK_FIRST = [
     '/',
+    '/assets/james-math.wasm',
     '/core/config.js',
     '/core/chat-db.js',
     '/core/chat-manager.js',
@@ -102,17 +101,17 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     const filename = url.pathname.split('/').pop();
 
-    // Always bypass SW for model weight files and Hugging Face assets
+    // Always bypass SW for large remote model weight files and Hugging Face assets
+    // (local james-math.wasm MUST stay SW-cached for offline boot)
     if (
         url.hostname.includes('huggingface.co') ||
         url.hostname.includes('hf.co') ||
         url.pathname.includes('.onnx') ||
         url.pathname.includes('.bin') ||
         url.pathname.includes('.safetensors') ||
-        url.pathname.includes('.onnx_data') ||
-        url.pathname.includes('.wasm')
+        url.pathname.includes('.onnx_data')
     ) {
-        return; 
+        return;
     }
 
     // Network-first for app files

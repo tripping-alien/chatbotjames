@@ -63,7 +63,7 @@ export function setupToolsBridge(neuralLink) {
         }
     });
 
-    const fileInput = document.getElementById('file-input');
+    const fileInput = document.getElementById('fileInput') || document.getElementById('file-input');
     if (fileInput) {
         fileInput.addEventListener('change', async () => {
             const files = Array.from(fileInput.files);
