@@ -13,6 +13,10 @@ class WorkerController {
         this.toolsWorker = null;
         this.pythonWorker = null;
         this.activeGenerations = new Map(); // chatId -> targetId
+        this.abortedTargets = new Set(); // targetIds stopped/aborted by user
+        this.abortControllers = new Map(); // targetId -> AbortController for async tool cancellation
+        this._workerBusyTargetId = null; // targetId currently executing in worker.js
+        this._queuedQuery = null; // queued query if user sends immediately after stopping during unwind
         this._pyodideState = 'idle'; // 'idle' | 'loading' | 'ready' | 'error'
 
         // Callbacks
@@ -56,8 +60,57 @@ class WorkerController {
         this.pythonWorker.postMessage({ type: 'init' });
     }
 
+    markAborted(targetId, chatId = null) {
+        if (targetId != null) {
+            this.abortedTargets.add(targetId);
+            if (this.abortedTargets.size > 256) {
+                this.abortedTargets.delete(this.abortedTargets.values().next().value);
+            }
+            const ctrl = this.abortControllers.get(targetId);
+            if (ctrl) {
+                ctrl.abort();
+                this.abortControllers.delete(targetId);
+            }
+        }
+        if (chatId != null) {
+            if (targetId == null || this.activeGenerations.get(chatId) === targetId) {
+                this.activeGenerations.delete(chatId);
+            }
+            if (this._queuedQuery && this._queuedQuery.chatId === chatId) {
+                this._queuedQuery = null;
+            }
+        } else if (targetId == null) {
+            this.activeGenerations.clear();
+            this._queuedQuery = null;
+        }
+    }
+
+    isTargetAborted(targetId) {
+        return targetId != null && this.abortedTargets.has(targetId);
+    }
+
+    getAbortSignal(targetId) {
+        if (targetId == null) return null;
+        let ctrl = this.abortControllers.get(targetId);
+        if (!ctrl) {
+            ctrl = new AbortController();
+            if (this.abortedTargets.has(targetId)) ctrl.abort();
+            this.abortControllers.set(targetId, ctrl);
+        }
+        return ctrl.signal;
+    }
+
     postQuery(messages, targetId, chatId) {
+        if (this.isTargetAborted(targetId)) return;
         this.activeGenerations.set(chatId, targetId);
+        // If worker inference from an aborted previous turn is still unwinding,
+        // queue the latest prompt instead of failing with "busy".
+        if (this._workerBusyTargetId != null && this._workerBusyTargetId !== targetId) {
+            this._queuedQuery = { messages, targetId, chatId };
+            return;
+        }
+        this._queuedQuery = null;
+        this._workerBusyTargetId = targetId;
         this.worker.postMessage({
             type: 'query',
             messages: messages,
@@ -66,15 +119,43 @@ class WorkerController {
         });
     }
 
-    abortGeneration() {
-        if (this.worker) {
-            this.worker.postMessage({ type: 'abort' });
+    abortGeneration(targetId = null, chatId = null) {
+        this.markAborted(targetId, chatId);
+        if (this.worker && (targetId == null || this._workerBusyTargetId === targetId)) {
+            this.worker.postMessage({ type: 'abort', targetId });
         }
-        this.activeGenerations.clear();
+    }
+
+    _flushQueuedQuery() {
+        if (this._workerBusyTargetId != null || !this._queuedQuery) return;
+        const next = this._queuedQuery;
+        this._queuedQuery = null;
+        if (this.isTargetAborted(next.targetId)) return;
+        this._workerBusyTargetId = next.targetId;
+        this.worker.postMessage({
+            type: 'query',
+            messages: next.messages,
+            targetId: next.targetId,
+            chatId: next.chatId
+        });
     }
 
     workerMessageHandler(e) {
         const { status, message, loaded, total, file, targetId, chatId } = e.data;
+
+        if (status === 'complete' || status === 'aborted' || status === 'error') {
+            if (targetId == null || this._workerBusyTargetId === targetId) {
+                this._workerBusyTargetId = null;
+            }
+            if (targetId != null) {
+                this.abortControllers.delete(targetId);
+            }
+        }
+
+        // Ignore stale progress events from an already-aborted targetId
+        if ((status === 'streaming' || status === 'thinking') && this.isTargetAborted(targetId)) {
+            return;
+        }
 
         if (this.onWorkerStatus) {
             this.onWorkerStatus(status, message, e);
@@ -99,6 +180,7 @@ class WorkerController {
             case 'done':
                 this._recoveryInitDone = true; // flag used for UI recovery check
                 if (this.onWorkerDone) this.onWorkerDone(e.data);
+                this._flushQueuedQuery();
                 break;
             case 'streaming':
                 if (this.onStreaming) this.onStreaming(chatId, targetId, message);
@@ -107,7 +189,9 @@ class WorkerController {
                 if (this.onThinking) this.onThinking(chatId, targetId);
                 break;
             case 'complete':
-                if (hasToolCalls(message)) {
+                if (this.isTargetAborted(targetId)) {
+                    if (this.onAborted) this.onAborted(chatId, targetId, message);
+                } else if (hasToolCalls(message)) {
                     // Message contains tool calls — route exclusively to tool handler.
                     // handleToolCalls will push the assistant message to history itself,
                     // so we must NOT call onComplete here to avoid a duplicate entry.
@@ -115,19 +199,25 @@ class WorkerController {
                 } else {
                     if (this.onComplete) this.onComplete(chatId, targetId, message);
                 }
+                this._flushQueuedQuery();
                 break;
             case 'aborted':
-                if (hasToolCalls(message)) {
-                    if (this.onToolCalls) this.onToolCalls(message, targetId, chatId);
-                } else {
-                    if (this.onAborted) this.onAborted(chatId, targetId, message);
-                }
+                // Never execute tool calls from an aborted generation.
+                if (this.onAborted) this.onAborted(chatId, targetId, message);
+                this._flushQueuedQuery();
+                break;
+            case 'error':
+                this._flushQueuedQuery();
                 break;
         }
     }
 
-    callWorkerRPC(targetWorker, messageData, timeoutMs = 30000) {
+    callWorkerRPC(targetWorker, messageData, timeoutMs = 30000, signal = null) {
         return new Promise((resolve, reject) => {
+            if (signal?.aborted) {
+                reject(new DOMException('Operation aborted', 'AbortError'));
+                return;
+            }
             const reqId = Date.now() + Math.random().toString(36).substring(2);
             const msg = { ...messageData, execId: reqId };
             let cleanup;
@@ -136,6 +226,11 @@ class WorkerController {
                 cleanup();
                 reject(new Error('Worker RPC Timeout'));
             }, timeoutMs);
+
+            const onAbort = () => {
+                cleanup();
+                reject(new DOMException('Operation aborted', 'AbortError'));
+            };
 
             const errListener = (e) => {
                 cleanup();
@@ -163,10 +258,12 @@ class WorkerController {
 
             cleanup = () => {
                 clearTimeout(timeout);
+                signal?.removeEventListener('abort', onAbort);
                 targetWorker.removeEventListener('message', listener);
                 targetWorker.removeEventListener('error', errListener);
             };
 
+            signal?.addEventListener('abort', onAbort, { once: true });
             targetWorker.addEventListener('message', listener);
             targetWorker.addEventListener('error', errListener);
             targetWorker.postMessage(msg);

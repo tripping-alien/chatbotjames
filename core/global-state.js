@@ -1,6 +1,7 @@
 class GlobalState {
     constructor() {
         this.isGeneratingUI = false;
+        this.isModelLoading = false;
         this.gpuInfo = null;
         this.presets = [];
         this.activePresetId = null;

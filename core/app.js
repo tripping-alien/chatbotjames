@@ -88,14 +88,29 @@ function renderChatLog() {
     // renderChatLog wipes the DOM (innerHTML = ''), so without this the bubble is lost on
     // thread switch and never comes back until a new worker event arrives.
     const targetId = workerController.activeGenerations.get(chatManager.currentChatId);
-    if (targetId != null && globalState.isGeneratingUI) {
+    const isThreadGenerating = targetId != null && !workerController.isTargetAborted(targetId);
+    if (isThreadGenerating) {
+        if (!globalState.isGeneratingUI) {
+            uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
+            updateStatusLight('streaming');
+        }
         // Pause every other stream so background animations cannot inject ghost bubbles
         pauseStreamsExcept(targetId);
         resumeStreamForTarget(targetId);
     } else {
-        // No active generation on this chat — delete any stale target, pause all streams and sweep thinking bubbles
+        // No active generation on this chat — delete any stale target, reset Stop UI if needed, pause all streams and sweep thinking bubbles
         if (targetId != null) {
             workerController.activeGenerations.delete(chatManager.currentChatId);
+        }
+        if (globalState.isGeneratingUI && !_cannedGenActive) {
+            if (globalState.isModelLoading) {
+                uiManager.setLoadingState(true, (v) => globalState.isGeneratingUI = v);
+                uiManager.updateStatusText('LOADING MODEL…');
+            } else {
+                uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
+                updateStatusLight('idle');
+                uiManager.updateStatusText('READY');
+            }
         }
         pauseStreamsExcept(null);
         removeThinkingBubble();
@@ -203,14 +218,35 @@ async function simulateCannedResponse(text) {
 
     // Typewriter effect
     let accumulated = '';
-    for (let i = 0; i < text.length; i++) {
-        if (!globalState.isGeneratingUI || !_cannedGenActive) {
-            cancelStream(targetId);
+    const commitStoppedCanned = () => {
+        cancelStream(targetId);
+        if (accumulated.trim().length > 0) {
+            if (chatManager.currentChatId === chatId) {
+                updateLiveBubble(accumulated, targetId, true);
+                chatManager.chatHistory.push({ role: 'assistant', content: accumulated });
+                chatManager.persistCurrentChat(() => gameController.getGameState());
+                renderChatLog();
+            } else {
+                const bgChat = chatManager.chatMap.get(chatId);
+                if (bgChat) {
+                    bgChat.messages.push({ role: 'assistant', content: accumulated });
+                    import('./chat-db.js').then(db => db.dbSaveChat(bgChat));
+                }
+            }
+        } else {
             removeThinkingBubble(targetId);
-            if (window.workerController) {
+        }
+        if (window.workerController) {
+            if (window.workerController.activeGenerations.get(chatId) === targetId) {
                 window.workerController.activeGenerations.delete(chatId);
             }
-            _cannedGenActive = false;
+        }
+        _cannedGenActive = false;
+    };
+
+    for (let i = 0; i < text.length; i++) {
+        if (!globalState.isGeneratingUI || !_cannedGenActive || workerController.isTargetAborted(targetId)) {
+            commitStoppedCanned();
             return;
         }
         accumulated += text[i];
@@ -219,13 +255,8 @@ async function simulateCannedResponse(text) {
         await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
     }
 
-    if (!globalState.isGeneratingUI || !_cannedGenActive) {
-        cancelStream(targetId);
-        removeThinkingBubble(targetId);
-        if (window.workerController) {
-            window.workerController.activeGenerations.delete(chatId);
-        }
-        _cannedGenActive = false;
+    if (!globalState.isGeneratingUI || !_cannedGenActive || workerController.isTargetAborted(targetId)) {
+        commitStoppedCanned();
         return;
     }
 
@@ -257,27 +288,47 @@ const _bgChatMoveRetries = new Map(); // chatId → retry count
 const _chatToolDepths = new Map();
 
 workerController.onWorkerStatus = (status, message, e) => {
+    const msgTargetId = e?.data?.targetId;
+    const msgChatId = e?.data?.chatId;
+
+    // Ignore stale progress/completion from an already-aborted targetId (except its final 'aborted' ack)
+    if (msgTargetId != null && workerController.isTargetAborted(msgTargetId) && status !== 'aborted') {
+        return;
+    }
+
     if (status === 'done' || status === 'complete' || status === 'error' || status === 'aborted') {
-        const isToolCall = (status === 'complete' || status === 'aborted') && message && hasToolCalls(message);
-        // Don't let a worker status reset the UI while a canned animation owns isGeneratingUI.
-        // (The canned handler will call setIdleState itself when it finishes.)
-        if (!_cannedGenActive && !isToolCall) {
-            uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
-            updateStatusLight('idle');
-            if (status === 'error' && !e.data?.chatId) {
-                uiManager.updateStatusText('LOAD FAILED');
-            } else {
-                uiManager.updateStatusText('READY');
+        if (status === 'done' || (status === 'error' && !msgChatId)) {
+            globalState.isModelLoading = false;
+        }
+        const activeTargetForChat = msgChatId != null ? workerController.activeGenerations.get(msgChatId) : null;
+        const isSupersededTarget = msgTargetId != null && activeTargetForChat != null && activeTargetForChat !== msgTargetId;
+        const isToolCall = (status === 'complete') && message && hasToolCalls(message);
+
+        // Don't let a stale worker completion reset the UI while a canned animation,
+        // a newer generation for this chat, or another visible active thread owns isGeneratingUI.
+        if (!_cannedGenActive && !isToolCall && !isSupersededTarget) {
+            const shouldResetUI = status === 'done' || (status === 'error' && !msgChatId)
+                ? workerController.activeGenerations.size === 0
+                : msgChatId === chatManager.currentChatId;
+            if (shouldResetUI) {
+                uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
+                updateStatusLight('idle');
+                if (status === 'error' && !msgChatId) {
+                    uiManager.updateStatusText('LOAD FAILED');
+                } else {
+                    uiManager.updateStatusText('READY');
+                }
             }
         }
-        if (status === 'aborted' && e.data.chatId) workerController.activeGenerations.delete(e.data.chatId);
-        if (status === 'complete' && e.data.chatId) workerController.activeGenerations.delete(e.data.chatId);
+        if ((status === 'aborted' || status === 'complete') && msgChatId && !isSupersededTarget) {
+            workerController.activeGenerations.delete(msgChatId);
+        }
         if (status === 'error') {
-            const errChatId = e.data?.chatId;
-            if (errChatId) workerController.activeGenerations.delete(errChatId);
+            const errChatId = msgChatId;
+            if (errChatId && !isSupersededTarget) workerController.activeGenerations.delete(errChatId);
             const errText = message || 'An unknown worker error occurred.';
-            if (errChatId === chatManager.currentChatId) {
-                removeThinkingBubble(e.data?.targetId);
+            if (errChatId === chatManager.currentChatId && !isSupersededTarget) {
+                removeThinkingBubble(msgTargetId);
             }
 
             // Trim any dangling partial assistant/system messages from history
@@ -315,13 +366,21 @@ workerController.onWorkerStatus = (status, message, e) => {
                 appendErrorToChat(`⚠️ Model failed to load: ${errText}. Please check your internet connection or choose another model in Settings.`);
             }
         }
-    } else {
-        if (!globalState.isGeneratingUI) {
-            uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
-            updateStatusLight('thinking');
+    } else if (status === 'thinking' || status === 'streaming') {
+        const activeTargetForChat = msgChatId != null ? workerController.activeGenerations.get(msgChatId) : null;
+        if (msgChatId === chatManager.currentChatId && (activeTargetForChat == null || activeTargetForChat === msgTargetId)) {
+            if (!globalState.isGeneratingUI) {
+                uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
+                updateStatusLight(status);
+            }
+            if (status === 'thinking') uiManager.updateStatusText('THINKING...');
+            if (status === 'streaming') uiManager.updateStatusText('RESPONDING...');
         }
-        if (status === 'thinking') uiManager.updateStatusText('THINKING...');
-        if (status === 'streaming') uiManager.updateStatusText('RESPONDING...');
+    } else if (status === 'downloading' || status === 'warm-start') {
+        globalState.isModelLoading = true;
+        if (!globalState.isGeneratingUI && !_cannedGenActive) {
+            uiManager.setLoadingState(true, (v) => globalState.isGeneratingUI = v);
+        }
     }
 };
 
@@ -424,13 +483,15 @@ workerController.onWorkerDone = (data) => {
 };
 
 workerController.onStreaming = (chatId, targetId, message) => {
+    if (workerController.isTargetAborted(targetId)) return;
     // Always keep stream state so returning to a background thread can restore the bubble.
     // Only drive the typewriter / DOM when this is the visible chat.
     const isActive = chatId === chatManager.currentChatId;
-    import('./stream-manager.js').then(sm => sm.queueStreamText(targetId, message, { updateDom: isActive }));
+    queueStreamText(targetId, message, { updateDom: isActive });
 };
 
 workerController.onThinking = (chatId, targetId) => {
+    if (workerController.isTargetAborted(targetId)) return;
     // Remember that this generation is in the thinking phase for this thread.
     // Only paint the bubble if the user is currently viewing that thread.
     if (chatId === chatManager.currentChatId) {
@@ -439,7 +500,7 @@ workerController.onThinking = (chatId, targetId) => {
 };
 
 workerController.onComplete = (chatId, targetId, message) => {
-    import('./stream-manager.js').then(sm => sm.flushStreamQueue(targetId));
+    flushStreamQueue(targetId);
     if (chatId === chatManager.currentChatId) {
         playReceiveSound();
         sendNotification("JAMES AI", "Response completed.");
@@ -510,20 +571,19 @@ workerController.onComplete = (chatId, targetId, message) => {
 };
 
 workerController.onToolCalls = (message, targetId, chatId) => {
-    import('./stream-manager.js').then(sm => {
-        sm.flushStreamQueue(targetId);
-        if (chatId === chatManager.currentChatId) {
-            // Switch the spinner to amber "tool" phase instead of destroying it.
-            // This keeps a visible indicator alive while the tool RPC is in flight
-            // (web search, Python, etc. can take several seconds).
-            setThinkingBubblePhase(targetId, 'tool');
-        }
-        handleToolCalls(message, targetId, chatId);
-    });
+    if (workerController.isTargetAborted(targetId)) return;
+    flushStreamQueue(targetId);
+    if (chatId === chatManager.currentChatId) {
+        // Switch the spinner to amber "tool" phase instead of destroying it.
+        // This keeps a visible indicator alive while the tool RPC is in flight
+        // (web search, Python, etc. can take several seconds).
+        setThinkingBubblePhase(targetId, 'tool');
+    }
+    handleToolCalls(message, targetId, chatId);
 };
 
 workerController.onAborted = (chatId, targetId, message) => {
-    import('./stream-manager.js').then(sm => sm.flushStreamQueue(targetId));
+    cancelStream(targetId);
     if (chatId === chatManager.currentChatId) {
         if (!message || message.trim() === '') {
             removeThinkingBubble(targetId);
@@ -916,16 +976,14 @@ function sendMessage(preExecutedMove = null) {
 }
 
 function handleStopGeneration() {
-    if (workerController.activeGenerations.has(chatManager.currentChatId) || globalState.isGeneratingUI) {
-        const currentTargetId = workerController.activeGenerations.get(chatManager.currentChatId);
-
+    const chatId = chatManager.currentChatId;
+    const currentTargetId = workerController.activeGenerations.get(chatId);
+    if (currentTargetId != null || globalState.isGeneratingUI) {
         if (currentTargetId != null) {
-            import('./stream-manager.js').then(sm => {
-                if (typeof sm.cancelStream === 'function') sm.cancelStream(currentTargetId);
-            });
+            cancelStream(currentTargetId);
         }
 
-        workerController.abortGeneration();
+        workerController.abortGeneration(currentTargetId, chatId);
 
         _cannedGenActive = false;
         globalState.cannedGenId++;
@@ -935,7 +993,7 @@ function handleStopGeneration() {
 
         uiManager.setIdleState(true, (v) => globalState.isGeneratingUI = v);
         updateStatusLight('idle');
-        uiManager.updateStatusText('READY');
+        uiManager.updateStatusText(globalState.isModelLoading ? 'LOADING MODEL…' : 'READY');
     }
 }
 
@@ -951,7 +1009,9 @@ async function handleToolCalls(message, targetId, originChatId) {
 
     const previous = _toolExecutionQueue.get(originChatId) || Promise.resolve();
     const current = previous.catch(() => { }).then(async () => {
+        if (workerController.isTargetAborted(targetId)) return;
         const isActiveChat = originChatId === chatManager.currentChatId;
+        const abortSignal = workerController.getAbortSignal(targetId);
         let targetHistory = chatManager.chatHistory;
         let bgChat = null;
 
@@ -1084,6 +1144,7 @@ async function handleToolCalls(message, targetId, originChatId) {
         }
 
         for (const callBlock of calls) {
+            if (workerController.isTargetAborted(targetId)) return;
             // ── Multi-format tool call parser ─────────────────────────────────────
             // Supports JSON, XML, and plain "key: value" formats (auto-detected).
             let toolName, params;
@@ -1234,7 +1295,7 @@ async function handleToolCalls(message, targetId, originChatId) {
                     if (!pyCode.trim()) {
                         throw new Error('No Python code provided to execute.');
                     }
-                    const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'run', code: pyCode }, 60000);
+                    const pyResp = await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'run', code: pyCode }, 60000, abortSignal);
                     // Combine stdout + expression result so the AI sees everything
                     const parts = [];
                     if (pyResp.stdout && pyResp.stdout.trim()) parts.push(pyResp.stdout.trim());
@@ -1282,7 +1343,7 @@ async function handleToolCalls(message, targetId, originChatId) {
                         }
                     }
                     if (pkgs.length === 0) throw new Error('pip_install requires a packages parameter');
-                    await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'install', packages: pkgs }, 120000);
+                    await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'install', packages: pkgs }, 120000, abortSignal);
                     toolResult = `Installed: ${pkgs.join(', ')}. You can now import them.`;
                 } else if (toolName === 'python_reset') {
                     // Wipe all user-defined variables / imports from the Pyodide namespace
@@ -1292,7 +1353,7 @@ async function handleToolCalls(message, targetId, originChatId) {
                     if (workerController._pyodideState !== 'ready') {
                         throw new Error('Python environment is still loading — please wait a moment and try again.');
                     }
-                    await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'reset' }, 15000);
+                    await workerController.callWorkerRPC(workerController.pythonWorker, { type: 'reset' }, 15000, abortSignal);
                     toolResult = 'Python environment reset. All variables and imports cleared.';
                 } else if (toolName === 'location') {
                     const toolsBridge = await import('../tools/tools-bridge.js');
@@ -1310,13 +1371,18 @@ async function handleToolCalls(message, targetId, originChatId) {
                     toolResult = { seconds: s, label: params.label ?? 'Timer', note: 'Timer started.' };
                 } else {
                     // Route all other tools to toolsWorker
-                    const rpcResp = await workerController.callWorkerRPC(workerController.toolsWorker, { tool: toolName, params }, 30000);
+                    const rpcResp = await workerController.callWorkerRPC(workerController.toolsWorker, { tool: toolName, params }, 30000, abortSignal);
                     toolResult = rpcResp.result ?? rpcResp;
                 }
             } catch (e) {
+                if (e?.name === 'AbortError' || workerController.isTargetAborted(targetId)) {
+                    return;
+                }
                 toolResult = `Error executing tool: ${e.message}`;
                 if (isActiveChat) appendErrorToChat(toolResult);
             }
+
+            if (workerController.isTargetAborted(targetId)) return;
 
             if (toolResult !== undefined && toolResult !== null) {
                 let formattedResult = typeof toolResult === 'object' ? JSON.stringify(toolResult, null, 2) : String(toolResult);
@@ -1335,6 +1401,8 @@ async function handleToolCalls(message, targetId, originChatId) {
                 }
             }
         }
+
+        if (workerController.isTargetAborted(targetId)) return;
 
         if (isActiveChat) {
             uiManager.updateStatusText('THINKING...');
@@ -1579,7 +1647,8 @@ window.addEventListener('beforeunload', () => {
 uiManager.initSidebarState(safeLocalStorage.getItem('james-sidebar-collapsed'));
 if (isTVDevice()) uiManager.initTVMode();
 
-uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
+globalState.isModelLoading = true;
+uiManager.setLoadingState(true, (v) => globalState.isGeneratingUI = v);
 const _savedLastPresetId = safeLocalStorage.getItem('james-last-preset-id');
 if (_savedLastPresetId) {
     globalState.selectedPresetId = _savedLastPresetId;
@@ -1632,17 +1701,26 @@ setupMessageRenderer({
 setupModelPanel({
     onApplyModel: (selectedId) => {
         // Abort any in-progress generation so the worker is free to re-init
+        _cannedGenActive = false;
+        globalState.cannedGenId++;
         if (workerController.activeGenerations.size > 0) {
             const currentTargetId = workerController.activeGenerations.get(chatManager.currentChatId);
             if (currentTargetId) {
+                cancelStream(currentTargetId);
+                workerController.markAborted(currentTargetId, chatManager.currentChatId);
                 workerController.worker.postMessage({ type: 'abort', targetId: currentTargetId });
                 removeThinkingBubble(currentTargetId);
+            }
+            for (const [cid, tid] of workerController.activeGenerations) {
+                cancelStream(tid);
+                workerController.markAborted(tid, cid);
             }
             workerController.activeGenerations.clear();
         }
         uiManager.updateProgress(0);
         uiManager.updateStatusMeta('Loading selected model…');
-        uiManager.setIdleState(false, (v) => globalState.isGeneratingUI = v);
+        globalState.isModelLoading = true;
+        uiManager.setLoadingState(true, (v) => globalState.isGeneratingUI = v);
         uiManager.updateStatusText('LOADING MODEL…');
         workerController.worker.postMessage({ type: 'init', forcePresetId: selectedId, screenWidth: window.screen?.width, maxTouchPoints: navigator.maxTouchPoints });
     }

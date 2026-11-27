@@ -259,5 +259,77 @@ mockDoc.elementsById.set('thinking-bubble', legacyBubble);
 simulateRemoveThinkingBubble(null);
 check('simulateRemoveThinkingBubble cleans up legacy #thinking-bubble', !chatLog.children.includes(legacyBubble));
 
+// 5. Functional tests for WorkerController Stop / Abort isolation & tool cancellation
+const wcPath = path.resolve('core/worker-controller.js');
+const wcContent = fs.readFileSync(wcPath, 'utf8');
+
+// Evaluate WorkerController cleanly from module source by exporting class dynamically
+const wcClassCode = wcContent + '\nexport { WorkerController };';
+const wcClassUri = 'data:text/javascript;base64,' + Buffer.from(wcClassCode).toString('base64');
+const { WorkerController } = await import(wcClassUri);
+
+const wc = new WorkerController();
+const postedMessages = [];
+wc.worker = { postMessage: (m) => postedMessages.push(m) };
+
+let toolCallsTriggered = 0;
+let abortedCallbackArgs = null;
+let streamingCallbackCalls = 0;
+wc.onToolCalls = () => { toolCallsTriggered++; };
+wc.onAborted = (chatId, targetId, message) => { abortedCallbackArgs = { chatId, targetId, message }; };
+wc.onStreaming = () => { streamingCallbackCalls++; };
+
+// Case 5a: Background chat stays intact when stopping active chat
+wc.postQuery([{ role: 'user', content: 'chat A' }], 201, 'chat-a');
+wc.activeGenerations.set('chat-b', 202);
+const sig201 = wc.getAbortSignal(201);
+wc.abortGeneration(201, 'chat-a');
+check('abortGeneration aborts target AbortSignal immediately', sig201.aborted === true);
+check('abortGeneration deletes stopped chat from activeGenerations', !wc.activeGenerations.has('chat-a'));
+check('abortGeneration preserves unrelated background chat in activeGenerations', wc.activeGenerations.get('chat-b') === 202);
+
+// Case 5b: Stale streaming events from aborted targetId are suppressed
+wc.workerMessageHandler({ data: { status: 'streaming', targetId: 201, chatId: 'chat-a', message: 'late chunk' } });
+check('stale streaming event after abort does not reach onStreaming', streamingCallbackCalls === 0);
+
+// Case 5c: Aborted output containing JSON tool call syntax must NOT execute tools
+wc.workerMessageHandler({ data: { status: 'aborted', targetId: 201, chatId: 'chat-a', message: '{"tool":"search","params":{"q":"test"}}' } });
+check('aborted status with tool syntax does not invoke onToolCalls', toolCallsTriggered === 0);
+check('aborted status invokes onAborted instead', abortedCallbackArgs?.targetId === 201);
+
+// Case 5d: Rapid re-send before worker emits aborted queues cleanly instead of throwing busy
+wc.postQuery([{ role: 'user', content: 'first' }], 301, 'chat-c');
+wc.abortGeneration(301, 'chat-c');
+postedMessages.length = 0;
+wc.postQuery([{ role: 'user', content: 'retry' }], 302, 'chat-c');
+check('re-sending during worker unwind queues query instead of posting while busy', postedMessages.length === 0);
+wc.workerMessageHandler({ data: { status: 'aborted', targetId: 301, chatId: 'chat-c', message: '' } });
+check('queued query flushes immediately once aborted worker unwinds', postedMessages.length === 1 && postedMessages[0].targetId === 302);
+
+// Case 5e: callWorkerRPC rejects immediately with AbortError when signal is aborted
+const fakeToolsWorker = {
+    listeners: new Set(),
+    addEventListener(type, fn) { if (type === 'message') this.listeners.add(fn); },
+    removeEventListener(type, fn) { if (type === 'message') this.listeners.delete(fn); },
+    postMessage() {}
+};
+const sigRpc = wc.getAbortSignal(401);
+const rpcPromise = wc.callWorkerRPC(fakeToolsWorker, { tool: 'web_search', params: {} }, 30000, sigRpc);
+wc.abortGeneration(401, 'chat-d');
+let rpcAborted = false;
+try {
+    await rpcPromise;
+} catch (err) {
+    rpcAborted = err?.name === 'AbortError';
+}
+check('callWorkerRPC rejects immediately with AbortError on Stop', rpcAborted);
+
+// Static structural checks for handleToolCalls & worker.js abort guards
+check('handleToolCalls checks workerController.isTargetAborted before posting follow-up query',
+    /handleToolCalls[\s\S]*?isTargetAborted\(targetId\)/.test(appContent));
+const workerContent = fs.readFileSync(path.resolve('workers/worker.js'), 'utf8');
+check('worker.js checks isAborted after tokenizer and guards targetId on abort',
+    /activeTargetId/.test(workerContent) && /tokenizer\(prompt\)[\s\S]{0,120}AbortGeneration/.test(workerContent));
+
 console.log(failed === 0 ? '\nALL STOP THINKING BUBBLE TESTS PASSED' : `\n${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);

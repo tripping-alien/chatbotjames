@@ -45,8 +45,11 @@ class UIManager {
         if (!input || !btn) return;
         if (isIdle) {
             input.disabled = false;
+            btn.disabled = false;
             btn.innerHTML = '&#10132;';
             btn.classList.remove('stop-btn');
+            btn.setAttribute('aria-label', 'Send message');
+            btn.title = 'Send message';
 
             input.classList.remove('loading-state');
             input.placeholder = "\uD83D\uDCAC Message JAMES...";
@@ -57,9 +60,32 @@ class UIManager {
             input.classList.add('loading-state');
             input.placeholder = "\u23F3 Generating response...";
 
+            btn.disabled = false;
             btn.innerHTML = '&#9208;';
             btn.classList.add('stop-btn');
+            btn.setAttribute('aria-label', 'Stop generating');
+            btn.title = 'Stop generating';
             if (isGeneratingUIFlagCallback) isGeneratingUIFlagCallback(true);
+        }
+    }
+
+    setLoadingState(isLoading, isGeneratingUIFlagCallback) {
+        const input = this.cmdInput;
+        const btn = this.sendBtn;
+        if (!input || !btn) return;
+        if (isLoading) {
+            input.disabled = true;
+            input.classList.add('loading-state');
+            input.placeholder = "\u23F3 Loading model...";
+
+            btn.disabled = true;
+            btn.innerHTML = '&#10132;';
+            btn.classList.remove('stop-btn');
+            btn.setAttribute('aria-label', 'Model loading');
+            btn.title = 'Model loading';
+            if (isGeneratingUIFlagCallback) isGeneratingUIFlagCallback(false);
+        } else {
+            this.setIdleState(true, isGeneratingUIFlagCallback);
         }
     }
 

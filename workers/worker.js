@@ -238,11 +238,18 @@ async function tryInitializeModels(gpuInfo, isMobile, isTV, forcePresetId = null
     throw lastError || new Error('All model presets failed to load');
 }
 
+let activeTargetId = null;
+
 self.onmessage = async (e) => {
     const { type, messages, targetId, chatId } = e.data;
 
     if (type === 'abort') {
-        isAborted = true;
+        if (e.data.targetId == null || e.data.targetId === activeTargetId) {
+            isAborted = true;
+        }
+        if (e.data.abortDownloads && typeof self.abortDownloads === 'function') {
+            self.abortDownloads();
+        }
         return;
     }
 
@@ -314,6 +321,7 @@ self.onmessage = async (e) => {
 
         isGenerating = true;
         isAborted = false;
+        activeTargetId = targetId ?? null;
         let accumulatedResponse = '';
 
         try {
@@ -345,6 +353,7 @@ self.onmessage = async (e) => {
             });
 
             const promptTokens = await chatbot.tokenizer(prompt);
+            if (isAborted) throw new Error('AbortGeneration');
             const promptTokenCount = promptTokens.input_ids.data.length;
             console.log(`[worker] prompt tier=${promptTier} tokens=${promptTokenCount}`);
 
@@ -454,6 +463,9 @@ self.onmessage = async (e) => {
             }
         } finally {
             isGenerating = false;
+            if (activeTargetId === (targetId ?? null)) {
+                activeTargetId = null;
+            }
         }
     }
 };
